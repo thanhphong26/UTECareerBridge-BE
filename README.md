@@ -9,7 +9,7 @@ This is the repository for the UTE Career Bridge website. The website is a platf
     cd UTECareerBridge
     ``
 2. Create file .env in root folder
-3.Copy the .env.example file to .env and update the environment variables:
+3. Copy the .env.example file to .env and update the environment variables:
     ```sh
     DATABASE_URL=jdbc:mysql://localhost:3306/yourdbname
     DATABASE_USERNAME=yourusername
