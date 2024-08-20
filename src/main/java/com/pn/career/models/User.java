@@ -5,20 +5,27 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Table(name = "users")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
+@Data
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "dtype")
-public class User extends BaseEntity{
+public class User extends BaseEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int userId;
     @Column(name="phone_number")
     private String phoneNumber;
     private String email;
@@ -26,7 +33,19 @@ public class User extends BaseEntity{
     private String firstName;
     @Column(name = "last_name")
     private String lastName;
-    @Column(name = "is_active", columnDefinition = "TINYINT(1)")
+    @Column(name="gender")
+    private boolean gender;
+    @Column(name="dob")
+    private LocalDate dob;
+    @Column(name="province_id")
+    private int provinceId;
+    @Column(name = "district_id")
+    private int districtId;
+    @Column(name="ward_id")
+    private int wardId;
+    @Column(name="address")
+    private String address;
+    @Column(name = "is_active")
     private boolean active;
     @ManyToOne
     @JoinColumn(name="role_id")
@@ -34,4 +53,41 @@ public class User extends BaseEntity{
     private String password;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Token> tokens;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<SimpleGrantedAuthority> authorityList=new ArrayList<>();
+        authorityList.add(new SimpleGrantedAuthority("ROLE_"+ getRole().getRoleName().toUpperCase()));
+        return authorityList;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

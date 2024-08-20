@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import java.util.Set;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class Package extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +29,6 @@ public class Package extends BaseEntity{
     private Feature feature;
     @Column(name = "is_active")
     private boolean isActive;
-    @OneToMany(mappedBy = "package", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "jobPackage", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EmployerPackage> employerPackages;
 }

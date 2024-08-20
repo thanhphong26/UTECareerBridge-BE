@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Table(name = "orders")
@@ -34,7 +35,8 @@ public class Order {
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;
-    private float total;
+    @Column(name="total",precision = 18, scale = 2)
+    private BigDecimal total;
     @Column(name = "is_active")
     private boolean isActive;
 }

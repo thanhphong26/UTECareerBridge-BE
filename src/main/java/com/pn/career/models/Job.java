@@ -4,8 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import org.hibernate.bytecode.enhance.spi.EnhancementInfo;
+import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Job extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +33,12 @@ public class Job extends BaseEntity{
     private String jobTitle;
     @Column(name = "job_description")
     private String jobDescription;
-    @Column(name = "job_requirement")
-    private String jobRequirement;
-    @Column(name = "job_salary")
-    private String jobSalary;
+    @Column(name = "job_requirements")
+    private String jobRequirements;
     @Column(name = "job_location")
     private String jobLocation;
+    @Column(name = "job_salary", precision = 18, scale = 2)
+    private BigDecimal jobSalary;
     @Column(name = "job_deadline")
     private LocalDate jobDeadline;
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -4,12 +4,13 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "job_categories")
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class JobCategory extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,4 +18,6 @@ public class JobCategory extends BaseEntity{
     private int jobCategoryId;
     @Column(name = "category_name")
     private String jobCategoryName;
+    @Column(name = "is_active")
+    private boolean isActive;
 }

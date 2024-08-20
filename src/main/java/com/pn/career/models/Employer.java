@@ -4,32 +4,32 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Table(name = "employers")
+@Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 @PrimaryKeyJoinColumn(name = "employer_id")
 public class Employer extends User{
     @Column(name = "company_name")
     private String companyName;
+    @Column(name = "company_address")
+    private String address;
     @Column(name = "company_logo")
     private String companyLogo;
-    @Column(name = "company_address")
-    private String companyAddress;
-    @Column(name = "company_phone_number")
-    private String companyPhoneNumber;
     @Column(name = "company_website")
     private String companyWebsite;
     @Column(name = "company_description")
     private String companyDescription;
-    @Column(name = "company_image")
-    private String companyImage;
-    @Column(name = "video_intro")
-    private String videoIntro;
+    @Column(name = "background_image")
+    private String backgroundImage;
+    @Column(name = "video_introduction")
+    private String videoIntroduction;
     @Column(name = "company_size")
     private int companySize;
     @Column(name = "is_approved")

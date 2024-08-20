@@ -24,4 +24,7 @@ public class StudentSkill {
     @MapsId("skillId")
     @JoinColumn(name = "skill_id")
     private Skill skill;
+
+    @Column(name = "level")
+    private int level;
 }

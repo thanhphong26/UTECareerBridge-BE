@@ -2,9 +2,8 @@ package com.pn.career.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
 
@@ -12,14 +11,17 @@ import java.util.Set;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 @PrimaryKeyJoinColumn(name = "student_id")
 public class Student extends User{
-    @Column(name = "university_mail")
-    private String universityMail;
+    @Column(name = "university_email")
+    private String universityEmail;
+    @Column(name="year")
+    private int year;
     @Column(name="profile_image")
     private String profileImage;
-    private String address;
+    @Column(name = "is_find")
+    private boolean isFind;
     @OneToMany(mappedBy = "student")
     private Set<Application> applications;
 }

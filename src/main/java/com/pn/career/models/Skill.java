@@ -4,12 +4,13 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "skills")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class Skill extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

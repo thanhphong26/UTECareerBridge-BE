@@ -4,12 +4,15 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
 
 @Table(name = "coupons")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class Coupon extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,8 +22,8 @@ public class Coupon extends BaseEntity {
     private String couponCode;
     private int amount;
     private float discount;
-    @Column(name = "is_expired")
-    private boolean isExpired;
+    @Column(name = "expired_at")
+    private LocalDateTime expiredAt;
     private String description;
     @Column(name = "max_usage")
     private int maxUsage;

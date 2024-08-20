@@ -4,14 +4,13 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "applications")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class Application extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,8 +25,6 @@ public class Application extends BaseEntity{
     @Enumerated(EnumType.STRING)
     @Column(name = "application_status", nullable = false)
     private ApplicationStatus applicationStatus = ApplicationStatus.PENDING;
-    @Column(name = "application_date")
-    private LocalDateTime applicationDate;
     @OneToOne(mappedBy = "application", cascade = CascadeType.ALL, orphanRemoval = true)
     private Interview interview;
 }

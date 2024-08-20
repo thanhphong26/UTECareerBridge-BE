@@ -4,12 +4,13 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Table(name = "job_levels")
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class JobLevel extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,4 +18,6 @@ public class JobLevel extends BaseEntity{
     private int jobLevelId;
     @Column(name = "name_level")
     private String nameLevel;
+    @Column(name = "is_active")
+    private boolean isActive;
 }

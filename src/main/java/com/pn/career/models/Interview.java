@@ -4,12 +4,15 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
 
 @Table(name = "interviews")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class Interview extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +22,7 @@ public class Interview extends BaseEntity{
     @JoinColumn(name = "application_id")
     private Application application;
     @Column(name = "schedule_date")
-    private String scheduleDate;
+    private LocalDateTime scheduleDate;
     @Column(name = "duration")
     private int duration;
     @Column(name = "meeting_link")

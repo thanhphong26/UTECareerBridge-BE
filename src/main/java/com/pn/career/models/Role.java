@@ -12,9 +12,10 @@ import lombok.*;
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name = "name", length = 100, nullable = false)
-    private String name;
+    @Column(name = "role_id")
+    private int roleId;
+    @Column(name = "role_name", length = 100, nullable = false)
+    private String roleName;
     private static String ADMIN="ADMIN";
     private static String STUDENT="STUDENT";
     private static String EMPLOYER="EMPLOYER";
