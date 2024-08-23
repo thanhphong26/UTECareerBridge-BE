@@ -3,7 +3,8 @@ package com.pn.career.utils;
 import java.util.regex.Pattern;
 
 public class ValidationUtils {
-
+    private static final String PHONE_REGEX = "^[0-9]{10,11}$";
+    private static final Pattern PHONE_PATTERN = Pattern.compile(PHONE_REGEX);
     public static boolean isValidEmail(String email) {
         // Regular expression pattern for validating email addresses
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
@@ -14,13 +15,10 @@ public class ValidationUtils {
     }
 
     public static boolean isValidPhoneNumber(String phoneNumber) {
-        // Regular expression pattern for validating phone numbers
-        // Valid if contains only numbers, at least 6 characters
-        String phoneRegex = "^\\d{6,}$";
-        // Create a Pattern object
-        Pattern pattern = Pattern.compile(phoneRegex);
-        // Match the input phone number with the pattern
-        return phoneNumber != null && pattern.matcher(phoneNumber).matches();
+        if (phoneNumber == null || phoneNumber.isBlank()) {
+            return false;
+        }
+        return PHONE_PATTERN.matcher(phoneNumber).matches();
     }
     public static boolean isValidPassword(String password) {
         // Password validation: At least 3 characters

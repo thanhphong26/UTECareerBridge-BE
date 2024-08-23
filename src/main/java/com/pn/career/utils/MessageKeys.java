@@ -10,5 +10,7 @@ public class MessageKeys {
 
     public static final String ROLE_DOES_NOT_EXISTS = "user.login.role_not_exist";
 
-
+    public static final String PHONE_IS_INVALID="user.login.invalid_phone_number";
+    public static final String EMAIL_IS_INVALID="user.login.invalid_email";
+    public static final String NON_PERMISSION_WITH_ROLE="user.login.non_permission";
 }

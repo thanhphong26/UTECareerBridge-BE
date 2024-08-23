@@ -1,11 +1,10 @@
 package com.pn.career.controllers;
 
 import com.pn.career.components.LocalizationUtils;
+import com.pn.career.dtos.EmployerRegistrationDTO;
 import com.pn.career.dtos.StudentLoginDTO;
 import com.pn.career.dtos.StudentRegistrationDTO;
 import com.pn.career.dtos.TokenDTO;
-import com.pn.career.models.Student;
-import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.responses.LoginResponse;
 import com.pn.career.responses.ResponseObject;
@@ -19,39 +18,70 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${api.prefix}/students")
-public class UserController {
+@RequestMapping("${api.prefix}/employers")
+public class EmployerController {
     private final IUserService userService;
     private final ITokenService tokenService;
     private final LocalizationUtils localizationUtils;
     @PostMapping("/register")
-    public ResponseEntity<ResponseObject> registerStudent(@RequestBody StudentRegistrationDTO studentRegistrationDTO) throws Exception {
-        if (studentRegistrationDTO.getEmail() == null || studentRegistrationDTO.getEmail().trim().isBlank()) {
-            if (studentRegistrationDTO.getPhoneNumber() == null || studentRegistrationDTO.getPhoneNumber().isBlank()) {
+    public ResponseEntity<ResponseObject> registerEmployer(@Valid @RequestBody EmployerRegistrationDTO employerRegistrationDTO, BindingResult result) throws Exception {
+        if (result.hasErrors()) {
+            List<String> errorMessages = result.getFieldErrors()
+                    .stream()
+                    .map(FieldError::getDefaultMessage)
+                    .toList();
+            String combinedErrorMessage = String.join(", ", errorMessages);
+
+            return ResponseEntity.badRequest().body(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .data(null)
+                    .message(combinedErrorMessage)
+                    .build());
+        }
+        if (employerRegistrationDTO.getEmail() == null || employerRegistrationDTO.getEmail().trim().isBlank()) {
+            return ResponseEntity.badRequest().body(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .data(null)
+                    .message("At least email is required")
+                    .build());
+        } else {
+            //Email not blank
+            if (!ValidationUtils.isValidEmail(employerRegistrationDTO.getEmail())) {
                 return ResponseEntity.badRequest().body(ResponseObject.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .data(null)
-                        .message("At least email or phone number is required")
+                        .message(localizationUtils.getLocalizedMessage(MessageKeys.EMAIL_IS_INVALID))
                         .build());
-            } else {
-                //phone number not blank
-                if (!ValidationUtils.isValidPhoneNumber(studentRegistrationDTO.getPhoneNumber())) {
-                    throw new Exception("Invalid phone number");
-                }
-            }
-        } else {
-            //Email not blank
-            if (!ValidationUtils.isValidEmail(studentRegistrationDTO.getEmail())) {
-                throw new Exception("Invalid email format");
             }
         }
-
-        if (!studentRegistrationDTO.getPassword().equals(studentRegistrationDTO.getRetypePassword())) {
+        if (employerRegistrationDTO.getPhoneNumber() == null || employerRegistrationDTO.getPhoneNumber().isBlank()) {
+            return ResponseEntity.badRequest().body(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .data(null)
+                    .message("At phone number is required")
+                    .build());
+        } else {
+            //phone number not blank
+            if (!ValidationUtils.isValidPhoneNumber(employerRegistrationDTO.getPhoneNumber())) {
+                return ResponseEntity.badRequest().body(ResponseObject.builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .data(null)
+                        .message(localizationUtils.getLocalizedMessage(MessageKeys.PHONE_IS_INVALID))
+                        .build());
+            }
+        }
+        if (!employerRegistrationDTO.getPassword().equals(employerRegistrationDTO.getRetypePassword())) {
             //registerResponse.setMessage();
             return ResponseEntity.badRequest().body(ResponseObject.builder()
                     .status(HttpStatus.BAD_REQUEST)
@@ -59,11 +89,11 @@ public class UserController {
                     .message(localizationUtils.getLocalizedMessage(MessageKeys.PASSWORD_NOT_MATCH))
                     .build());
         }
-        User user = userService.studentRegister(studentRegistrationDTO);
+        User user = userService.employerRegister(employerRegistrationDTO);
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.CREATED)
                 .data(StudentResponse.fromUser(user))
-                .message("Account registration successful")
+                .message("Account employer registration successful")
                 .build());
     }
     @PostMapping("/login")

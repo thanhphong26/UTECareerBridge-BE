@@ -19,7 +19,7 @@ public class Employer extends User{
     @Column(name = "company_name")
     private String companyName;
     @Column(name = "company_address")
-    private String address;
+    private String companyAddress;
     @Column(name = "company_logo")
     private String companyLogo;
     @Column(name = "company_website")

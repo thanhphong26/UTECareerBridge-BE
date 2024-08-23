@@ -2,12 +2,14 @@ package com.pn.career.services;
 
 import com.pn.career.components.JWTTokenUtil;
 import com.pn.career.components.LocalizationUtils;
+import com.pn.career.dtos.EmployerRegistrationDTO;
 import com.pn.career.dtos.StudentLoginDTO;
 import com.pn.career.dtos.StudentRegistrationDTO;
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.ExpiredTokenException;
 import com.pn.career.exceptions.PermissionDenyException;
+import com.pn.career.models.Employer;
 import com.pn.career.models.Role;
 import com.pn.career.models.Student;
 import com.pn.career.models.User;
@@ -60,8 +62,31 @@ public class UserService implements IUserService{
                 .build();
         student.setRole(role);
         return userRepository.save(student);
-
     }
+
+    @Override
+    public User employerRegister(EmployerRegistrationDTO employerRegistrationDTO) throws Exception {
+        if(!employerRegistrationDTO.getPhoneNumber().isBlank() && userRepository.existsByPhoneNumber(employerRegistrationDTO.getPhoneNumber())){
+            throw new DataIntegrityViolationException("Phone number already exist!");
+        }
+        if(!employerRegistrationDTO.getEmail().isBlank() && userRepository.existsByEmail(employerRegistrationDTO.getEmail())) {
+            throw new DataIntegrityViolationException("Email already exist!");
+        }
+        Role role=roleRepository.findByRoleName("employer").orElseThrow(() -> new DataNotFoundException(
+                localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS)));
+        Employer employer =Employer.builder()
+                .firstName(employerRegistrationDTO.getFirsName())
+                .lastName(employerRegistrationDTO.getLastName())
+                .phoneNumber(employerRegistrationDTO.getPhoneNumber())
+                .companyName(employerRegistrationDTO.getCompanyName())
+                .companyAddress(employerRegistrationDTO.getCompanyAddress())
+                .email(employerRegistrationDTO.getEmail())
+                .password(bCryptPasswordEncoder.encode(employerRegistrationDTO.getPassword()))
+                .build();
+        employer.setRole(role);
+        return userRepository.save(employer);
+    }
+
     @Override
     public TokenDTO login(StudentLoginDTO studentLoginDTO) throws Exception {
         Optional<User> optionalStudent = Optional.empty();
@@ -80,7 +105,12 @@ public class UserService implements IUserService{
             throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
         }
         //return optionalUser.get();//muốn trả JWT token ?
-        Student existingUser= (Student) optionalStudent.get();
+        User existingUser=  optionalStudent.get();
+        Role role=existingUser.getRole();
+        //check role
+        if(role==null || !role.getRoleName().equalsIgnoreCase("student")){
+            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.NON_PERMISSION_WITH_ROLE));
+        }
         //check password
         if(!bCryptPasswordEncoder.matches(studentLoginDTO.getPassword(), existingUser.getPassword())) {
             throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));

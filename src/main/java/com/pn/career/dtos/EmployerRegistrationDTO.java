@@ -3,12 +3,16 @@ package com.pn.career.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class StudentRegistrationDTO {
+public class EmployerRegistrationDTO {
     @JsonProperty("first_name")
     private String firsName;
     @JsonProperty("last_name")
@@ -23,4 +27,8 @@ public class StudentRegistrationDTO {
     private String password;
     @JsonProperty("retype_password")
     private String retypePassword;
+    @JsonProperty("company_name")
+    private String companyName;
+    @JsonProperty("company_address")
+    private String companyAddress;
 }
