@@ -1,5 +1,4 @@
 package com.pn.career.configurations;
-
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -24,13 +23,10 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
-import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 
-
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity   // Enable method level security
 public class WebSecurityConfig {
     @Autowired
     KeyUtils keyUtils;
@@ -42,20 +38,16 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(requests -> {
                     requests
                             .requestMatchers(
-                                    String.format("%s/students/register", apiPrefix),
-                                    String.format("%s/students/login", apiPrefix),
+                                    String.format("%s/users/register", apiPrefix),
+                                    String.format("%s/users/login", apiPrefix),
                                     String.format("%s/employers/register", apiPrefix),
                                     String.format("%s/employers/login", apiPrefix)
                             ).permitAll()
                             .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
-                .oauth2ResourceServer((oauth2)->oauth2.jwt((jwt)->jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling((exceptions)->exceptions
-                        .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                        .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
-                );
+                .oauth2ResourceServer((oauth2)->oauth2.jwt(jwt->jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                .sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return httpSecurity.build();
     }
     private JwtAuthenticationConverter jwtAuthenticationConverter() {

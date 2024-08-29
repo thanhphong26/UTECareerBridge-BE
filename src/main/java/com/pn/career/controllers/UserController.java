@@ -4,8 +4,6 @@ import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.StudentLoginDTO;
 import com.pn.career.dtos.StudentRegistrationDTO;
 import com.pn.career.dtos.TokenDTO;
-import com.pn.career.models.Student;
-import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.responses.LoginResponse;
 import com.pn.career.responses.ResponseObject;
@@ -19,12 +17,11 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("${api.prefix}/students")
+@RequestMapping("${api.prefix}/users")
 public class UserController {
     private final IUserService userService;
     private final ITokenService tokenService;
@@ -50,7 +47,6 @@ public class UserController {
                 throw new Exception("Invalid email format");
             }
         }
-
         if (!studentRegistrationDTO.getPassword().equals(studentRegistrationDTO.getRetypePassword())) {
             //registerResponse.setMessage();
             return ResponseEntity.badRequest().body(ResponseObject.builder()
@@ -71,7 +67,7 @@ public class UserController {
             @Valid @RequestBody StudentLoginDTO studentLoginDTO,
             HttpServletRequest request
     ) throws Exception {
-        TokenDTO token=userService.login(studentLoginDTO);
+        TokenDTO token=userService.userLogin(studentLoginDTO);
         String userAgent = request.getHeader("User-Agent");
         User userDetail = userService.getUserDetailsFromToken(token.getAccessToken());
         //Token jwtToken = tokenService.addToken(userDetail, token); /* Sử dụng refresh token*/

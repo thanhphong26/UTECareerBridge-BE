@@ -2,7 +2,7 @@ package com.pn.career.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
+@Data
 @PrimaryKeyJoinColumn(name = "employer_id")
 public class Employer extends User{
     @Column(name = "company_name")
@@ -36,6 +37,9 @@ public class Employer extends User{
     private boolean isApproved;
     @Column(name = "business_certificate")
     private String businessCertificate;
+    @ManyToOne
+    @JoinColumn(name = "industry_id")
+    private Industry industry;
     @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmployerPackage> employerPackages = new ArrayList<>();
 

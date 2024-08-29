@@ -45,7 +45,7 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name="address")
     private String address;
     @Column(name = "is_active")
-    private boolean active;
+    private boolean active=true;
     @ManyToOne
     @JoinColumn(name="role_id")
     private Role role;
@@ -56,7 +56,7 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorityList=new ArrayList<>();
-        authorityList.add(new SimpleGrantedAuthority("ROLE_"+ getRole().getRoleName().toUpperCase()));
+        authorityList.add(new SimpleGrantedAuthority(getRole().getRoleName().toUpperCase()));
         return authorityList;
     }
 

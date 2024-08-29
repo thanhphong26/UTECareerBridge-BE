@@ -88,7 +88,7 @@ public class UserService implements IUserService{
     }
 
     @Override
-    public TokenDTO login(StudentLoginDTO studentLoginDTO) throws Exception {
+    public TokenDTO userLogin(StudentLoginDTO studentLoginDTO) throws Exception {
         Optional<User> optionalStudent = Optional.empty();
         String subject = null;
         if (studentLoginDTO.getPhoneNumber() != null && !studentLoginDTO.getPhoneNumber().isBlank()) {
@@ -108,7 +108,56 @@ public class UserService implements IUserService{
         User existingUser=  optionalStudent.get();
         Role role=existingUser.getRole();
         //check role
-        if(role==null || !role.getRoleName().equalsIgnoreCase("student")){
+        if(role==null || (!role.getRoleName().equalsIgnoreCase("student") && !role.getRoleName().equalsIgnoreCase("admin"))){
+            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.NON_PERMISSION_WITH_ROLE));
+        }
+        //check password
+        if(!bCryptPasswordEncoder.matches(studentLoginDTO.getPassword(), existingUser.getPassword())) {
+            throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
+        }
+        if(!optionalStudent.get().isActive()){
+            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
+        }
+        // Create authentication token using the found subject and granted authorities
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                subject,
+                studentLoginDTO.isPasswordBlank()  ? "" : studentLoginDTO.getPassword(),
+                existingUser.getAuthorities()
+        );
+        //authentication with java spring
+        logger.info("Authenticating user with subject: {}", subject);
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(authenticationToken);
+            logger.info("Authentication successful for user: {}", subject);
+        } catch (Exception e) {
+            logger.error("Authentication failed for user: {}. Reason: {}", subject, e.getMessage());
+            throw e;
+        }        return jwtTokenUtil.generateTokenPair(authentication);
+    }
+
+    @Override
+    public TokenDTO employerLogin(StudentLoginDTO studentLoginDTO) throws Exception {
+        Optional<User> optionalStudent = Optional.empty();
+        String subject = null;
+        if (studentLoginDTO.getPhoneNumber() != null && !studentLoginDTO.getPhoneNumber().isBlank()) {
+            optionalStudent = userRepository.findUserByPhoneNumber(studentLoginDTO.getPhoneNumber());
+            subject = studentLoginDTO.getPhoneNumber();
+        }
+        // If the user is not found by phone number, check by email
+        if (optionalStudent.isEmpty() && studentLoginDTO.getEmail() != null) {
+            optionalStudent = userRepository.findUserByEmail(studentLoginDTO.getEmail());
+            subject = studentLoginDTO.getEmail();
+        }
+        // If user is not found, throw an exception
+        if (optionalStudent.isEmpty()) {
+            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
+        }
+        //return optionalUser.get();//muốn trả JWT token ?
+        User existingUser=  optionalStudent.get();
+        Role role=existingUser.getRole();
+        //check role
+        if(role==null || !role.getRoleName().equalsIgnoreCase("employer")){
             throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.NON_PERMISSION_WITH_ROLE));
         }
         //check password
