@@ -32,23 +32,31 @@ public class EmployerService implements IEmployerService {
             employer.setCompanySize(employerUpdateDTO.getCompanySize());
             employer.setIndustry(industryRepository.findById(employerUpdateDTO.getIndustryId()).orElseThrow(() -> new DataNotFoundException(
                     localizationUtils.getLocalizedMessage(MessageKeys.INDUSTRY_DOES_NOT_EXISTS))));
+            String companyNameSlug = employerUpdateDTO.getCompanyName().replaceAll("[^a-zA-Z0-9]", "_");
+
             if (!employerUpdateDTO.getCompanyLogo().isEmpty()) {
-                String logoUrl = cloudinaryService.uploadFile(employerUpdateDTO.getCompanyLogo());
+                String logoUrl = cloudinaryService.uploadFile(employerUpdateDTO.getCompanyLogo(),companyNameSlug + "_logo");
                 employer.setCompanyLogo(logoUrl);
             }
 
             if (!employerUpdateDTO.getBackgroundImage().isEmpty()) {
-                String backgroundUrl = cloudinaryService.uploadFile(employerUpdateDTO.getBackgroundImage());
+                String backgroundUrl = cloudinaryService.uploadFile(employerUpdateDTO.getBackgroundImage(),companyNameSlug + "_background");
                 employer.setBackgroundImage(backgroundUrl);
             }
 
             if (!employerUpdateDTO.getVideoIntroduction().isEmpty()) {
-                String videoUrl = cloudinaryService.uploadFile(employerUpdateDTO.getVideoIntroduction());
+                String videoUrl = cloudinaryService.uploadFile(employerUpdateDTO.getVideoIntroduction(),companyNameSlug + "_video");
                 employer.setVideoIntroduction(videoUrl);
             }
             return employerRepository.save(employer);
         } catch (DataNotFoundException | IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to update company profile", e);
         }
+    }
+
+    @Override
+    public Employer getEmployerById(Integer employerId) throws DataNotFoundException {
+        return employerRepository.findById(employerId).orElseThrow(()-> new DataNotFoundException(
+                localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_DOES_NOT_EXISTS)));
     }
 }

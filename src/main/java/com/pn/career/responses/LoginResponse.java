@@ -1,6 +1,7 @@
 package com.pn.career.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pn.career.models.Role;
 import lombok.*;
 
 import java.util.List;
@@ -24,5 +25,5 @@ public class LoginResponse {
     private int id;
     private String username;
 
-    private List<String> roles;
+    private Role roles;
 }

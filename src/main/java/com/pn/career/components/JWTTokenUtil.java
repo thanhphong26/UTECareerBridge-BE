@@ -2,6 +2,7 @@ package com.pn.career.components;
 
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.models.User;
+import com.pn.career.services.UserDetailsImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,9 +29,10 @@ public class JWTTokenUtil {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("ute-career-bridge")
                 .issuedAt(now)
-                .expiresAt(now.plus(7, ChronoUnit.DAYS))
+                .expiresAt(now.plus(3, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
                 .claim("roles", createScope(authentication))
+                .claim("userId", ((UserDetailsImpl) authentication.getPrincipal()).getUser().getUserId())
                 .build();
         return accessTokenEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
@@ -40,9 +42,10 @@ public class JWTTokenUtil {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("ute-career-bridge")
                 .issuedAt(now)
-                .expiresAt(now.plus(30, ChronoUnit.DAYS))
+                .expiresAt(now.plus(13, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
                 .claim("roles", createScope(authentication))
+                .claim("userId", ((UserDetailsImpl) authentication.getPrincipal()).getUser().getUserId())
                 .build();
         return refreshTokenEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
@@ -53,13 +56,13 @@ public class JWTTokenUtil {
                 .collect(Collectors.joining(" "));
     }
     public TokenDTO generateTokenPair(Authentication authentication) {
-        if (!(authentication.getPrincipal() instanceof User user)) {
+        if (!(authentication.getPrincipal() instanceof UserDetailsImpl user)) {
             throw new BadCredentialsException(MessageFormat.format(
                     "Principal {0} is not of User type", authentication.getPrincipal().getClass()
             ));
         }
         TokenDTO tokenDTO=new TokenDTO();
-        tokenDTO.setUserId(user.getUserId());
+        tokenDTO.setUserId(user.getUser().getUserId());
         tokenDTO.setAccessToken(createAccessToken(authentication));
         String refreshToken;
         if(authentication.getCredentials() instanceof Jwt jwt){

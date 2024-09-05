@@ -28,9 +28,9 @@ public class EmployerUpdateDTO {
     @JsonProperty("video_introduction")
     private MultipartFile videoIntroduction;
     @JsonProperty("company_size")
-    private int companySize;
+    private Integer companySize;
     @JsonProperty("business_certificate")
     private String businessCertificate;
     @JsonProperty("industry_id")
-    private int industryId;
+    private Integer industryId;
 }

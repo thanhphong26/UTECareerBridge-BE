@@ -2,7 +2,6 @@ package com.pn.career.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.pn.career.utils.ImageValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,8 +17,13 @@ public class CloudinaryService {
 
     private Cloudinary cloudinary;
 
-    public String uploadFile(MultipartFile file) throws IOException {
-        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+    public String uploadFile(MultipartFile file, String publicId) throws IOException {
+        String folder = "company";
+        Map<String, Object> uploadParams = ObjectUtils.asMap(
+                "public_id", publicId,
+                "folder", folder
+        );
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), uploadParams);
         return uploadResult.get("url").toString();
     }
     private File convertMultiPartToFile(MultipartFile file) throws IOException {

@@ -51,7 +51,7 @@ public class TokenService implements ITokenService{
     }
 
     @Override
-    public Token refreshToken(String refreshToken, User user) throws Exception {
+    public Token refreshToken(String refreshToken,UserDetailsImpl userDetails) throws Exception {
         Token existingToken = tokenRepository.findByRefreshToken(refreshToken);
         if(existingToken == null) {
             throw new DataNotFoundException("Refresh token does not exist");
@@ -61,7 +61,7 @@ public class TokenService implements ITokenService{
             throw new ExpiredTokenException("Refresh token is expired");
         }
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user.getUsername(), null, user.getAuthorities());
+                userDetails.getUsername(), null, userDetails.getAuthorities());
         TokenDTO token = jwtTokenUtil.generateTokenPair(authentication);
 
         LocalDateTime expirationDateAccessToken = convertToLocalDateTime(jwtDecoder.decode(token.getAccessToken()).getExpiresAt());

@@ -1,8 +1,8 @@
 package com.pn.career.controllers;
 
 import com.pn.career.components.LocalizationUtils;
-import com.pn.career.dtos.StudentLoginDTO;
-import com.pn.career.dtos.StudentRegistrationDTO;
+import com.pn.career.dtos.LoginDTO;
+import com.pn.career.dtos.StudentRegisterDTO;
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.models.User;
 import com.pn.career.responses.LoginResponse;
@@ -27,7 +27,7 @@ public class UserController {
     private final ITokenService tokenService;
     private final LocalizationUtils localizationUtils;
     @PostMapping("/register")
-    public ResponseEntity<ResponseObject> registerStudent(@RequestBody StudentRegistrationDTO studentRegistrationDTO) throws Exception {
+    public ResponseEntity<ResponseObject> registerStudent(@RequestBody StudentRegisterDTO studentRegistrationDTO) throws Exception {
         if (studentRegistrationDTO.getEmail() == null || studentRegistrationDTO.getEmail().trim().isBlank()) {
             if (studentRegistrationDTO.getPhoneNumber() == null || studentRegistrationDTO.getPhoneNumber().isBlank()) {
                 return ResponseEntity.badRequest().body(ResponseObject.builder()
@@ -55,19 +55,20 @@ public class UserController {
                     .message(localizationUtils.getLocalizedMessage(MessageKeys.PASSWORD_NOT_MATCH))
                     .build());
         }
-        User user = userService.studentRegister(studentRegistrationDTO);
+        User user = userService.registerUser(studentRegistrationDTO,"student");
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.CREATED)
                 .data(StudentResponse.fromUser(user))
-                .message("Account registration successful")
+                .message(localizationUtils.getLocalizedMessage(MessageKeys.STUDENT_REGISTER_SUCCESSFULLY))
                 .build());
+
     }
     @PostMapping("/login")
     public ResponseEntity<ResponseObject> login(
-            @Valid @RequestBody StudentLoginDTO studentLoginDTO,
+            @Valid @RequestBody LoginDTO studentLoginDTO,
             HttpServletRequest request
     ) throws Exception {
-        TokenDTO token=userService.userLogin(studentLoginDTO);
+        TokenDTO token=userService.userLogin(studentLoginDTO,"student","admin");
         String userAgent = request.getHeader("User-Agent");
         User userDetail = userService.getUserDetailsFromToken(token.getAccessToken());
         //Token jwtToken = tokenService.addToken(userDetail, token); /* Sử dụng refresh token*/
@@ -77,12 +78,12 @@ public class UserController {
                 .token(token.getAccessToken())
                 .tokenType("Bearer")
                 .refreshToken(token.getRefreshToken())
-                .username(userDetail.getUsername())
-                .roles(userDetail.getAuthorities().stream().map(item -> item.getAuthority()).toList())
+                .username((userDetail.getEmail()!=null)?userDetail.getEmail():userDetail.getPhoneNumber())
                 .id(userDetail.getUserId())
+                .roles(userDetail.getRole())
                 .build();
         return ResponseEntity.ok().body(ResponseObject.builder()
-                .message("Login successfully")
+                .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
                 .data(loginResponse)
                 .status(HttpStatus.OK)
                 .build());

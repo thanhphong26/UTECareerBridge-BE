@@ -1,6 +1,11 @@
 package com.pn.career.utils;
 
 public class MessageKeys {
+    public static final String EMPLOYER_REGISTER_SUCCESSFULLY = "employer.register.register_successfully";
+    public static final String EMPLOYER_REGISTER_FAILED = "employer.register.register_failed";
+    public static final String STUDENT_REGISTER_SUCCESSFULLY = "student.register.register_successfully";
+    public static final String STUDENT_REGISTER_FAILED = "student.register.register_failed";
+
     public static final String LOGIN_SUCCESSFULLY =  "user.login.login_successfully";
     public static final String REGISTER_SUCCESSFULLY =  "user.login.register_successfully";
     public static final String LOGIN_FAILED =  "user.login.login_failed";
@@ -18,4 +23,8 @@ public class MessageKeys {
     public static final String EMPLOYER_DOES_NOT_EXISTS="employer.login.employer_not_exist";
 
     public static final String INDUSTRY_DOES_NOT_EXISTS="employer.login.industry_not_exist";
+    public static final String EMPLOYER_UPDATE_SUCCESSFULLY="employer.update.update_successfully";
+    public static final String EMPLOYER_GET_INFO_SUCCESSFULLY="employer.login.get_company_info_successfully";
+
+    public static final String GET_ALL_INDUSTRIES_SUCCESSFULLY="get_all_industries_successfully";
 }

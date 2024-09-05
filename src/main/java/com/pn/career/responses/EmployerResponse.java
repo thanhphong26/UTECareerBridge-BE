@@ -63,4 +63,14 @@ public class EmployerResponse {
                 .industry(employer.getIndustry())
                 .build();
     }
+    public static EmployerResponse fromUser(User user) {
+        return EmployerResponse.builder()
+                .id(user.getUserId())
+                .phoneNumber(user.getPhoneNumber())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
+                .address(user.getAddress())
+                .build();
+    }
 }

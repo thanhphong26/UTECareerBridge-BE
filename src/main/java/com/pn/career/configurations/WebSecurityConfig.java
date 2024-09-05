@@ -25,6 +25,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static org.springframework.http.HttpMethod.GET;
+
 @Configuration
 @EnableMethodSecurity   // Enable method level security
 public class WebSecurityConfig {
@@ -43,6 +45,8 @@ public class WebSecurityConfig {
                                     String.format("%s/employers/register", apiPrefix),
                                     String.format("%s/employers/login", apiPrefix)
                             ).permitAll()
+                            .requestMatchers(GET,
+                                    String.format("%s/industries/get-all-industries", apiPrefix)).permitAll()
                             .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)

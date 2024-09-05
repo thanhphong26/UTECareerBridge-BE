@@ -2,204 +2,119 @@ package com.pn.career.services;
 
 import com.pn.career.components.JWTTokenUtil;
 import com.pn.career.components.LocalizationUtils;
-import com.pn.career.dtos.EmployerRegistrationDTO;
-import com.pn.career.dtos.StudentLoginDTO;
-import com.pn.career.dtos.StudentRegistrationDTO;
-import com.pn.career.dtos.TokenDTO;
-import com.pn.career.exceptions.DataNotFoundException;
-import com.pn.career.exceptions.ExpiredTokenException;
-import com.pn.career.exceptions.PermissionDenyException;
-import com.pn.career.models.Employer;
-import com.pn.career.models.Role;
-import com.pn.career.models.Student;
-import com.pn.career.models.User;
-import com.pn.career.repositories.RoleRepository;
-import com.pn.career.repositories.UserRepository;
-import com.pn.career.utils.MessageKeys;
-import com.pn.career.utils.ValidationUtils;
-import lombok.AllArgsConstructor;
+import com.pn.career.dtos.*;
+import com.pn.career.exceptions.*;
+import com.pn.career.models.*;
+import com.pn.career.repositories.*;
+import com.pn.career.utils.*;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
+import java.util.Arrays;
 @Service
-@AllArgsConstructor
-public class UserService implements IUserService{
+@RequiredArgsConstructor
+public class UserService implements IUserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final JWTTokenUtil jwtTokenUtil;
     private final RoleRepository roleRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final LocalizationUtils localizationUtils;
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public User studentRegister(StudentRegistrationDTO studentRegistrationDTO) throws Exception {
-        if(!studentRegistrationDTO.getPhoneNumber().isBlank() && userRepository.existsByPhoneNumber(studentRegistrationDTO.getPhoneNumber())){
-            throw new DataIntegrityViolationException("Phone number already exist!");
-        }
-        if(!studentRegistrationDTO.getEmail().isBlank() && userRepository.existsByEmail(studentRegistrationDTO.getEmail())) {
-            throw new DataIntegrityViolationException("Email already exist!");
-        }
-        Role role=roleRepository.findByRoleName("student").orElseThrow(() -> new DataNotFoundException(
-                localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS)));
-        Student student =Student.builder()
-                .firstName(studentRegistrationDTO.getFirsName())
-                .lastName(studentRegistrationDTO.getLastName())
-                .phoneNumber(studentRegistrationDTO.getPhoneNumber())
-                .universityEmail(studentRegistrationDTO.getEmail())
-                .email(studentRegistrationDTO.getEmail())
-                .password(bCryptPasswordEncoder.encode(studentRegistrationDTO.getPassword()))
-                .build();
-        student.setRole(role);
-        return userRepository.save(student);
+    @Transactional
+    public User registerUser(RegistrationDTO registrationDTO, String roleName) throws DataNotFoundException {
+        validateUserRegistration(registrationDTO);
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS)));
+        User user=registrationDTO.createUser(role);
+        user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
+        return userRepository.save(user);
     }
 
-    @Override
-    public User employerRegister(EmployerRegistrationDTO employerRegistrationDTO) throws Exception {
-        if(!employerRegistrationDTO.getPhoneNumber().isBlank() && userRepository.existsByPhoneNumber(employerRegistrationDTO.getPhoneNumber())){
-            throw new DataIntegrityViolationException("Phone number already exist!");
+    private void validateUserRegistration(RegistrationDTO registrationDTO) {
+        if (userRepository.existsByPhoneNumber(registrationDTO.getPhoneNumber())) {
+            throw new DataIntegrityViolationException("Phone number already exists");
         }
-        if(!employerRegistrationDTO.getEmail().isBlank() && userRepository.existsByEmail(employerRegistrationDTO.getEmail())) {
-            throw new DataIntegrityViolationException("Email already exist!");
+        if (userRepository.existsByEmail(registrationDTO.getEmail())) {
+            throw new DataIntegrityViolationException("Email already exists");
         }
-        Role role=roleRepository.findByRoleName("employer").orElseThrow(() -> new DataNotFoundException(
-                localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS)));
-        Employer employer =Employer.builder()
-                .firstName(employerRegistrationDTO.getFirsName())
-                .lastName(employerRegistrationDTO.getLastName())
-                .phoneNumber(employerRegistrationDTO.getPhoneNumber())
-                .companyName(employerRegistrationDTO.getCompanyName())
-                .companyAddress(employerRegistrationDTO.getCompanyAddress())
-                .email(employerRegistrationDTO.getEmail())
-                .password(bCryptPasswordEncoder.encode(employerRegistrationDTO.getPassword()))
-                .build();
-        employer.setRole(role);
-        return userRepository.save(employer);
     }
-
     @Override
-    public TokenDTO userLogin(StudentLoginDTO studentLoginDTO) throws Exception {
-        Optional<User> optionalStudent = Optional.empty();
-        String subject = null;
-        if (studentLoginDTO.getPhoneNumber() != null && !studentLoginDTO.getPhoneNumber().isBlank()) {
-            optionalStudent = userRepository.findUserByPhoneNumber(studentLoginDTO.getPhoneNumber());
-            subject = studentLoginDTO.getPhoneNumber();
-        }
-        // If the user is not found by phone number, check by email
-        if (optionalStudent.isEmpty() && studentLoginDTO.getEmail() != null) {
-            optionalStudent = userRepository.findUserByEmail(studentLoginDTO.getEmail());
-            subject = studentLoginDTO.getEmail();
-        }
-        // If user is not found, throw an exception
-        if (optionalStudent.isEmpty()) {
-            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
-        }
-        //return optionalUser.get();//muốn trả JWT token ?
-        User existingUser=  optionalStudent.get();
-        Role role=existingUser.getRole();
-        //check role
-        if(role==null || (!role.getRoleName().equalsIgnoreCase("student") && !role.getRoleName().equalsIgnoreCase("admin"))){
-            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.NON_PERMISSION_WITH_ROLE));
-        }
-        //check password
-        if(!bCryptPasswordEncoder.matches(studentLoginDTO.getPassword(), existingUser.getPassword())) {
+    public TokenDTO userLogin(LoginDTO loginDTO, String... allowedRoles) throws Exception{
+        try {
+            logger.info("Attempting login with email: {} or phone number: {}", loginDTO.getEmail(), loginDTO.getPhoneNumber());
+
+            // Sử dụng AuthenticationManager để xác thực người dùng dựa trên email hoặc phone
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginDTO.getEmail() != null ? loginDTO.getEmail() : loginDTO.getPhoneNumber(),
+                            loginDTO.getPassword()
+                    )
+            );
+            logger.info("Authentication successful for user: {}", authentication.getName());
+
+            // Lấy đối tượng UserDetails sau khi xác thực thành công
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+            // Kiểm tra quyền hạn của người dùng (nếu có)
+            validateUserForLogin(userDetails.getUser(), allowedRoles);
+
+            // Tạo cặp token JWT
+            TokenDTO tokenDTO = jwtTokenUtil.generateTokenPair(authentication);
+
+            return tokenDTO;
+
+        } catch (BadCredentialsException e) {
+            // Xử lý khi thông tin đăng nhập không hợp lệ
             throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
+        } catch (AuthenticationException e) {
+            // Xử lý ngoại lệ xác thực
+            throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD)) {};
         }
-        if(!optionalStudent.get().isActive()){
+
+        /*User user = findUserByEmailOrPhone(loginDTO);
+        validateUserForLogin(user, loginDTO, allowedRoles);
+
+        Authentication authentication = authenticateUser(loginDTO, user);
+        return jwtTokenUtil.generateTokenPair(authentication);*/
+    }
+
+    private User findUserByEmailOrPhone(LoginDTO loginDTO) {
+        return userRepository.findUserByEmailOrPhoneNumber(loginDTO.getEmail(), loginDTO.getPhoneNumber())
+                .orElseThrow(() -> new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD)));
+    }
+
+    private void validateUserForLogin(User user, String... allowedRoles) throws Exception {
+        if (!user.isActive()) {
             throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
         }
-        // Create authentication token using the found subject and granted authorities
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                subject,
-                studentLoginDTO.isPasswordBlank()  ? "" : studentLoginDTO.getPassword(),
-                existingUser.getAuthorities()
-        );
-        //authentication with java spring
-        logger.info("Authenticating user with subject: {}", subject);
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(authenticationToken);
-            logger.info("Authentication successful for user: {}", subject);
-        } catch (Exception e) {
-            logger.error("Authentication failed for user: {}. Reason: {}", subject, e.getMessage());
-            throw e;
-        }        return jwtTokenUtil.generateTokenPair(authentication);
-    }
-
-    @Override
-    public TokenDTO employerLogin(StudentLoginDTO studentLoginDTO) throws Exception {
-        Optional<User> optionalStudent = Optional.empty();
-        String subject = null;
-        if (studentLoginDTO.getPhoneNumber() != null && !studentLoginDTO.getPhoneNumber().isBlank()) {
-            optionalStudent = userRepository.findUserByPhoneNumber(studentLoginDTO.getPhoneNumber());
-            subject = studentLoginDTO.getPhoneNumber();
-        }
-        // If the user is not found by phone number, check by email
-        if (optionalStudent.isEmpty() && studentLoginDTO.getEmail() != null) {
-            optionalStudent = userRepository.findUserByEmail(studentLoginDTO.getEmail());
-            subject = studentLoginDTO.getEmail();
-        }
-        // If user is not found, throw an exception
-        if (optionalStudent.isEmpty()) {
-            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
-        }
-        //return optionalUser.get();//muốn trả JWT token ?
-        User existingUser=  optionalStudent.get();
-        Role role=existingUser.getRole();
-        //check role
-        if(role==null || !role.getRoleName().equalsIgnoreCase("employer")){
+        if (allowedRoles.length > 0 && !isUserRoleAllowed(user, allowedRoles)) {
             throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.NON_PERMISSION_WITH_ROLE));
         }
-        //check password
-        if(!bCryptPasswordEncoder.matches(studentLoginDTO.getPassword(), existingUser.getPassword())) {
-            throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
-        }
-        if(!optionalStudent.get().isActive()){
-            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
-        }
-        // Create authentication token using the found subject and granted authorities
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                subject,
-                studentLoginDTO.isPasswordBlank()  ? "" : studentLoginDTO.getPassword(),
-                existingUser.getAuthorities()
-        );
-        //authentication with java spring
-        logger.info("Authenticating user with subject: {}", subject);
-        Authentication authentication;
-        try {
-            authentication = authenticationManager.authenticate(authenticationToken);
-            logger.info("Authentication successful for user: {}", subject);
-        } catch (Exception e) {
-            logger.error("Authentication failed for user: {}. Reason: {}", subject, e.getMessage());
-            throw e;
-        }        return jwtTokenUtil.generateTokenPair(authentication);
     }
 
+    private boolean isUserRoleAllowed(User user, String... allowedRoles) {
+        return Arrays.stream(allowedRoles)
+                .anyMatch(role -> role.equalsIgnoreCase(user.getRole().getRoleName()));
+    }
     @Override
-    public User getUserDetailsFromToken(String token) throws Exception {
-        if(jwtTokenUtil.isTokenExpired(token)) {
+    public User getUserDetailsFromToken(String token) throws Exception{
+        if (jwtTokenUtil.isTokenExpired(token)) {
             throw new ExpiredTokenException("Token is expired");
         }
         String subject = jwtTokenUtil.getSubjectFromToken(token);
-        Optional<User> user;
-        if (ValidationUtils.isValidPhoneNumber(subject)) {
-            user = userRepository.findUserByPhoneNumber(subject);
-        } else if (ValidationUtils.isValidEmail(subject)) {
-            user = userRepository.findUserByEmail(subject);
-        } else {
-            throw new Exception("Invalid token subject");
-        }
-        return user.orElseThrow(() -> new Exception("User not found"));
+        return userRepository.findUserByEmailOrPhoneNumber(subject, subject)
+                .orElseThrow(() -> new DataNotFoundException("User not found"));
     }
-
 }

@@ -6,5 +6,5 @@ import com.pn.career.models.User;
 
 public interface ITokenService {
     Token addToken(User user, TokenDTO token);
-    Token refreshToken(String refreshToken, User user) throws Exception;
+    Token refreshToken(String refreshToken,  UserDetailsImpl userDetails) throws Exception;
 }
