@@ -18,6 +18,21 @@ spring:
     basename: i18n/messages
     encoding: UTF-8
     default-locale: vi
+  thymeleaf:
+    prefix: classpath:/mail-templates/
+    suffix: .html
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_SERVICE_USERNAME}
+    password: ${MAIL_SERVICE_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    debug: false
 access-token:
   private: access-refresh-token-keys/access-token-private.key
   public: access-refresh-token-keys/access-token-public.key

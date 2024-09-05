@@ -9,6 +9,8 @@ public class MessageKeys {
     public static final String LOGIN_SUCCESSFULLY =  "user.login.login_successfully";
     public static final String REGISTER_SUCCESSFULLY =  "user.login.register_successfully";
     public static final String LOGIN_FAILED =  "user.login.login_failed";
+    public static final String FORGOT_PASSWORD_SEND_SUCCESSFULLY="student.forgot_password.send_successfully";
+    public static final String EMAIL_NOT_EXISTS="user.forgot_password.email_not_exist";
     public static final String PASSWORD_NOT_MATCH =  "user.register.password_not_match";
     public static final String USER_IS_LOCKED = "user.login.user_is_locked";
     public static final String WRONG_PHONE_PASSWORD = "user.login.wrong_phone_password";

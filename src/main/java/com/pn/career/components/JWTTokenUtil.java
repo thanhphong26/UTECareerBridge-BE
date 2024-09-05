@@ -1,7 +1,6 @@
 package com.pn.career.components;
 
 import com.pn.career.dtos.TokenDTO;
-import com.pn.career.models.User;
 import com.pn.career.services.UserDetailsImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
