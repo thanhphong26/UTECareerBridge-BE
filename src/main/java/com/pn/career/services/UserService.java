@@ -80,7 +80,7 @@ public class UserService implements IUserService {
             throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
         } catch (AuthenticationException e) {
             // Xử lý ngoại lệ xác thực
-            throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD)) {};
+            throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.USER_DOES_NOT_EXISTS)) {};
         }
 
         /*User user = findUserByEmailOrPhone(loginDTO);

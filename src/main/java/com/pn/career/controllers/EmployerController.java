@@ -24,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -133,7 +134,7 @@ public class EmployerController {
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> updateCompanyProfile( @AuthenticationPrincipal Jwt principal,
                                                                  @Valid @ModelAttribute EmployerUpdateDTO employerUpdateDTO) throws DataNotFoundException {
-        Long userIdLong = principal.getClaim("user_id");
+        Long userIdLong = principal.getClaim("userId");
         Integer userId = userIdLong != null ? userIdLong.intValue() : null;
 
         Employer employer = employerService.updateEmployer(userId, employerUpdateDTO);
@@ -147,13 +148,32 @@ public class EmployerController {
     @GetMapping("/company-general-info")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getCompanyGeneralInfo(@AuthenticationPrincipal Jwt principal) throws DataNotFoundException {
-        Long userIdLong = principal.getClaim("user_id");
-        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
-        Employer employer=employerService.getEmployerById(userId);
-        return ResponseEntity.ok().body(ResponseObject.builder()
-                .message(localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_GET_INFO_SUCCESSFULLY))
-                .data(EmployerResponse.fromUser(employer))
-                .status(HttpStatus.OK)
-                .build());
+        try {
+            Long userIdLong = principal.getClaim("userId");
+            Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+            Employer employer = employerService.getEmployerById(userId);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message(localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_GET_INFO_SUCCESSFULLY))
+                    .data(EmployerResponse.fromUser(employer))
+                    .status(HttpStatus.OK)
+                    .build());
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .status(HttpStatus.NOT_FOUND)
+                    .message(e.getMessage())
+                    .build());
+        } catch (JwtException e) {
+            // Xử lý trường hợp token không hợp lệ hoặc đã hết hạn
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseObject.builder()
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .message("Token JWT không hợp lệ hoặc đã hết hạn")
+                    .build());
+        } catch (Exception e) {
+            // Xử lý các lỗi khác
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .message("Đã xảy ra lỗi không mong muốn")
+                    .build());
+        }
     }
 }

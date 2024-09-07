@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.pn.career.components.AuthEntryPointJwt;
 import com.pn.career.security.KeyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -32,12 +34,15 @@ import static org.springframework.http.HttpMethod.POST;
 @EnableMethodSecurity   // Enable method level security
 public class WebSecurityConfig {
     @Autowired
+    private AuthEntryPointJwt authEntryPointJwt;
+    @Autowired
     KeyUtils keyUtils;
     @Value("${api.prefix}")
     private String apiPrefix;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPointJwt))
                 .authorizeHttpRequests(requests -> {
                     requests
                             .requestMatchers(
@@ -53,11 +58,16 @@ public class WebSecurityConfig {
                             .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
-                .oauth2ResourceServer((oauth2)->oauth2.jwt(jwt->jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                .oauth2ResourceServer((oauth2) -> oauth2
+                        .jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(authEntryPointJwt)
+                )
                 .sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return httpSecurity.build();
     }
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
         grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
@@ -97,10 +107,10 @@ public class WebSecurityConfig {
         return new NimbusJwtEncoder(jwks);
     }
     @Bean
-    @Qualifier("jwtRefreshTokenAuthProvider")
-    JwtAuthenticationProvider jwtAuthenticationProvider() {
-        JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtRefreshTokenDecoder());
+    public JwtAuthenticationProvider jwtAuthenticationProvider() {
+        JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtAccessTokenDecoder());
         provider.setJwtAuthenticationConverter(jwtAuthenticationConverter());
         return provider;
     }
+
 }

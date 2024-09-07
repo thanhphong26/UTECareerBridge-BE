@@ -41,3 +41,9 @@ refresh-token:
   public: access-refresh-token-keys/refresh-token-public.key
 api:
   prefix: /api/v1
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
+    com.pn.career: DEBUG
+
