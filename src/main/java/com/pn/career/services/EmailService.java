@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import org.thymeleaf.context.Context;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class EmailService {

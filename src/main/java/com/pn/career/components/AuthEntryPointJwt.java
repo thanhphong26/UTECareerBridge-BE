@@ -35,7 +35,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
         if (authException instanceof OAuth2AuthenticationException) {
             OAuth2Error error = ((OAuth2AuthenticationException) authException).getError();
-            body.put("message", "Token không hợp lệ hoặc đã hết hạn");
+            body.put("message", "Bạn không có quyền truy cập vào tài nguyên này");
         } else {
             body.put("message", "Token không hợp lệ hoặc đã hết hạn");
         }

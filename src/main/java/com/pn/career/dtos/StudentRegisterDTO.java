@@ -17,6 +17,8 @@ public class StudentRegisterDTO extends RegistrationDTO{
                 .firstName(getFirsName())
                 .lastName(getLastName())
                 .phoneNumber(getPhoneNumber())
+                .gender(isGender())
+                .dob(getDob())
                 .email(getEmail())
                 .universityEmail(getEmail())
                 .role(role)

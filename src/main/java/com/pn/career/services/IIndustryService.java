@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface IIndustryService {
     List<Industry> getAllIndustries();
+    List<Industry> getAllActiveIndustries(boolean isAdmin);
 }

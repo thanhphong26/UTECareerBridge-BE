@@ -16,6 +16,8 @@ public class EmployerRegisterDTO extends RegistrationDTO{
     private String companyName;
     @JsonProperty("company_address")
     private String companyAddress;
+    @JsonProperty("company_website")
+    private String companyWebsite;
 
     @Override
     public User createUser(Role role) {
@@ -23,10 +25,13 @@ public class EmployerRegisterDTO extends RegistrationDTO{
         employer.setFirstName(getFirsName());
         employer.setLastName(getLastName());
         employer.setPhoneNumber(getPhoneNumber());
+        employer.setGender(isGender());
+        employer.setDob(getDob());
         employer.setEmail(getEmail());
         employer.setRole(role);
         employer.setCompanyName(companyName);
         employer.setCompanyAddress(companyAddress);
+        employer.setCompanyWebsite(companyWebsite);
         employer.setActive(true);
         return employer;
     }

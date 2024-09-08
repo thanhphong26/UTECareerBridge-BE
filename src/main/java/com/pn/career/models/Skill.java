@@ -20,4 +20,6 @@ public class Skill extends BaseEntity{
     private String skillName;
     @Column(name = "skill_level")
     private String skillLevel;
+    @Column(name="is_active")
+    private boolean isActive;
 }

@@ -55,6 +55,8 @@ public class WebSecurityConfig {
                                     String.format("%s/industries/get-all-industries", apiPrefix)).permitAll()
                             .requestMatchers(POST,
                                     String.format("%s/users/forgot-password", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
+                                    String.format("%s/job-categories/get-all-job-categories", apiPrefix)).permitAll()
                             .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)

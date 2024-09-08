@@ -2,7 +2,7 @@ package com.pn.career.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Table(name = "jobs")
+@Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,10 +38,16 @@ public class Job extends BaseEntity{
     private String jobRequirements;
     @Column(name = "job_location")
     private String jobLocation;
-    @Column(name = "job_salary", precision = 18, scale = 2)
-    private BigDecimal jobSalary;
+    @Column(name = "job_min_salary", precision = 18, scale = 2)
+    private BigDecimal jobMinSalary;
+    @Column(name = "job_max_salary", precision = 18, scale = 2)
+    private BigDecimal jobMaxSalary;
     @Column(name = "job_deadline")
     private LocalDate jobDeadline;
+    @Column(name="amount")
+    private int amount;
+    @Column(name="is_active")
+    private boolean isActive;
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Application> applications;
 }

@@ -1,14 +1,16 @@
 package com.pn.career.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pn.career.models.Role;
 import com.pn.career.models.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -24,6 +26,11 @@ public abstract class RegistrationDTO {
     private String phoneNumber;
     @JsonProperty("email")
     private String email;
+    @JsonProperty("gender")
+    private boolean gender;
+    @JsonProperty("dob")
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate dob;
     @NotBlank(message = "Password cannot be blank")
     private String password;
     @JsonProperty("retype_password")

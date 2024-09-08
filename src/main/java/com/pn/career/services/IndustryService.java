@@ -14,4 +14,14 @@ public class IndustryService implements IIndustryService{
     public List<Industry> getAllIndustries() {
         return industryRepository.findAll();
     }
+
+    @Override
+    public List<Industry> getAllActiveIndustries(boolean isAdmin) {
+        if(isAdmin){
+            return industryRepository.findAll();
+        }
+        return industryRepository.findAllByIsActiveTrue();
+    }
+
+
 }
