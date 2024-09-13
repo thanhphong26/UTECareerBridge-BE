@@ -4,6 +4,7 @@ import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.LoginDTO;
 import com.pn.career.dtos.StudentRegisterDTO;
 import com.pn.career.dtos.TokenDTO;
+import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.repositories.UserRepository;
 import com.pn.career.responses.LoginResponse;
@@ -16,7 +17,9 @@ import com.pn.career.services.UserService;
 import com.pn.career.utils.MessageKeys;
 import com.pn.career.utils.ValidationUtils;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -78,12 +81,17 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ResponseObject> login(
             @Valid @RequestBody LoginDTO studentLoginDTO,
-            HttpServletRequest request
+            HttpServletRequest request, HttpServletResponse response
     ) throws Exception {
         TokenDTO token=userService.userLogin(studentLoginDTO,"student","admin");
         String userAgent = request.getHeader("User-Agent");
         User userDetail = userService.getUserDetailsFromToken(token.getAccessToken());
-        //Token jwtToken = tokenService.addToken(userDetail, token); /* Sử dụng refresh token*/
+        Token jwtToken = tokenService.addToken(userDetail, token); /* Sử dụng refresh token*/
+        Cookie refreshToken=new Cookie("refreshToken",token.getRefreshToken());
+        refreshToken.setHttpOnly(true);
+        refreshToken.setMaxAge(7*24*60*60);
+        refreshToken.setPath("/");
+        response.addCookie(refreshToken);
 
         LoginResponse loginResponse = LoginResponse.builder()
                 .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
@@ -121,4 +129,5 @@ public class UserController {
                 .message(localizationUtils.getLocalizedMessage(MessageKeys.FORGOT_PASSWORD_SEND_SUCCESSFULLY))
                 .build());
     }
+
 }

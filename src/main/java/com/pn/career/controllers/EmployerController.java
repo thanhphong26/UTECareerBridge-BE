@@ -4,7 +4,9 @@ import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.*;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.Employer;
+import com.pn.career.models.Token;
 import com.pn.career.models.User;
+import com.pn.career.responses.EmployerListResponse;
 import com.pn.career.responses.EmployerResponse;
 import com.pn.career.responses.LoginResponse;
 import com.pn.career.responses.ResponseObject;
@@ -13,11 +15,15 @@ import com.pn.career.services.ITokenService;
 import com.pn.career.services.IUserService;
 import com.pn.career.utils.MessageKeys;
 import com.pn.career.utils.ValidationUtils;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -108,13 +114,17 @@ public class EmployerController {
     @PostMapping("/login")
     public ResponseEntity<ResponseObject> login(
             @Valid @RequestBody LoginDTO studentLoginDTO,
-            HttpServletRequest request
+            HttpServletRequest request, HttpServletResponse response
     ) throws Exception {
         TokenDTO token=userService.userLogin(studentLoginDTO,"employer");
         String userAgent = request.getHeader("User-Agent");
         User userDetail = userService.getUserDetailsFromToken(token.getAccessToken());
-        //Token jwtToken = tokenService.addToken(userDetail, token); /* Sử dụng refresh token*/
-
+        Token jwtToken = tokenService.addToken(userDetail, token); /* Sử dụng refresh token*/
+        Cookie refreshToken=new Cookie("refreshToken",token.getRefreshToken());
+        refreshToken.setHttpOnly(true);
+        refreshToken.setMaxAge(7*24*60*60);
+        refreshToken.setPath("/");
+        response.addCookie(refreshToken);
         LoginResponse loginResponse = LoginResponse.builder()
                 .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
                 .token(token.getAccessToken())
@@ -175,5 +185,32 @@ public class EmployerController {
                     .message("Đã xảy ra lỗi không mong muốn")
                     .build());
         }
+    }
+    @GetMapping("/get-all-employers")
+    public ResponseEntity<ResponseObject> getAllEmployers( @RequestParam(defaultValue = "") String keyword,
+                                                           @RequestParam(defaultValue = "0", name = "industry_id") Integer industryId,
+                                                           @RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "10") int limit) {
+        int totalPage = 0;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<EmployerResponse> employers = employerService.getAllEmployers(keyword, industryId, pageRequest);
+        if (employers.getTotalPages() > 0) {
+            totalPage = employers.getTotalPages();
+        }
+        List<EmployerResponse> employerResponses = employers.getContent();
+        if (employerResponses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .status(HttpStatus.NOT_FOUND)
+                    .message("Không tìm thấy công ty nào")
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách công ty thành công")
+                .data(EmployerListResponse.builder()
+                        .employerResponses(employerResponses)
+                        .totalPages(totalPage)
+                        .build())
+                .status(HttpStatus.OK)
+                .build());
     }
 }

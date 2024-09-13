@@ -4,14 +4,20 @@ import com.pn.career.components.JWTTokenUtil;
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.ExpiredTokenException;
+import com.pn.career.exceptions.InvalidTokenException;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.repositories.TokenRepository;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -27,6 +33,8 @@ public class TokenService implements ITokenService{
     private final TokenRepository tokenRepository;
     private final JWTTokenUtil jwtTokenUtil;
     private JwtDecoder jwtDecoder;
+    private final Logger logger= LoggerFactory.getLogger(TokenService.class);
+    private final AuthenticationManager authenticationManager;
     @Override
     public Token addToken(User user, TokenDTO token) {
         List<Token> tokenList=tokenRepository.findByUser(user);
@@ -53,25 +61,41 @@ public class TokenService implements ITokenService{
     @Override
     public Token refreshToken(String refreshToken,UserDetailsImpl userDetails) throws Exception {
         Token existingToken = tokenRepository.findByRefreshToken(refreshToken);
-        if(existingToken == null) {
+        if (existingToken == null) {
             throw new DataNotFoundException("Refresh token does not exist");
         }
-        if(existingToken.getRefreshExpirationDate().compareTo(LocalDateTime.now()) < 0){
+        if (existingToken.getRefreshExpirationDate().isBefore(LocalDateTime.now())) {
             tokenRepository.delete(existingToken);
             throw new ExpiredTokenException("Refresh token is expired");
         }
+
+        // Validate the refresh token
+        Jwt jwt;
+        try {
+            jwt = jwtDecoder.decode(refreshToken);
+        } catch (JwtException e) {
+            throw new InvalidTokenException("Invalid refresh token", e);
+        }
+
+        // Check if the user details match the token
+        if (!jwt.getSubject().equals(userDetails.getUsername())) {
+            throw new InvalidTokenException("Token does not match user details");
+        }
+
+        // Create a new Authentication object
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userDetails.getUsername(), null, userDetails.getAuthorities());
-        TokenDTO token = jwtTokenUtil.generateTokenPair(authentication);
+                userDetails, null, userDetails.getAuthorities());
 
-        LocalDateTime expirationDateAccessToken = convertToLocalDateTime(jwtDecoder.decode(token.getAccessToken()).getExpiresAt());
-        LocalDateTime expirationDateRefreshToken = convertToLocalDateTime(jwtDecoder.decode(token.getRefreshToken()).getExpiresAt());
+        // Generate new token pair
+        TokenDTO newTokenPair = jwtTokenUtil.generateTokenPair(authentication);
 
-        existingToken.setExpirationDate(LocalDateTime.from(expirationDateAccessToken));
-        existingToken.setToken(token.getAccessToken());
-        existingToken.setRefreshToken(token.getRefreshToken());
-        existingToken.setRefreshExpirationDate(LocalDateTime.from(expirationDateRefreshToken));
-        return existingToken;
+        // Update token in database
+        existingToken.setToken(newTokenPair.getAccessToken());
+        existingToken.setRefreshToken(newTokenPair.getRefreshToken());
+        existingToken.setExpirationDate(convertToLocalDateTime(jwtDecoder.decode(newTokenPair.getAccessToken()).getExpiresAt()));
+        existingToken.setRefreshExpirationDate(convertToLocalDateTime(jwtDecoder.decode(newTokenPair.getRefreshToken()).getExpiresAt()));
+
+        return tokenRepository.save(existingToken);
     }
     private LocalDateTime convertToLocalDateTime(Instant instant) {
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());

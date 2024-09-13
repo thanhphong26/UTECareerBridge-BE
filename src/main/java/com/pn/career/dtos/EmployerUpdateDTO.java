@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class EmployerUpdateDTO {
     @JsonProperty("company_name")
-    @NotBlank(message = "Company name is required")
     private String companyName;
     @JsonProperty("company_address")
     private String companyAddress;

@@ -1,8 +1,8 @@
 package com.pn.career.controllers;
 
-import com.pn.career.models.JobLevel;
+import com.pn.career.models.Benefit;
 import com.pn.career.responses.ResponseObject;
-import com.pn.career.services.IJobLevelService;
+import com.pn.career.services.IBenefitService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,21 +16,21 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("${api.prefix}/job-levels")
+@RequestMapping("${api.prefix}/benefits")
 @AllArgsConstructor
-public class JobLevelController {
-    private final IJobLevelService jobLevelService;
-    @GetMapping("/get-all-job-levels")
-    public ResponseEntity<ResponseObject> getAllJobLevels(){
+public class BenefitController {
+    private final IBenefitService benefitService;
+    @GetMapping("/get-all-benefits")
+    public ResponseEntity<ResponseObject> getAllBenefits(){
         Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
         boolean isAuthenticated = authentication != null && !(authentication instanceof AnonymousAuthenticationToken);
         boolean isAdmin = isAuthenticated && authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        List<JobLevel> jobLevels=jobLevelService.findAllJobLevels(isAdmin);
+        List<Benefit> benefits=benefitService.findAllBenefits(isAdmin);
         return ResponseEntity.ok().body(ResponseObject.builder()
-                .data(jobLevels)
+                .message("Lấy danh sách các phúc lợi từ công ty thành công")
                 .status(HttpStatus.OK)
-                .message("Lấy danh sách cấp bậc công việc thành công")
+                .data(benefits)
                 .build());
     }
 }

@@ -22,7 +22,6 @@ public class JobService implements IJobService {
     public List<Job> findAllJobs(boolean isAdmin) {
         return jobRepository.findAll();
     }
-
     @Override
     public Job createJob(Integer employerId, JobDTO jobDTO) throws Exception {
         Employer employer=employerRepository.findById(employerId).orElseThrow(()->new Exception("Không tìm thấy thông tin công ty"));

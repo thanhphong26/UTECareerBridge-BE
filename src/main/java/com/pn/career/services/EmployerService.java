@@ -6,9 +6,13 @@ import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.Employer;
 import com.pn.career.repositories.EmployerRepository;
 import com.pn.career.repositories.IndustryRepository;
+import com.pn.career.responses.EmployerResponse;
 import com.pn.career.utils.MessageKeys;
+import com.pn.career.utils.SlugConverter;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -26,13 +30,13 @@ public class EmployerService implements IEmployerService {
         try {
             Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException(
                     localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_DOES_NOT_EXISTS)));
-            employer.setCompanyName(employer.getCompanyName());
+            employer.setCompanyName(employer.getCompanyName().toUpperCase());
             employer.setCompanyDescription(employerUpdateDTO.getCompanyDescription());
             employer.setCompanyWebsite(employerUpdateDTO.getCompanyWebsite());
             employer.setCompanySize(employerUpdateDTO.getCompanySize());
             employer.setIndustry(industryRepository.findById(employerUpdateDTO.getIndustryId()).orElseThrow(() -> new DataNotFoundException(
                     localizationUtils.getLocalizedMessage(MessageKeys.INDUSTRY_DOES_NOT_EXISTS))));
-            String companyNameSlug = employerUpdateDTO.getCompanyName().replaceAll("[^a-zA-Z0-9]", "_");
+            String companyNameSlug = SlugConverter.toSlug(employerUpdateDTO.getCompanyName());
 
             if (!employerUpdateDTO.getCompanyLogo().isEmpty()) {
                 String logoUrl = cloudinaryService.uploadFile(employerUpdateDTO.getCompanyLogo(),companyNameSlug + "_logo");
@@ -58,5 +62,12 @@ public class EmployerService implements IEmployerService {
     public Employer getEmployerById(Integer employerId) throws DataNotFoundException {
         return employerRepository.findById(employerId).orElseThrow(()-> new DataNotFoundException(
                 localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_DOES_NOT_EXISTS)));
+    }
+
+    @Override
+    public Page<EmployerResponse> getAllEmployers(String keyword, Integer industryId, PageRequest pageRequest) {
+        Page<Employer> employers;
+        employers=employerRepository.searchEmployers(keyword,industryId,pageRequest);
+        return employers.map(EmployerResponse::fromUser);
     }
 }

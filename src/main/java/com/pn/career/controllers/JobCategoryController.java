@@ -1,17 +1,21 @@
 package com.pn.career.controllers;
 
+import com.pn.career.dtos.CategoryJobDTO;
 import com.pn.career.models.JobCategory;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IJobCategoryService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,5 +36,38 @@ public class JobCategoryController {
                 .message("Lấy danh sách các ngành nghề thành công")
                 .data(jobCategories)
                 .build());
+    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("")
+    public ResponseEntity<ResponseObject> createJobCategory(@Valid @RequestBody CategoryJobDTO categoryJobDTO, BindingResult result){
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getFieldErrors()
+                    .stream()
+                    .map(FieldError::getDefaultMessage)
+                    .toList();
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message(errorMessages.toString())
+                    .status(HttpStatus.BAD_REQUEST)
+                    .data(null)
+                    .build());
+        }
+        try{
+            JobCategory jobCategory = jobCategoryService.createJobCategory(categoryJobDTO);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Tạo ngành nghề mới thành công")
+                    .status(HttpStatus.OK)
+                    .data(jobCategory)
+                    .build());
+        }catch(DuplicateKeyException e){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message(e.getMessage())
+                    .status(HttpStatus.CONFLICT)
+                    .build());
+        }catch(Exception e){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Đã có lỗi xảy ra trong khi thực hiện thêm mới ngành nghề")
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build());
+        }
     }
 }
