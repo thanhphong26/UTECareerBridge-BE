@@ -3,6 +3,8 @@ package com.pn.career.components;
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.services.UserDetailsImpl;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -23,12 +25,13 @@ public class JWTTokenUtil {
     @Qualifier("jwtRefreshTokenEncoder")
     private JwtEncoder refreshTokenEncoder;
     private JwtDecoder jwtDecoder;
+    private final Logger logger= LoggerFactory.getLogger(JWTTokenUtil.class);
     private String createAccessToken(Authentication authentication) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("ute-career-bridge")
                 .issuedAt(now)
-                .expiresAt(now.plus(7, ChronoUnit.DAYS))
+                .expiresAt(now.plus(30, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
                 .claim("roles", createScope(authentication))
                 .claim("userId", ((UserDetailsImpl) authentication.getPrincipal()).getUser().getUserId())
@@ -63,6 +66,7 @@ public class JWTTokenUtil {
         TokenDTO tokenDTO=new TokenDTO();
         tokenDTO.setUserId(user.getUser().getUserId());
         tokenDTO.setAccessToken(createAccessToken(authentication));
+        logger.info("TAccess token created for user: {}", tokenDTO.getAccessToken());
         String refreshToken;
         if(authentication.getCredentials() instanceof Jwt jwt){
             Instant now=Instant.now();
@@ -78,6 +82,7 @@ public class JWTTokenUtil {
             refreshToken=createRefreshToken(authentication);
         }
         tokenDTO.setRefreshToken(refreshToken);
+        logger.info("TRefresh token created for user: {}", tokenDTO.getRefreshToken());
         return tokenDTO;
     }
     public Boolean isTokenExpired(String token) {

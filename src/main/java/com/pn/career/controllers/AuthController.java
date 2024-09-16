@@ -6,6 +6,7 @@ import com.pn.career.exceptions.ExpiredTokenException;
 import com.pn.career.exceptions.InvalidTokenException;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
+import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IUserService;
 import com.pn.career.services.TokenService;
 import com.pn.career.services.UserDetailsImpl;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -64,5 +66,34 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while refreshing the token");
         }
     }
-
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ResponseObject> forgotPassword(@RequestParam String email) throws DataNotFoundException {
+        try{
+            userService.initiatePasswordReset(email);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu qua email của bạn. Vui lòng kiểm tra email của bạn để tiếp tục")
+                    .status(HttpStatus.OK)
+                    .data(null)
+                    .build());
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResponseObject> resetPassword(@RequestParam String token, @RequestParam String password) throws Exception {
+        try {
+            userService.resetPassword(token, password);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .data(null)
+                    .message("Mật khẩu của bạn đã được thay đổi thành công. Vui lòng đăng nhập bằng mật khẩu mới để tiếp tục")
+                    .build());
+        } catch (InvalidTokenException e) {
+            return ResponseEntity.badRequest().body(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .data(null)
+                    .message("Có lỗi xảy ra trong quá trình xác thực vui lòng thực hiện lại")
+                    .build());
+        }
+    }
 }

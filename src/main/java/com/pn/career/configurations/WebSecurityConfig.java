@@ -49,14 +49,11 @@ public class WebSecurityConfig {
                                     String.format("%s/users/register", apiPrefix),
                                     String.format("%s/users/login", apiPrefix),
                                     String.format("%s/employers/register", apiPrefix),
-                                    String.format("%s/employers/login", apiPrefix)
+                                    String.format("%s/employers/login", apiPrefix),
+                                    String.format("%s/auth/**", apiPrefix)
                             ).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/industries/get-all-industries", apiPrefix)).permitAll()
-                            .requestMatchers(POST,
-                                    String.format("%s/auth/refresh", apiPrefix)).permitAll()
-                            .requestMatchers(POST,
-                                    String.format("%s/users/forgot-password", apiPrefix)).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/job-categories/get-all-job-categories", apiPrefix)).permitAll()
                             .requestMatchers(GET,
@@ -71,7 +68,6 @@ public class WebSecurityConfig {
                 .sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return httpSecurity.build();
     }
-
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();

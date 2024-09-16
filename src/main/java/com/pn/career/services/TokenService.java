@@ -8,6 +8,7 @@ import com.pn.career.exceptions.InvalidTokenException;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.repositories.TokenRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public class TokenService implements ITokenService{
     }
 
     @Override
+    @Transactional
     public Token refreshToken(String refreshToken,UserDetailsImpl userDetails) throws Exception {
         Token existingToken = tokenRepository.findByRefreshToken(refreshToken);
         if (existingToken == null) {
@@ -92,6 +94,8 @@ public class TokenService implements ITokenService{
         // Update token in database
         existingToken.setToken(newTokenPair.getAccessToken());
         existingToken.setRefreshToken(newTokenPair.getRefreshToken());
+        logger.info("SToken refreshed for user: {}", existingToken.getToken());
+        logger.info("SToken refresh for user: {}", existingToken.getRefreshToken());
         existingToken.setExpirationDate(convertToLocalDateTime(jwtDecoder.decode(newTokenPair.getAccessToken()).getExpiresAt()));
         existingToken.setRefreshExpirationDate(convertToLocalDateTime(jwtDecoder.decode(newTokenPair.getRefreshToken()).getExpiresAt()));
 

@@ -11,7 +11,7 @@ public class BenefitService implements IBenefitService{
     private final BenefitRepository benefitRepository;
     @Override
     public List<Benefit> findAllBenefits(boolean isAdmin) {
-        if(isAdmin){
+        if (isAdmin) {
             return benefitRepository.findAll();
         }
         return benefitRepository.findAllByIsActiveTrue();

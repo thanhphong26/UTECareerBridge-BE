@@ -2,6 +2,7 @@ package com.pn.career.controllers;
 
 import com.pn.career.models.Benefit;
 import com.pn.career.responses.ResponseObject;
+import com.pn.career.services.IBenefitDetailService;
 import com.pn.career.services.IBenefitService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 public class BenefitController {
     private final IBenefitService benefitService;
+    private final IBenefitDetailService benefitDetailService;
     @GetMapping("/get-all-benefits")
     public ResponseEntity<ResponseObject> getAllBenefits(){
         Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
@@ -33,4 +35,5 @@ public class BenefitController {
                 .data(benefits)
                 .build());
     }
+
 }

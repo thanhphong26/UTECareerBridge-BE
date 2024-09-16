@@ -22,6 +22,7 @@ import java.io.IOException;
 public class EmployerService implements IEmployerService {
     private final EmployerRepository employerRepository;
     private final IndustryRepository industryRepository;
+    private final IBenefitDetailService benefitDetailService;
     private final CloudinaryService cloudinaryService;
     private final LocalizationUtils localizationUtils;
     @Override
@@ -52,6 +53,7 @@ public class EmployerService implements IEmployerService {
                 String videoUrl = cloudinaryService.uploadFile(employerUpdateDTO.getVideoIntroduction(),companyNameSlug + "_video");
                 employer.setVideoIntroduction(videoUrl);
             }
+            benefitDetailService.createBenefitDetail(employer, employerUpdateDTO.getBenefitDetails());
             return employerRepository.save(employer);
         } catch (DataNotFoundException | IOException e) {
             throw new RuntimeException("Failed to update company profile", e);

@@ -10,6 +10,7 @@ import com.pn.career.utils.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -19,7 +20,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserService {
@@ -31,7 +37,12 @@ public class UserService implements IUserService {
     private final PasswordEncoder passwordEncoder;
     private final LocalizationUtils localizationUtils;
     private final AuthenticationManager authenticationManager;
-
+    private final TokenRepository tokenRepository;
+    private final EmailService emailService;
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+    @Value("${app.password-reset.expirations}")
+    private int passwordResetExpirations;
     @Override
     @Transactional
     public User registerUser(RegistrationDTO registrationDTO, String roleName) throws DataNotFoundException {
@@ -84,12 +95,6 @@ public class UserService implements IUserService {
             // Xử lý ngoại lệ xác thực
             throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.USER_DOES_NOT_EXISTS)) {};
         }
-
-        /*User user = findUserByEmailOrPhone(loginDTO);
-        validateUserForLogin(user, loginDTO, allowedRoles);
-
-        Authentication authentication = authenticateUser(loginDTO, user);
-        return jwtTokenUtil.generateTokenPair(authentication);*/
     }
 
     private User findUserByEmailOrPhone(LoginDTO loginDTO) {
@@ -118,5 +123,49 @@ public class UserService implements IUserService {
         String subject = jwtTokenUtil.getSubjectFromToken(token);
         return userRepository.findUserByEmailOrPhoneNumber(subject, subject)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
+    }
+
+    @Override
+    public void initiatePasswordReset(String email) throws Exception {
+        User user=userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
+        String resetToken=generateToken();
+        tokenRepository.revokeAllUserTokens(user.getUserId(),Token.RESET_PASSWORD);
+        LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(passwordResetExpirations);
+        Instant now = Instant.now();
+        Token token=Token.builder()
+                .user(user)
+                .token(resetToken)
+                .tokenType(Token.RESET_PASSWORD)
+                .expirationDate(expiryDate)
+                .revoked(false)
+                .expired(false)
+                .build();
+        tokenRepository.save(token);
+        //send email
+        String url=frontendUrl+"/reset-password?token="+resetToken+"&email="+email;
+        logger.info("Reset password URL: {}",url);
+        emailService.sendForgotPasswordEmail(email,user.getFirstName(),url);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String resetToken, String newPassword) throws Exception {
+        Token token=tokenRepository.findByTokenAndTokenType(resetToken,Token.RESET_PASSWORD)
+                .orElseThrow(() -> new DataNotFoundException("Token không hợp lệ"));
+        if (token.getExpirationDate().isBefore(LocalDateTime.now()) || token.isExpired() || token.isRevoked()){
+            throw new ExpiredTokenException("Token đã hết hạn hoặc đã bị thu hồi");
+        }
+        User user=token.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        //invalidate token after use
+        token.setRevoked(true);
+        token.setExpired(true);
+        tokenRepository.save(token);
+    }
+
+    private String generateToken(){
+        return UUID.randomUUID().toString();
     }
 }

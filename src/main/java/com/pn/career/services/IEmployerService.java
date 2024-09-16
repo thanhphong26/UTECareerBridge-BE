@@ -7,8 +7,6 @@ import com.pn.career.responses.EmployerResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.List;
-
 public interface IEmployerService{
     Employer updateEmployer(Integer employerId, EmployerUpdateDTO employerUpdateDTO);
     Employer getEmployerById(Integer employerId) throws DataNotFoundException;

@@ -43,6 +43,11 @@ access-token:
 refresh-token:
   private: access-refresh-token-keys/refresh-token-private.key
   public: access-refresh-token-keys/refresh-token-public.key
+app:
+  password-reset:
+    expirations: 15
+  frontend:
+    url: http://localhost:3000
 api:
   prefix: /api/v1
 logging:

@@ -6,17 +6,14 @@ import com.pn.career.dtos.StudentRegisterDTO;
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
-import com.pn.career.repositories.UserRepository;
 import com.pn.career.responses.LoginResponse;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.responses.StudentResponse;
-import com.pn.career.services.EmailService;
 import com.pn.career.services.ITokenService;
 import com.pn.career.services.IUserService;
 import com.pn.career.services.UserService;
 import com.pn.career.utils.MessageKeys;
 import com.pn.career.utils.ValidationUtils;
-import jakarta.mail.MessagingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,19 +24,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
-import java.util.UUID;
-
 @RestController
 @AllArgsConstructor
 @RequestMapping("${api.prefix}/users")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private final UserRepository userRepository;
     private final IUserService userService;
     private final ITokenService tokenService;
-    private final EmailService emailService;
     private final LocalizationUtils localizationUtils;
     @PostMapping("/register")
     public ResponseEntity<ResponseObject> registerStudent(@RequestBody StudentRegisterDTO studentRegistrationDTO) throws Exception {
@@ -108,26 +99,6 @@ public class UserController {
                 .status(HttpStatus.OK)
                 .build());
     }
-    @PostMapping("/forgot-password")
-    public ResponseEntity<ResponseObject> forgotPassword(@RequestParam String email) throws MessagingException {
-        Optional<User> user = userRepository.findUserByEmail(email);
-        if (user.isEmpty()){
-            return ResponseEntity.badRequest().body(ResponseObject.builder()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .data(null)
-                    .message(localizationUtils.getLocalizedMessage(MessageKeys.EMAIL_NOT_EXISTS))
-                    .build());
-        }
-        String token= UUID.randomUUID().toString();
-        logger.info("Token: {}",token);
-        String url = "http://localhost:8080/reset-password?token=" + token;
-        logger.info("URL: {}",url);
-        emailService.sendForgotPasswordEmail(email, user.get().getFirstName(),url);
-        return ResponseEntity.ok().body(ResponseObject.builder()
-                .status(HttpStatus.OK)
-                .data(null)
-                .message(localizationUtils.getLocalizedMessage(MessageKeys.FORGOT_PASSWORD_SEND_SUCCESSFULLY))
-                .build());
-    }
+
 
 }

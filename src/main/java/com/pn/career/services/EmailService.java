@@ -28,12 +28,6 @@ public class EmailService {
         helper.setTo(recipientEmail);
         helper.setSubject("Tạo mật khẩu đăng nhập mới trên UTE-Career-Bridge");
 
-        /*// Prepare email template variables
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("name", name);
-        variables.put("resetUrl", resetUrl);*/
-
-        // Render email template using Thymeleaf
         Context context = new Context();
         context.setVariable("name", name);
         context.setVariable("resetUrl", resetUrl);

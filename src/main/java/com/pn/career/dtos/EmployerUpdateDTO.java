@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -32,4 +34,5 @@ public class EmployerUpdateDTO {
     private String businessCertificate;
     @JsonProperty("industry_id")
     private Integer industryId;
+    private List<BenefitDetailDTO> benefitDetails;
 }

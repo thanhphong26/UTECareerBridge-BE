@@ -35,4 +35,7 @@ public class Token {
     private boolean revoked;
     @Column(name="expired_at")
     private boolean expired;
+
+    public static String RESET_PASSWORD="RESET_PASSWORD";
+    public static String EMAIL_VERIFICATION="EMAIL_VERIFICATION";
 }

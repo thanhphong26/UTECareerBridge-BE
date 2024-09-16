@@ -2,6 +2,7 @@ package com.pn.career.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,10 +11,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BenefitDetail {
     @EmbeddedId
     private BenefitDetailId id;
-
     @ManyToOne
     @MapsId("employerId")
     @JoinColumn(name = "employer_id")
@@ -23,4 +24,6 @@ public class BenefitDetail {
     @MapsId("benefitId")
     @JoinColumn(name = "benefit_id")
     private Benefit benefit;
+    @Column(name = "description")
+    private String description;
 }
