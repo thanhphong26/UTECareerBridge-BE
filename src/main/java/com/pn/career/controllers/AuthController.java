@@ -1,5 +1,6 @@
 package com.pn.career.controllers;
 
+import com.pn.career.dtos.ChangePasswordDTO;
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.ExpiredTokenException;
@@ -16,10 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("${api.prefix}/auth")
@@ -80,9 +78,9 @@ public class AuthController {
         }
     }
     @PostMapping("/reset-password")
-    public ResponseEntity<ResponseObject> resetPassword(@RequestParam String token, @RequestParam String password) throws Exception {
+    public ResponseEntity<ResponseObject> resetPassword(@RequestBody ChangePasswordDTO changePasswordDTO) throws Exception {
         try {
-            userService.resetPassword(token, password);
+            userService.resetPassword(changePasswordDTO.getToken(), changePasswordDTO.getPassword());
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .data(null)

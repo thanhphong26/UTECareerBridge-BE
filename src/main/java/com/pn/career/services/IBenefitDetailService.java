@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IBenefitDetailService {
-    BenefitDetail insertBenefitDetail(BenefitDetail benefitDetail);
     Optional<BenefitDetail> updateBenefitDetail(BenefitDetail benefitDetail);
     boolean deleteBenefitDetail(BenefitDetail benefitDetail);
     Optional<BenefitDetail> findBenefitDetailById(BenefitDetailId benefitDetailId);

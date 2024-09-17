@@ -10,6 +10,7 @@ import com.pn.career.repositories.BenefitRepository;
 import com.pn.career.repositories.EmployerRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,10 +20,7 @@ public class BenefitDetailService implements IBenefitDetailService{
     private final BenefitDetailRepository benefitDetailRepository;
     private final EmployerRepository employerRepository;
     private final BenefitRepository benefitRepository;
-    @Override
-    public BenefitDetail insertBenefitDetail(BenefitDetail benefitDetail) {
-        return benefitDetailRepository.save(benefitDetail);
-    }
+
     @Override
     public Optional<BenefitDetail> updateBenefitDetail(BenefitDetail benefitDetail) {
         if(benefitDetailRepository.existsById(benefitDetail.getId())){
@@ -44,6 +42,7 @@ public class BenefitDetailService implements IBenefitDetailService{
         return benefitDetailRepository.findById(benefitDetailId);
     }
     @Override
+    @Transactional
     public void createBenefitDetail(Employer employer, List<BenefitDetailDTO> benefitDetailDTOs) {
         for(BenefitDetailDTO benefitDetailDTO:benefitDetailDTOs){
             Benefit benefit=benefitRepository.findById(benefitDetailDTO.getBenefitId()).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin phúc lợi phù hợp"));
