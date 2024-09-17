@@ -3,13 +3,9 @@ package com.pn.career.controllers;
 import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.*;
 import com.pn.career.exceptions.DataNotFoundException;
-import com.pn.career.models.Employer;
-import com.pn.career.models.Token;
-import com.pn.career.models.User;
-import com.pn.career.responses.EmployerListResponse;
-import com.pn.career.responses.EmployerResponse;
-import com.pn.career.responses.LoginResponse;
-import com.pn.career.responses.ResponseObject;
+import com.pn.career.models.*;
+import com.pn.career.responses.*;
+import com.pn.career.services.IBenefitDetailService;
 import com.pn.career.services.IEmployerService;
 import com.pn.career.services.ITokenService;
 import com.pn.career.services.IUserService;
@@ -49,6 +45,7 @@ public class EmployerController {
     private final ITokenService tokenService;
     private final LocalizationUtils localizationUtils;
     private final JwtDecoder jwtDecoder;
+    private final IBenefitDetailService benefitDetailService;
     @PostMapping("/register")
     public ResponseEntity<ResponseObject> registerEmployer(@Valid @RequestBody EmployerRegisterDTO employerRegistrationDTO, BindingResult result) throws Exception {
         if (result.hasErrors()) {
@@ -211,6 +208,40 @@ public class EmployerController {
                         .totalPages(totalPage)
                         .build())
                 .status(HttpStatus.OK)
+                .build());
+    }
+    @DeleteMapping("/delete-benefits/{benefitId}")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> deleteBenefit(@AuthenticationPrincipal Jwt jwt, @Valid @PathVariable Integer benefitId) throws DataNotFoundException {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        BenefitDetailId benefitDetailId = BenefitDetailId.builder()
+                .benefitId(benefitId)
+                .employerId(userId)
+                .build();
+        BenefitDetail benefitDetail=benefitDetailService.findBenefitDetailById(benefitDetailId);
+        if(benefitDetailService.deleteBenefitDetail(benefitDetail)){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Xóa phúc lợi thành công")
+                    .status(HttpStatus.OK)
+                    .build());
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                .message("Xóa phúc lợi thất bại")
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .build());
+    }
+    @GetMapping("/get-all-benefits")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getAllBenefitDetailByEmployer(@AuthenticationPrincipal Jwt jwt) throws DataNotFoundException {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        Employer employer=employerService.getEmployerById(userId);
+        List<BenefitDetail> benefitDetails=benefitDetailService.findAllByEmployerId(employer);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách phúc lợi của công ty thành công")
+                .status(HttpStatus.OK)
+                .data(BenefitDetailResponse.fromBenefitDetailResponse(benefitDetails))
                 .build());
     }
 }

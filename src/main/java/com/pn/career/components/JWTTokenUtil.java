@@ -2,6 +2,7 @@ package com.pn.career.components;
 
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.services.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,5 +94,11 @@ public class JWTTokenUtil {
         Jwt decodedJwt = jwtDecoder.decode(token);
         return decodedJwt.getSubject();
     }
-
+    public String extractTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }

@@ -18,6 +18,8 @@ public class EmployerUpdateDTO {
     private String companyName;
     @JsonProperty("company_address")
     private String companyAddress;
+    @JsonProperty("company_email")
+    private String companyEmail;
     @JsonProperty("company_logo")
     private MultipartFile companyLogo;
     @JsonProperty("company_website")

@@ -8,6 +8,7 @@ import com.pn.career.exceptions.InvalidTokenException;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.repositories.TokenRepository;
+import com.pn.career.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -36,11 +37,12 @@ public class TokenService implements ITokenService{
     private JwtDecoder jwtDecoder;
     private final Logger logger= LoggerFactory.getLogger(TokenService.class);
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
     @Override
     public Token addToken(User user, TokenDTO token) {
         List<Token> tokenList=tokenRepository.findByUser(user);
         int tokenCount=tokenList.size();
-        if(tokenCount>=MAX_TOKENS){
+        if(tokenCount> MAX_TOKENS){
             Token oldestToken = tokenList.get(0);
             tokenRepository.delete(oldestToken);
         }
@@ -94,13 +96,26 @@ public class TokenService implements ITokenService{
         // Update token in database
         existingToken.setToken(newTokenPair.getAccessToken());
         existingToken.setRefreshToken(newTokenPair.getRefreshToken());
-        logger.info("SToken refreshed for user: {}", existingToken.getToken());
-        logger.info("SToken refresh for user: {}", existingToken.getRefreshToken());
         existingToken.setExpirationDate(convertToLocalDateTime(jwtDecoder.decode(newTokenPair.getAccessToken()).getExpiresAt()));
         existingToken.setRefreshExpirationDate(convertToLocalDateTime(jwtDecoder.decode(newTokenPair.getRefreshToken()).getExpiresAt()));
 
         return tokenRepository.save(existingToken);
     }
+
+    @Override
+    public void invalidateUserTokens(Integer userId) throws DataNotFoundException {
+        User user=userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin hợp lệ"));
+        List<Token> validUserTokens = tokenRepository.findByUser(user);
+        if (validUserTokens.isEmpty())
+            return;
+        validUserTokens.forEach(token -> {
+            token.setExpired(true);
+            token.setRevoked(true);
+        });
+        tokenRepository.saveAll(validUserTokens);
+    }
+
     private LocalDateTime convertToLocalDateTime(Instant instant) {
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }

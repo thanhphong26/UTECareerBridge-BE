@@ -14,6 +14,8 @@ import lombok.Data;
 public class EmployerRegisterDTO extends RegistrationDTO{
     @JsonProperty("company_name")
     private String companyName;
+    @JsonProperty("company_email")
+    private String companyEmail;
     @JsonProperty("company_address")
     private String companyAddress;
     @JsonProperty("company_website")
@@ -30,6 +32,7 @@ public class EmployerRegisterDTO extends RegistrationDTO{
         employer.setEmail(getEmail());
         employer.setRole(role);
         employer.setCompanyName(companyName);
+        employer.setCompanyEmail(companyEmail);
         employer.setCompanyAddress(companyAddress);
         employer.setCompanyWebsite(companyWebsite);
         employer.setActive(true);

@@ -1,6 +1,7 @@
 package com.pn.career.services;
 
 import com.pn.career.dtos.BenefitDetailDTO;
+import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.Benefit;
 import com.pn.career.models.BenefitDetail;
 import com.pn.career.models.BenefitDetailId;
@@ -12,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 @Service
@@ -29,6 +31,7 @@ public class BenefitDetailService implements IBenefitDetailService{
         return Optional.empty();
     }
     @Override
+    @Transactional
     public boolean deleteBenefitDetail(BenefitDetail benefitDetail) {
         if(benefitDetailRepository.existsById(benefitDetail.getId())){
             benefitDetailRepository.delete(benefitDetail);
@@ -38,8 +41,12 @@ public class BenefitDetailService implements IBenefitDetailService{
     }
 
     @Override
-    public Optional<BenefitDetail> findBenefitDetailById(BenefitDetailId benefitDetailId) {
-        return benefitDetailRepository.findById(benefitDetailId);
+    public BenefitDetail findBenefitDetailById(BenefitDetailId benefitDetailId) throws DataNotFoundException {
+        Optional<BenefitDetail> benefitDetail=benefitDetailRepository.findById(benefitDetailId);
+        if(benefitDetail.isEmpty()){
+            throw new DataNotFoundException("Không tìm thấy thông tin phúc lợi phù hợp");
+        }
+        return benefitDetail.get();
     }
     @Override
     @Transactional

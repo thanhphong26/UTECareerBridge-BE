@@ -37,6 +37,7 @@ public class EmployerService implements IEmployerService {
             employer.setCompanyName(employer.getCompanyName().toUpperCase());
             employer.setCompanyAddress(employerUpdateDTO.getCompanyAddress());
             employer.setCompanyDescription(employerUpdateDTO.getCompanyDescription());
+            employer.setCompanyEmail(employerUpdateDTO.getCompanyEmail());
             employer.setCompanyWebsite(employerUpdateDTO.getCompanyWebsite());
             employer.setCompanySize(employerUpdateDTO.getCompanySize());
             employer.setIndustry(industryRepository.findById(employerUpdateDTO.getIndustryId()).orElseThrow(() -> new DataNotFoundException(

@@ -11,4 +11,5 @@ public interface IUserService {
     User getUserDetailsFromToken(String token) throws Exception;
     void initiatePasswordReset(String email) throws Exception;
     void resetPassword(String resetToken, String newPassword) throws Exception;
+    void blockOrEnable(Integer userId, boolean active) throws Exception;
 }

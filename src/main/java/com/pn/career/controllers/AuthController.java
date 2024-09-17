@@ -17,6 +17,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -93,5 +97,30 @@ public class AuthController {
                     .message("Có lỗi xảy ra trong quá trình xác thực vui lòng thực hiện lại")
                     .build());
         }
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseObject> logout(HttpServletRequest request, HttpServletResponse response, @AuthenticationPrincipal Jwt jwt) throws DataNotFoundException {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseObject.builder()
+                            .status(HttpStatus.BAD_REQUEST)
+                            .message("Đã xảy ra lỗi trong quá trình đăng xuất. Vui lòng thử lại sau.")
+                            .build()
+            );
+        }
+        tokenService.invalidateUserTokens(userId);
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        SecurityContextHolder.clearContext();
+
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Đăng xuất thành công")
+                .build());
     }
 }

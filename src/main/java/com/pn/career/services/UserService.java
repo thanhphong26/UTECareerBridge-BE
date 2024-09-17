@@ -165,6 +165,15 @@ public class UserService implements IUserService {
         tokenRepository.save(token);
     }
 
+    @Override
+    @Transactional
+    public void blockOrEnable(Integer userId, boolean active) throws Exception {
+        User user=userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
+        user.setActive(active);
+        userRepository.save(user);
+    }
+
     private String generateToken(){
         return UUID.randomUUID().toString();
     }

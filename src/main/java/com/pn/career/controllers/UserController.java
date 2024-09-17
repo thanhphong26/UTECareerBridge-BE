@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 @RestController
 @AllArgsConstructor
@@ -98,6 +99,21 @@ public class UserController {
                 .data(loginResponse)
                 .status(HttpStatus.OK)
                 .build());
+    }
+    @PutMapping("/block/{userId}/{active}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> blockUser(
+            @Valid @PathVariable Integer userId,
+            @Valid @PathVariable Integer active
+    ) throws Exception {
+        userService.blockOrEnable(userId, active >0);
+        String message = active > 0 ? "Đã kích hoạt người dùng thành công." : "Đã chặn người dùng thành công.";
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .message(message)
+                        .status(HttpStatus.OK)
+                        .build()
+        );
     }
 
 

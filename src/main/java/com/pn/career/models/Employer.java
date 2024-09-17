@@ -23,6 +23,8 @@ public class Employer extends User{
     private String companyAddress;
     @Column(name = "company_logo")
     private String companyLogo;
+    @Column(name = "company_email")
+    private String companyEmail;
     @Column(name = "company_website")
     private String companyWebsite;
     @Column(name = "company_description")
