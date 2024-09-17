@@ -152,9 +152,9 @@ public class UserService implements IUserService {
     @Transactional
     public void resetPassword(String resetToken, String newPassword) throws Exception {
         Token token=tokenRepository.findByTokenAndTokenType(resetToken,Token.RESET_PASSWORD)
-                .orElseThrow(() -> new DataNotFoundException("Token không hợp lệ"));
+                .orElseThrow(() -> new DataNotFoundException("Có lỗi xảy ra trong quá trình xác thực vui lòng thực hiện lại"));
         if (token.getExpirationDate().isBefore(LocalDateTime.now()) || token.isExpired() || token.isRevoked()){
-            throw new ExpiredTokenException("Token đã hết hạn hoặc đã bị thu hồi");
+            throw new ExpiredTokenException("Có lỗi xảy ra trong quá trình xác thực vui lòng thực hiện lại");
         }
         User user=token.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));
