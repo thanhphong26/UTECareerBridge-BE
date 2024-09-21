@@ -3,7 +3,7 @@ package com.pn.career.services;
 import com.pn.career.dtos.SkillDTO;
 import com.pn.career.dtos.SkillUpdateDTO;
 import com.pn.career.exceptions.DataNotFoundException;
-import com.pn.career.exceptions.DuplicateBenefitNameException;
+import com.pn.career.exceptions.DuplicateNameException;
 import com.pn.career.models.JobSkill;
 import com.pn.career.models.Skill;
 import com.pn.career.models.StudentSkill;
@@ -52,7 +52,7 @@ public class SkillService implements ISkillService{
         if (!Objects.equals(existingSkill.getSkillName(), skill.getSkillName())) {
             // Chỉ kiểm tra trùng lặp nếu tên thực sự thay đổi
             if (skillRepository.existsBySkillName(skill.getSkillName())) {
-                throw new DuplicateBenefitNameException("Phúc lợi có tên " + skill.getSkillName() + " đã tồn tại");
+                throw new DuplicateNameException("Phúc lợi có tên " + skill.getSkillName() + " đã tồn tại");
             }
             existingSkill.setSkillName(skill.getSkillName());
         }

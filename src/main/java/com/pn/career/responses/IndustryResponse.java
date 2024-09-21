@@ -10,9 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class IndustryResponse {
-    @JsonProperty("industry_id")
     private int industryId;
-    @JsonProperty("industry_name")
     private String industryName;
     public static IndustryResponse fromIndustry(Industry industry) {
         return IndustryResponse.builder()

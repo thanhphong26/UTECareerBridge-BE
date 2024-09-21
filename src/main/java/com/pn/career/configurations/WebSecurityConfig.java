@@ -53,7 +53,7 @@ public class WebSecurityConfig {
                                     String.format("%s/auth/**", apiPrefix)
                             ).permitAll()
                             .requestMatchers(GET,
-                                    String.format("%s/industries/get-all-industries", apiPrefix)).permitAll()
+                                    String.format("%s/industries/**", apiPrefix)).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/skills/**", apiPrefix)).permitAll()
                             .requestMatchers(GET,

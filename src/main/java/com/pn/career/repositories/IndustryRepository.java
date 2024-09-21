@@ -8,5 +8,6 @@ import java.util.List;
 public interface IndustryRepository extends JpaRepository<Industry, Integer> {
     Industry findByIndustryName(String industryName);
     List<Industry> findAllByIsActiveTrue();
+    boolean existsByIndustryNameIgnoreCase(String industryName);
 }
 
