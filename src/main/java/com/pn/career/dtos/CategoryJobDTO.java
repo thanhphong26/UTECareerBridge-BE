@@ -8,7 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CategoryJobDTO {
-    @JsonProperty("category_job_name")
     @NotEmpty(message = "Tên nghề nghiệp không được để trống")
     private String categoryJobName;
 }

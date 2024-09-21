@@ -1,11 +1,13 @@
 package com.pn.career.controllers;
 
 import com.pn.career.dtos.CategoryJobDTO;
+import com.pn.career.dtos.CategoryJobUpdateDTO;
 import com.pn.career.models.JobCategory;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IJobCategoryService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.hibernate.boot.archive.scan.spi.ClassDescriptor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +69,41 @@ public class JobCategoryController {
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .message("Đã có lỗi xảy ra trong khi thực hiện thêm mới ngành nghề")
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build());
+        }
+    }
+    @GetMapping("/{jobCategoryId}")
+    public ResponseEntity<ResponseObject> getJobCategoryById(@PathVariable Integer jobCategoryId){
+        JobCategory jobCategory = jobCategoryService.getJobCategoryById(jobCategoryId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy thông tin ngành nghề thành công")
+                .data(jobCategory)
+                .build());
+    }
+    @PutMapping("/{jobCategoryId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> updateJobCategory(@PathVariable Integer jobCategoryId, @RequestBody CategoryJobUpdateDTO categoryJobDTO){
+        JobCategory jobCategory = jobCategoryService.updateJobCategory(jobCategoryId, categoryJobDTO);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Cập nhật ngành nghề thành công")
+                .data(jobCategory)
+                .build());
+    }
+    @DeleteMapping("/{jobCategoryId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> deleteJobCategory(@PathVariable Integer jobCategoryId){
+        try{
+            jobCategoryService.deleteJobCategory(jobCategoryId);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Xóa ngành nghề thành công")
+                    .build());
+        }catch(Exception e){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .message("Đã có lỗi xảy ra trong khi xóa ngành nghề")
                     .build());
         }
     }
