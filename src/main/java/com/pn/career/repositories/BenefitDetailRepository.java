@@ -1,4 +1,5 @@
 package com.pn.career.repositories;
+import com.pn.career.models.Benefit;
 import com.pn.career.models.BenefitDetail;
 import com.pn.career.models.BenefitDetailId;
 import com.pn.career.models.Employer;
@@ -8,4 +9,5 @@ import java.util.List;
 
 public interface BenefitDetailRepository extends JpaRepository<BenefitDetail, BenefitDetailId> {
     List<BenefitDetail> findAllByEmployer(Employer employer);
+    List<BenefitDetail> findAllByBenefit(Benefit benefit);
 }

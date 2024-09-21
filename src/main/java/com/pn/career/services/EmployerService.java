@@ -40,13 +40,12 @@ public class EmployerService implements IEmployerService {
             employer.setCompanyEmail(employerUpdateDTO.getCompanyEmail());
             employer.setCompanyWebsite(employerUpdateDTO.getCompanyWebsite());
             employer.setCompanySize(employerUpdateDTO.getCompanySize());
+            employer.setVideoIntroduction(employerUpdateDTO.getVideoIntroduction());
             employer.setIndustry(industryRepository.findById(employerUpdateDTO.getIndustryId()).orElseThrow(() -> new DataNotFoundException(
                     localizationUtils.getLocalizedMessage(MessageKeys.INDUSTRY_DOES_NOT_EXISTS))));
             String companyNameSlug = SlugConverter.toSlug(employerUpdateDTO.getCompanyName());
-
             CompletableFuture<String> logoFuture = CompletableFuture.completedFuture(null);
             CompletableFuture<String> backgroundFuture = CompletableFuture.completedFuture(null);
-            CompletableFuture<String> videoFuture = CompletableFuture.completedFuture(null);
             if (!employerUpdateDTO.getCompanyLogo().isEmpty()) {
                 if(employer.getCompanyLogo()!=null){
                     asyncCloudinaryService.deleteFile(employer.getCompanyLogo());
@@ -61,24 +60,12 @@ public class EmployerService implements IEmployerService {
                 }
                 backgroundFuture = asyncCloudinaryService.uploadFileAsync(employerUpdateDTO.getBackgroundImage(), companyNameSlug + "_background");
             }
-            if (!employerUpdateDTO.getVideoIntroduction().isEmpty()) {
-                if (employer.getVideoIntroduction()!=null){
-                    asyncCloudinaryService.deleteFile(employer.getVideoIntroduction());
-                    logger.info("Deleted video");
-                }
-                videoFuture = asyncCloudinaryService.uploadFileAsync(employerUpdateDTO.getVideoIntroduction(), companyNameSlug + "_video");
-            }
-            CompletableFuture.allOf(logoFuture, backgroundFuture, videoFuture).join();
+            CompletableFuture.allOf(logoFuture, backgroundFuture).join();
             logoFuture.thenAccept(url -> {
                 if (url != null) employer.setCompanyLogo(url);
             });
-
             backgroundFuture.thenAccept(url -> {
                 if (url != null) employer.setBackgroundImage(url);
-            });
-
-            videoFuture.thenAccept(url -> {
-                if (url != null) employer.setVideoIntroduction(url);
             });
             benefitDetailService.createBenefitDetail(employer, employerUpdateDTO.getBenefitDetails());
             return employerRepository.save(employer);
@@ -92,7 +79,6 @@ public class EmployerService implements IEmployerService {
         return employerRepository.findById(employerId).orElseThrow(()-> new DataNotFoundException(
                 localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_DOES_NOT_EXISTS)));
     }
-
     @Override
     public Page<EmployerResponse> getAllEmployers(String keyword, Integer industryId, PageRequest pageRequest) {
         Page<Employer> employers;

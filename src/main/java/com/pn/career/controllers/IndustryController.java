@@ -29,19 +29,9 @@ public class IndustryController {
     @GetMapping("/get-all-industries")
     public ResponseEntity<ResponseObject> getAllIndustries() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        logger.info("Authentication: {}", authentication);
-        logger.info("Authentication class: {}", authentication.getClass().getName());
-        logger.info("Is authenticated: {}", authentication.isAuthenticated());
-        logger.info("Principal: {}", authentication.getPrincipal());
-        logger.info("Authorities: {}", authentication.getAuthorities());
-
         boolean isAuthenticated = authentication != null && !(authentication instanceof AnonymousAuthenticationToken);
         boolean isAdmin = isAuthenticated && authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        logger.info("Is authenticated (after check): {}", isAuthenticated);
-        logger.info("Is admin: {}", isAdmin);
         List<Industry> industries = industryService.getAllActiveIndustries(isAdmin);
         //List<Industry> industries = industryService.getAllIndustries();
         List<IndustryResponse> industryResponses = industries.stream()

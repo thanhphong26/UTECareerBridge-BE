@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface SkillRepository extends JpaRepository<Skill, Integer> {
     List<Skill> findAllByIsActiveTrue();
+    boolean existsBySkillName(String skillName);
 }

@@ -29,7 +29,7 @@ public class EmployerUpdateDTO {
     @JsonProperty("background_image")
     private MultipartFile backgroundImage;
     @JsonProperty("video_introduction")
-    private MultipartFile videoIntroduction;
+    private String videoIntroduction;
     @JsonProperty("company_size")
     private Integer companySize;
     @JsonProperty("business_certificate")

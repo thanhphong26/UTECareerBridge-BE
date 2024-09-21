@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface BenefitRepository extends JpaRepository<Benefit, Integer>{
     List<Benefit> findAllByIsActiveTrue();
+    boolean existsByBenefitNameIgnoreCase(String benefitName);
 }
