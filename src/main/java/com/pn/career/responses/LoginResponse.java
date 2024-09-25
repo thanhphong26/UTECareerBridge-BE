@@ -14,11 +14,7 @@ import java.util.List;
 public class LoginResponse {
     @JsonProperty("message")
     private String message;
-
-    @JsonProperty("token")
     private String token;
-
-    @JsonProperty("refresh_token")
     private String refreshToken;
     private String tokenType = "Bearer";
     //user's detail

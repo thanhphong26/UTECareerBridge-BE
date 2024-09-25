@@ -2,11 +2,19 @@ package com.pn.career.services;
 
 import com.pn.career.dtos.JobDTO;
 import com.pn.career.models.Job;
+import com.pn.career.responses.JobResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
+import javax.swing.text.html.Option;
+import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Optional;
 
 public interface IJobService {
-    List<Job> findAllJobs(boolean isAdmin);
-    Job createJob(Integer employerId,JobDTO jobDTO) throws Exception;
+    JobResponse createJob(Integer employerId,JobDTO jobDTO) throws Exception;
+    Optional<JobResponse> getJobById(Integer jobId);
+    Page<JobResponse> getJobsByEmployerId(Integer employerId, PageRequest page);
+    JobResponse updateJob(Integer employerId, Integer jobId, JobDTO jobDTO) throws Exception;
+    Page<JobResponse> getAllJobs(PageRequest pageRequest);
 }

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
+
 @Table(name = "resumes")
 @Entity
 @AllArgsConstructor
@@ -30,4 +32,6 @@ public class Resume extends BaseEntity {
     private JobLevel jobLevel;
     @Column(name = "is_active")
     private boolean isActive;
+    @OneToMany(mappedBy = "resume")
+    private List<Application> applications;
 }

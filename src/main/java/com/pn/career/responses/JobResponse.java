@@ -1,14 +1,18 @@
 package com.pn.career.responses;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pn.career.dtos.JobSkillDTO;
 import com.pn.career.models.Job;
 import com.pn.career.models.JobCategory;
 import com.pn.career.models.JobLevel;
+import com.pn.career.models.JobSkill;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,32 +20,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class JobResponse {
-    @JsonProperty("job_id")
     private Integer jobId;
-    @JsonProperty("employer_id")
     private Integer employerId;
-    @JsonProperty("category")
     private JobCategory jobCategory;
-    @JsonProperty("level")
     private JobLevel jobLevel;
-    @JsonProperty("job_title")
     private String jobTitle;
-    @JsonProperty("job_description")
     private String jobDescription;
-    @JsonProperty("job_requirements")
     private String jobRequirements;
-    @JsonProperty("job_location")
     private String jobLocation;
-    @JsonProperty("job_min_salary")
     private BigDecimal jobMinSalary;
-    @JsonProperty("job_max_salary")
     private BigDecimal jobMaxSalary;
-    @JsonProperty("amount")
     private int amount;
-    @JsonProperty("job_deadline")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate jobDeadline;
-    @JsonProperty("created_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private LocalDateTime updatedAt;
+    private List<JobSkillDTO> jobSkills;
     public static JobResponse fromJob(Job job) {
         return JobResponse.builder()
                 .jobId(job.getJobId())
@@ -69,6 +65,15 @@ public class JobResponse {
                 .amount(job.getAmount())
                 .jobDeadline(job.getJobDeadline())
                 .createdAt(job.getCreatedAt())
+                .updatedAt(job.getUpdatedAt())
                 .build();
+    }
+    public static List<JobSkillDTO> convertJobSkillToDTO(List<JobSkill> jobSkills) {
+        return jobSkills.stream()
+                .map(jobSkill -> JobSkillDTO.builder()
+                        .skillId(jobSkill.getSkill().getSkillId())
+                        .skillName(jobSkill.getSkill().getSkillName())
+                        .build())
+                .toList();
     }
 }

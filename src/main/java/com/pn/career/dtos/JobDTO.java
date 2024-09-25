@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -36,5 +38,5 @@ public class JobDTO {
     @JsonProperty("job_deadline")
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate jobDeadline;
-
+    private Set<Integer> skillIds;
 }

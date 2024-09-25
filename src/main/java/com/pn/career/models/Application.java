@@ -17,11 +17,11 @@ public class Application extends BaseEntity{
     @Column(name = "application_id")
     private int applicationId;
     @ManyToOne
+    @JoinColumn(name = "resume_id", nullable = false)
+    private Resume resume;
+    @ManyToOne
     @JoinColumn(name = "job_id",nullable = false)
     private Job job;
-    @ManyToOne
-    @JoinColumn(name = "student_id",nullable = false)
-    private Student student;
     @Enumerated(EnumType.STRING)
     @Column(name = "application_status", nullable = false)
     private ApplicationStatus applicationStatus = ApplicationStatus.PENDING;

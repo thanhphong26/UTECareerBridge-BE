@@ -23,5 +23,5 @@ public class Student extends User{
     @Column(name = "is_find")
     private boolean isFind;
     @OneToMany(mappedBy = "student")
-    private Set<Application> applications;
+    private Set<Resume> resumes;
 }

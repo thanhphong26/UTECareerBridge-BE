@@ -72,7 +72,6 @@ public class TokenService implements ITokenService{
             tokenRepository.delete(existingToken);
             throw new ExpiredTokenException("Refresh token is expired");
         }
-
         // Validate the refresh token
         Jwt jwt;
         try {
@@ -80,12 +79,10 @@ public class TokenService implements ITokenService{
         } catch (JwtException e) {
             throw new InvalidTokenException("Invalid refresh token", e);
         }
-
         // Check if the user details match the token
         if (!jwt.getSubject().equals(userDetails.getUsername())) {
             throw new InvalidTokenException("Token does not match user details");
         }
-
         // Create a new Authentication object
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());

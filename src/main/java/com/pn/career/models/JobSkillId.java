@@ -2,6 +2,7 @@ package com.pn.career.models;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +12,8 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class JobSkillId implements Serializable {
-    private int jobId;
-    private int skillId;
+    private Integer jobId;
+    private Integer skillId;
 }
