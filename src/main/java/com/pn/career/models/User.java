@@ -41,6 +41,8 @@ public class User extends BaseEntity {
     private String address;
     @Column(name = "is_active")
     private boolean active=true;
+    @Column(name = "reason_blocked")
+    private String reasonBlocked;
     @ManyToOne
     @JoinColumn(name="role_id")
     private Role role;

@@ -1,7 +1,6 @@
 package com.pn.career.controllers;
 
 import com.pn.career.dtos.JobDTO;
-import com.pn.career.models.Job;
 import com.pn.career.responses.JobListResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.ResponseObject;
@@ -95,7 +94,18 @@ public class JobController {
                         .build())
                 .build());
     }
-
+    @PutMapping("/employer/job-posting/hide/{jobId}")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> hideJob(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer jobId){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        JobResponse jobResponse=jobService.hideJob(employerId,jobId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Ẩn công việc thành công")
+                .data(jobResponse)
+                .build());
+    }
     @GetMapping("/admin/all-jobs")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getAllJobs(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit){
@@ -119,6 +129,26 @@ public class JobController {
                         .jobResponses(jobResponses)
                         .totalPages(totalPages)
                         .build())
+                .build());
+    }
+    @PutMapping("/admin/job-approval/approve/{jobId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> approveJob(@PathVariable Integer jobId){
+        JobResponse jobResponse=jobService.approveJob(jobId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Duyệt công việc thành công")
+                .data(jobResponse)
+                .build());
+    }
+    @PutMapping("/admin/job-approval/reject/{jobId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> rejectJob(@PathVariable Integer jobId, @RequestParam String reasonReject){
+        JobResponse jobResponse=jobService.rejectJob(jobId,reasonReject);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Từ chối công việc thành công")
+                .data(jobResponse)
                 .build());
     }
 }

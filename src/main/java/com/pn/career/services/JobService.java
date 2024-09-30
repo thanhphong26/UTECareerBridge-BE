@@ -25,6 +25,12 @@ public class JobService implements IJobService {
     @Transactional
     public JobResponse createJob(Integer employerId, JobDTO jobDTO) throws Exception {
         Employer employer=employerRepository.findById(employerId).orElseThrow(()->new Exception("Không tìm thấy thông tin công ty"));
+        if(employer.getBusinessCertificate()== null || employer.getBusinessCertificate().isEmpty()){
+            throw new Exception("Bạn cần cập nhật giấy phép kinh doanh trước khi thực hiện đăng tin tuyển dụng");
+        }
+        if(employer.getApprovalStatus()!= EmployerStatus.APPROVED){
+            throw new Exception("Giấy phép kinh doanh của bạn chưa được duyệt, vui lòng chờ hoặc liên hệ với quản trị viên để được hỗ trợ");
+        }
         JobCategory jobCategory=jobCategoryRepository.findById(jobDTO.getJobCategoryId()).orElseThrow(()->new Exception("Không tìm thấy thông tin danh mục công việc"));
         JobLevel jobLevel=jobLevelRepository.findById(jobDTO.getJobLevelId()).orElseThrow(()->new Exception("Không tìm thấy thông tin cấp độ công việc"));
         Job job=Job.builder()
@@ -39,7 +45,7 @@ public class JobService implements IJobService {
                 .amount(jobDTO.getAmount())
                 .jobDeadline(jobDTO.getJobDeadline())
                 .employer(employer)
-                .isActive(true)
+                .status(JobStatus.PENDING)
                 .build();
         jobRepository.save(job);
         jobSkillService.createJobSkill(job, jobDTO.getSkillIds());
@@ -93,7 +99,6 @@ public class JobService implements IJobService {
         jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
         return jobResponse;
     }
-
     @Override
     public Page<JobResponse> getAllJobs(PageRequest pageRequest) {
         Page<Job> jobs=jobRepository.findAll(pageRequest);
@@ -103,5 +108,46 @@ public class JobService implements IJobService {
             jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
             return jobResponse;
         });
+    }
+    @Override
+    @Transactional
+    public JobResponse approveJob(Integer jobId) {
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin công việc"));
+        job.setStatus(JobStatus.APPROVED);
+        jobRepository.save(job);
+        JobResponse jobResponse=JobResponse.fromJob(job);
+        List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
+        jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+        return jobResponse;
+    }
+    @Override
+    @Transactional
+    public JobResponse rejectJob(Integer jobId, String reasonReject) {
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin công việc"));
+        job.setStatus(JobStatus.REJECTED);
+        job.setRejectionReason(reasonReject);
+        jobRepository.save(job);
+        JobResponse jobResponse=JobResponse.fromJob(job);
+        List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
+        jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+        return jobResponse;
+    }
+    @Override
+    @Transactional
+    public JobResponse hideJob(Integer employerId, Integer jobId) {
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin công việc"));
+        if (!Integer.valueOf(job.getEmployer().getUserId()).equals(employerId)) {
+            throw new RuntimeException("Bạn không có quyền ẩn công việc này");
+        }
+        job.setStatus(JobStatus.INACTIVE);
+        jobRepository.save(job);
+        JobResponse jobResponse=JobResponse.fromJob(job);
+        List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
+        jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+        return jobResponse;
+    }
+    @Override
+    public Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, PageRequest pageRequest) {
+        return null;
     }
 }

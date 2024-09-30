@@ -34,9 +34,12 @@ public class Employer extends User{
     @Column(name = "video_introduction")
     private String videoIntroduction;
     @Column(name = "company_size")
-    private int companySize;
-    @Column(name = "is_approved")
-    private boolean isApproved;
+    private String companySize;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approval_status")
+    private EmployerStatus approvalStatus;
+    @Column(name = "rejected_reason")
+    private String rejectedReason;
     @Column(name = "business_certificate")
     private String businessCertificate;
     @ManyToOne

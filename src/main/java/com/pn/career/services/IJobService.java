@@ -17,4 +17,8 @@ public interface IJobService {
     Page<JobResponse> getJobsByEmployerId(Integer employerId, PageRequest page);
     JobResponse updateJob(Integer employerId, Integer jobId, JobDTO jobDTO) throws Exception;
     Page<JobResponse> getAllJobs(PageRequest pageRequest);
+    JobResponse approveJob(Integer jobId);
+    JobResponse rejectJob(Integer jobId, String reasonReject);
+    JobResponse hideJob(Integer employerId, Integer jobId);
+    Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, PageRequest pageRequest);
 }

@@ -14,27 +14,15 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmployerUpdateDTO {
-    @JsonProperty("company_name")
     private String companyName;
-    @JsonProperty("company_address")
     private String companyAddress;
-    @JsonProperty("company_email")
     private String companyEmail;
-    @JsonProperty("company_logo")
     private MultipartFile companyLogo;
-    @JsonProperty("company_website")
     private String companyWebsite;
-    @JsonProperty("company_description")
     private String companyDescription;
-    @JsonProperty("background_image")
     private MultipartFile backgroundImage;
-    @JsonProperty("video_introduction")
     private String videoIntroduction;
-    @JsonProperty("company_size")
-    private Integer companySize;
-    @JsonProperty("business_certificate")
-    private String businessCertificate;
-    @JsonProperty("industry_id")
+    private String companySize;
     private Integer industryId;
     private List<BenefitDetailDTO> benefitDetails;
 }

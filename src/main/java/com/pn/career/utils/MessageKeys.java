@@ -29,4 +29,6 @@ public class MessageKeys {
     public static final String EMPLOYER_GET_INFO_SUCCESSFULLY="employer.login.get_company_info_successfully";
 
     public static final String GET_ALL_INDUSTRIES_SUCCESSFULLY="get_all_industries_successfully";
+    public static final String ACCOUNT_LOCKED = "account.locked";
+    public static final String AUTHENTICATION_FAILED="authentication.failed";
 }

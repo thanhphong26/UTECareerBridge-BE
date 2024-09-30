@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -31,6 +32,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -46,6 +48,8 @@ public class EmployerController {
     private final LocalizationUtils localizationUtils;
     private final JwtDecoder jwtDecoder;
     private final IBenefitDetailService benefitDetailService;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
     @PostMapping("/register")
     public ResponseEntity<ResponseObject> registerEmployer(@Valid @RequestBody EmployerRegisterDTO employerRegistrationDTO, BindingResult result) throws Exception {
         if (result.hasErrors()) {
@@ -123,7 +127,7 @@ public class EmployerController {
         refreshToken.setPath("/");
         response.addCookie(refreshToken);
         LoginResponse loginResponse = LoginResponse.builder()
-                .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+                .message("Đăng nhập thành công")
                 .token(token.getAccessToken())
                 .tokenType("Bearer")
                 .refreshToken(token.getRefreshToken())
@@ -132,7 +136,7 @@ public class EmployerController {
                 .roles(userDetail.getRole())
                 .build();
         return ResponseEntity.ok().body(ResponseObject.builder()
-                .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+                .message("Đăng nhập thành công")
                 .data(loginResponse)
                 .status(HttpStatus.OK)
                 .build());
@@ -160,7 +164,7 @@ public class EmployerController {
             Integer userId = userIdLong != null ? userIdLong.intValue() : null;
             Employer employer = employerService.getEmployerById(userId);
             return ResponseEntity.ok().body(ResponseObject.builder()
-                    .message(localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_GET_INFO_SUCCESSFULLY))
+                    .message("Lấy thông tin công ty thành công")
                     .data(EmployerResponse.fromUser(employer))
                     .status(HttpStatus.OK)
                     .build());
@@ -244,4 +248,65 @@ public class EmployerController {
                 .data(BenefitDetailResponse.fromBenefitDetailResponse(benefitDetails))
                 .build());
     }
+    @PostMapping("/legal-info")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> addBusinessCertificate(@AuthenticationPrincipal Jwt jwt, @RequestBody MultipartFile businessCertificate) throws DataNotFoundException {
+        try{
+            Long userIdLong = jwt.getClaim("userId");
+            Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+            employerService.addBusinessCertificate(userId,businessCertificate);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Tải lên giấy phép kinh doanh thành công. Vui lòng chờ duyệt từ phía quản trị viên")
+                    .status(HttpStatus.OK)
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .message("Đã xảy ra lỗi khi tải lên giấy phép kinh doanh. Vui lòng thử lại sau")
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build());
+        }
+    }
+    @PutMapping("/admin/{employerId}/legal-info/approve")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> approveEmployer(@PathVariable Integer employerId) {
+        try {
+            employerService.approveEmployer(employerId);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Duyệt giấy phép kinh doanh của nhà tuyển dụng thành công")
+                    .status(HttpStatus.OK)
+                    .build());
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .message("Không tìm thấy nhà tuyển dụng tương ứng")
+                    .status(HttpStatus.NOT_FOUND)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .message("Đã xảy ra lỗi khi duyệt nhà tuyển dụng. Vui lòng thử lại sau")
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build());
+        }
+    }
+    @PutMapping("/admin/{employerId}/legal-info/reject")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> rejectEmployer(@PathVariable Integer employerId, @RequestBody RejectDTO rejectDTO) {
+        try {
+            employerService.rejectEmployer(employerId, rejectDTO.reason());
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Từ chối nhà tuyển dụng thành công")
+                    .status(HttpStatus.OK)
+                    .build());
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .message("Không tìm thấy nhà tuyển dụng tương ứng")
+                    .status(HttpStatus.NOT_FOUND)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .message("Đã xảy ra lỗi khi từ chối nhà tuyển dụng. Vui lòng thử lại sau")
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build());
+        }
+    }
+
 }

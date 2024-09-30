@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -48,5 +49,14 @@ public class GlobalExceptionHandler {
         body.put("path", request.getDescription(false));
 
         return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
+    }
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<Object> handleLockedException(LockedException ex, WebRequest request) {
+        logger.error("Locked error: {}", ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.LOCKED.value());
+        body.put("error", "Locked");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.LOCKED);
     }
 }

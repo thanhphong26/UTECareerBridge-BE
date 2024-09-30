@@ -46,8 +46,11 @@ public class Job extends BaseEntity{
     private LocalDate jobDeadline;
     @Column(name="amount")
     private int amount;
-    @Column(name="is_active")
-    private boolean isActive;
+    @Enumerated(EnumType.STRING)
+    @Column(name="status")
+    private JobStatus status;
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Application> applications;
 }

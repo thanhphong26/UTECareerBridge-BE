@@ -1,11 +1,12 @@
 package com.pn.career.services;
-
 import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.EmployerUpdateDTO;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.Employer;
+import com.pn.career.models.EmployerStatus;
 import com.pn.career.repositories.EmployerRepository;
 import com.pn.career.repositories.IndustryRepository;
+import com.pn.career.repositories.TokenRepository;
 import com.pn.career.responses.EmployerResponse;
 import com.pn.career.utils.MessageKeys;
 import com.pn.career.utils.SlugConverter;
@@ -16,7 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -26,14 +29,18 @@ public class EmployerService implements IEmployerService {
     private final IndustryRepository industryRepository;
     private final IBenefitDetailService benefitDetailService;
     private final AsyncCloudinaryService asyncCloudinaryService;
+    private final CloudinaryService cloudinaryService;
     private final LocalizationUtils localizationUtils;
     private final Logger logger= LoggerFactory.getLogger(EmployerService.class);
+    private final TokenRepository tokenRepository;
+
     @Override
     @Transactional
     public Employer updateEmployer(Integer employerId, EmployerUpdateDTO employerUpdateDTO) {
         try {
             Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException(
                     localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_DOES_NOT_EXISTS)));
+            logger.info("Id of employer: "+employerId);
             employer.setCompanyName(employer.getCompanyName().toUpperCase());
             employer.setCompanyAddress(employerUpdateDTO.getCompanyAddress());
             employer.setCompanyDescription(employerUpdateDTO.getCompanyDescription());
@@ -84,5 +91,53 @@ public class EmployerService implements IEmployerService {
         Page<Employer> employers;
         employers=employerRepository.searchEmployers(keyword,industryId,pageRequest);
         return employers.map(EmployerResponse::fromUser);
+    }
+    @Override
+    @Transactional
+    public void addBusinessCertificate(Integer employerId, MultipartFile businessCertificate) {
+       try {
+           Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
+           logger.info("Uploading business certificate");
+           if(!businessCertificate.isEmpty()){
+               String companySlug=SlugConverter.toSlug(employer.getCompanyName());
+               if(employer.getBusinessCertificate()!=null){
+                   asyncCloudinaryService.deleteFile(employer.getBusinessCertificate());
+                   logger.info("Deleted business certificate");
+               }
+               String certificateUrl=cloudinaryService.uploadFile(businessCertificate,companySlug+"_business_certificate");
+                if(certificateUrl!=null){
+                    employer.setBusinessCertificate(certificateUrl);
+                    employer.setApprovalStatus(EmployerStatus.PENDING);
+                    employerRepository.save(employer);
+                }else {
+                    throw new RuntimeException("Đã xảy ra lỗi khi tải lên giấy phép kinh doanh. Vui lòng thử lại sau");
+                }
+           }else {
+               throw new RuntimeException("Vui lòng chọn một tệp tin. Giấy phép kinh doanh không được để trống");
+           }
+       }catch(IOException e){
+              throw new RuntimeException("Đã xảy ra lỗi khi tải lên giấy phép kinh doanh. Vui lòng thử lại sau",e);
+       }
+    }
+    @Override
+    @Transactional
+    public void approveEmployer(Integer employerId) {
+        Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
+        if(employer.getBusinessCertificate()==null || employer.getBusinessCertificate().isEmpty()){
+            throw new RuntimeException("Nhà tuyển dụng chưa cung cấp giấy phép kinh doanh");
+        }
+        employer.setApprovalStatus(EmployerStatus.APPROVED);
+        employerRepository.save(employer);
+    }
+    @Override
+    @Transactional
+    public void rejectEmployer(Integer employerId, String reason) {
+        Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
+        employer.setApprovalStatus(EmployerStatus.REJECTED);
+        employer.setRejectedReason(reason);
+        employer.setActive(false);
+        employer.setReasonBlocked(reason);
+        tokenRepository.deleteByUser(employer);
+        employerRepository.save(employer);
     }
 }

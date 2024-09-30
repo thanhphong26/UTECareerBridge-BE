@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,20 +25,15 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return subject -> {
-            // Attempt to find user by phone number
-            Optional<User> userByPhoneNumber = userRepository.findUserByPhoneNumber(subject);
-            if (userByPhoneNumber.isPresent()) {
-                return new UserDetailsImpl(userByPhoneNumber.get()); // Wrap User with UserDetailsImpl
+            // Attempt to find user by phone number or email
+            User user = userRepository.findUserByPhoneNumber(subject)
+                    .orElseGet(() -> userRepository.findUserByEmail(subject)
+                            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng có thông tin email/sdt: " + subject)));
+            if (!user.isActive()) {
+                String reasonBlocked = user.getReasonBlocked() != null ? user.getReasonBlocked() : "Không xác định";
+                throw new LockedException("Tài khoản của bạn đã bị khóa. Lý do: " + reasonBlocked);
             }
-
-            // If user not found by phone number, attempt to find by email
-            Optional<User> userByEmail = userRepository.findUserByEmail(subject);
-            if (userByEmail.isPresent()) {
-                return new UserDetailsImpl(userByEmail.get()); // Wrap User with UserDetailsImpl
-            }
-
-            // If user not found by either phone number or email, throw UsernameNotFoundException
-            throw new UsernameNotFoundException("User not found with subject: " + subject);
+            return new UserDetailsImpl(user);
         };
     }
 

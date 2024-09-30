@@ -18,4 +18,5 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
     @Transactional
     @Query("UPDATE Token t SET t.revoked = true, t.expired = true WHERE t.user.userId = :userId AND t.tokenType = :tokenType AND (t.expired = false OR t.revoked = false)")
     void revokeAllUserTokens(int userId, String tokenType);
+    void deleteByUser(User user);
 }

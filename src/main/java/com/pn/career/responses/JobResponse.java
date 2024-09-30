@@ -1,7 +1,6 @@
 package com.pn.career.responses;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pn.career.dtos.JobSkillDTO;
 import com.pn.career.models.Job;
 import com.pn.career.models.JobCategory;

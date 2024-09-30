@@ -16,13 +16,13 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -64,6 +64,7 @@ public class UserService implements IUserService {
     }
     @Override
     public TokenDTO userLogin(LoginDTO loginDTO, String... allowedRoles) throws Exception{
+        UserDetailsImpl userDetails=null;
         try {
             logger.info("Attempting login with email: {} or phone number: {}", loginDTO.getEmail(), loginDTO.getPhoneNumber());
 
@@ -78,7 +79,7 @@ public class UserService implements IUserService {
             SecurityContextHolder.getContext()
                     .setAuthentication(authentication);
             // Lấy đối tượng UserDetails sau khi xác thực thành công
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
             // Kiểm tra quyền hạn của người dùng (nếu có)
             validateUserForLogin(userDetails.getUser(), allowedRoles);
@@ -87,21 +88,23 @@ public class UserService implements IUserService {
             TokenDTO tokenDTO = jwtTokenUtil.generateTokenPair(authentication);
 
             return tokenDTO;
-
+        } catch (InternalAuthenticationServiceException e) {
+            if (e.getCause() instanceof LockedException) {
+                LockedException lockedException = (LockedException) e.getCause();
+                String reason = lockedException.getMessage();
+                throw new LockedException(reason);
+            }
+            throw e;
         } catch (BadCredentialsException e) {
-            // Xử lý khi thông tin đăng nhập không hợp lệ
             throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
         } catch (AuthenticationException e) {
-            // Xử lý ngoại lệ xác thực
-            throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.USER_DOES_NOT_EXISTS)) {};
+            throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.AUTHENTICATION_FAILED)) {};
         }
     }
-
     private User findUserByEmailOrPhone(LoginDTO loginDTO) {
         return userRepository.findUserByEmailOrPhoneNumber(loginDTO.getEmail(), loginDTO.getPhoneNumber())
                 .orElseThrow(() -> new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD)));
     }
-
     private void validateUserForLogin(User user, String... allowedRoles) throws Exception {
         if (!user.isActive()) {
             throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
@@ -110,7 +113,6 @@ public class UserService implements IUserService {
             throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.NON_PERMISSION_WITH_ROLE));
         }
     }
-
     private boolean isUserRoleAllowed(User user, String... allowedRoles) {
         return Arrays.stream(allowedRoles)
                 .anyMatch(role -> role.equalsIgnoreCase(user.getRole().getRoleName()));
@@ -124,7 +126,6 @@ public class UserService implements IUserService {
         return userRepository.findUserByEmailOrPhoneNumber(subject, subject)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
     }
-
     @Override
     public void initiatePasswordReset(String email) throws Exception {
         User user=userRepository.findUserByEmail(email)
