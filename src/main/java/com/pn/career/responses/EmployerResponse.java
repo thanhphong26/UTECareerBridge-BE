@@ -18,41 +18,24 @@ import java.time.LocalDate;
 public class EmployerResponse {
     @JsonProperty("id")
     private int id;
-    @JsonProperty("phone_number")
     private String phoneNumber;
     private String firstName;
-    @JsonProperty("last_name")
     private String lastName;
-    @JsonProperty("gender")
     private boolean gender;
-    @JsonProperty("address")
     private String address;
-    @JsonProperty("dob")
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dob;
-    @JsonProperty("role")
     private Role role;
-    @JsonProperty("company_name")
     private String companyName;
-    @JsonProperty("company_address")
     private String companyAddress;
-    @JsonProperty("company_logo")
     private String companyLogo;
-    @JsonProperty("company_email")
     private String companyEmail;
-    @JsonProperty("company_description")
     private String companyDescription;
-    @JsonProperty("company_website")
     private String companyWebsite;
-    @JsonProperty("background_image")
     private String backgroundImage;
-    @JsonProperty("video_introduction")
     private String videoIntroduction;
-    @JsonProperty("company_size")
     private String companySize;
-    @JsonProperty("business_certificate")
     private String businessCertificate;
-    @JsonProperty("industry")
     private Industry industry;
     public static EmployerResponse fromUser(Employer employer) {
         return EmployerResponse.builder()
