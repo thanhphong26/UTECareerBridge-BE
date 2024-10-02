@@ -79,7 +79,7 @@ public class EmployerService implements IEmployerService {
             backgroundFuture.thenAccept(url -> {
                 if (url != null) employer.setBackgroundImage(url);
             });
-            benefitDetailService.createBenefitDetail(employer, employerUpdateDTO.getBenefitDetails());
+            benefitDetailService.updateBenefitDetail(employer, employerUpdateDTO.getBenefitDetails());
             return employerRepository.save(employer);
         } catch (DataNotFoundException e) {
             throw new RuntimeException("Đã xảy ra lỗi khi cập nhật thông tin. Vui lòng thử lại sau", e);

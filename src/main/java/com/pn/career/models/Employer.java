@@ -47,5 +47,6 @@ public class Employer extends User{
     private Industry industry;
     @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmployerPackage> employerPackages = new ArrayList<>();
-
+    @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BenefitDetail> benefitDetails = new ArrayList<>();
 }

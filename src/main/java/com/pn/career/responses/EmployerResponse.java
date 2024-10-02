@@ -2,13 +2,12 @@ package com.pn.career.responses;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.pn.career.models.Employer;
-import com.pn.career.models.Industry;
-import com.pn.career.models.Role;
-import com.pn.career.models.User;
+import com.pn.career.models.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -37,6 +36,7 @@ public class EmployerResponse {
     private String companySize;
     private String businessCertificate;
     private Industry industry;
+    private List<BenefitResponse> benefitDetails;
     public static EmployerResponse fromUser(Employer employer) {
         return EmployerResponse.builder()
                 .id(employer.getUserId())
@@ -57,6 +57,14 @@ public class EmployerResponse {
                 .companySize(employer.getCompanySize())
                 .businessCertificate(employer.getBusinessCertificate())
                 .industry(employer.getIndustry())
+                .benefitDetails(employer.getBenefitDetails().stream()
+                        .map(benefitDetail -> BenefitResponse.builder()
+                                .benefitId(benefitDetail.getBenefit().getBenefitId())
+                                .benefitName(benefitDetail.getBenefit().getBenefitName())
+                                .benefitIcon(benefitDetail.getBenefit().getBenefitIcon())
+                                .benefitDescription(benefitDetail.getDescription())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
     }
     public static EmployerResponse fromUser(User user) {
