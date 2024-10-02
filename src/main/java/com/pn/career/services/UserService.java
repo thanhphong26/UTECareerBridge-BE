@@ -18,12 +18,15 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,6 +42,7 @@ public class UserService implements IUserService {
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
     private final EmailService emailService;
+    private final JwtDecoder jwtDecoder;
     @Value("${app.frontend.url}")
     private String frontendUrl;
     @Value("${app.password-reset.expirations}")
@@ -119,10 +123,11 @@ public class UserService implements IUserService {
     }
     @Override
     public User getUserDetailsFromToken(String token) throws Exception{
-        if (jwtTokenUtil.isTokenExpired(token)) {
-            throw new ExpiredTokenException("Token is expired");
-        }
-        String subject = jwtTokenUtil.getSubjectFromToken(token);
+        logger.info("Attempting to get user details from token: {}", token);
+        Jwt jwt = jwtDecoder.decode(token); // Đảm bảo rằng jwtDecoder được cấu hình đúng
+        logger.info("Token subject: {}", jwt.getSubject());
+        String subject = jwt.getSubject();
+        logger.info("Attempting to find user by email or phone: {}", subject);
         return userRepository.findUserByEmailOrPhoneNumber(subject, subject)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
     }
@@ -174,7 +179,6 @@ public class UserService implements IUserService {
         user.setActive(active);
         userRepository.save(user);
     }
-
     private String generateToken(){
         return UUID.randomUUID().toString();
     }

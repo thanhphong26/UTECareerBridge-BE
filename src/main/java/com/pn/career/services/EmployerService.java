@@ -1,9 +1,12 @@
 package com.pn.career.services;
 import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.EmployerUpdateDTO;
+import com.pn.career.dtos.UpdatePasswordDTO;
+import com.pn.career.dtos.UpdateProfileDTO;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.Employer;
 import com.pn.career.models.EmployerStatus;
+import com.pn.career.models.Token;
 import com.pn.career.repositories.EmployerRepository;
 import com.pn.career.repositories.IndustryRepository;
 import com.pn.career.repositories.TokenRepository;
@@ -16,10 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -33,7 +38,7 @@ public class EmployerService implements IEmployerService {
     private final LocalizationUtils localizationUtils;
     private final Logger logger= LoggerFactory.getLogger(EmployerService.class);
     private final TokenRepository tokenRepository;
-
+    private final PasswordEncoder passwordEncoder;
     @Override
     @Transactional
     public Employer updateEmployer(Integer employerId, EmployerUpdateDTO employerUpdateDTO) {
@@ -86,6 +91,48 @@ public class EmployerService implements IEmployerService {
         return employerRepository.findById(employerId).orElseThrow(()-> new DataNotFoundException(
                 localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_DOES_NOT_EXISTS)));
     }
+
+    @Override
+    @Transactional
+    public Employer updateProfile(Integer employerId, UpdateProfileDTO updateProfileDTO) {
+        Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
+        employer.setFirstName(updateProfileDTO.getFistName());
+        employer.setLastName(updateProfileDTO.getLastName());
+        employer.setGender(updateProfileDTO.isGender());
+        employer.setDob(updateProfileDTO.getDob());
+        employer.setPhoneNumber(updateProfileDTO.getPhoneNumber());
+        return employerRepository.save(employer);
+    }
+
+    @Override
+    @Transactional
+    public Employer updatePassword(Integer employerId, UpdatePasswordDTO updatePasswordDTO) {
+        Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
+        if(!passwordEncoder.matches(updatePasswordDTO.oldPassword(),employer.getPassword())){
+            throw new RuntimeException("Mật khẩu cũ không chính xác");
+        }
+        if(updatePasswordDTO.oldPassword().equals(updatePasswordDTO.newPassword())){
+            throw new RuntimeException("Mật khẩu mới không được trùng với mật khẩu cũ");
+        }
+        if(!updatePasswordDTO.newPassword().equals(updatePasswordDTO.confirmPassword())){
+            throw new RuntimeException("Mật khẩu xác nhận không khớp");
+        }
+        employer.setPassword(passwordEncoder.encode(updatePasswordDTO.newPassword()));
+        revokedTokens(employerId);
+        return employerRepository.save(employer);
+    }
+
+    @Override
+    @Transactional
+    public void revokedTokens(Integer employerId) {
+        Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
+        List<Token> tokens=tokenRepository.findByUser(employer);
+        tokens.forEach(token -> {
+            token.setRevoked(true);
+            token.setExpired(true);
+        });
+    }
+
     @Override
     public Page<EmployerResponse> getAllEmployers(String keyword, Integer industryId, PageRequest pageRequest) {
         Page<Employer> employers;
@@ -94,7 +141,7 @@ public class EmployerService implements IEmployerService {
     }
     @Override
     @Transactional
-    public void addBusinessCertificate(Integer employerId, MultipartFile businessCertificate) {
+    public Employer addBusinessCertificate(Integer employerId, MultipartFile businessCertificate) {
        try {
            Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
            logger.info("Uploading business certificate");
@@ -108,7 +155,7 @@ public class EmployerService implements IEmployerService {
                 if(certificateUrl!=null){
                     employer.setBusinessCertificate(certificateUrl);
                     employer.setApprovalStatus(EmployerStatus.PENDING);
-                    employerRepository.save(employer);
+                    return employerRepository.save(employer);
                 }else {
                     throw new RuntimeException("Đã xảy ra lỗi khi tải lên giấy phép kinh doanh. Vui lòng thử lại sau");
                 }

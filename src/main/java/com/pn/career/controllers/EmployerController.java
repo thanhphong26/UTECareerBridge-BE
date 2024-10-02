@@ -156,6 +156,29 @@ public class EmployerController {
                 .status(HttpStatus.OK)
                 .build());
     }
+    @PostMapping("/update-profile")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> updateProfile(@AuthenticationPrincipal Jwt principal, @Valid @RequestBody UpdateProfileDTO updateProfileDTO) throws DataNotFoundException {
+        Long userIdLong = principal.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        Employer employer = employerService.updateProfile(userId, updateProfileDTO);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Cập nhật thông tin công ty thành công")
+                .data(EmployerResponse.fromUser(employer))
+                .status(HttpStatus.OK)
+                .build());
+    }
+    @PostMapping("/update-profile/change-password")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> updatePassword(@AuthenticationPrincipal Jwt principal, @Valid @RequestBody UpdatePasswordDTO updatePasswordDTO) throws DataNotFoundException {
+        Long userIdLong = principal.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        employerService.updatePassword(userId, updatePasswordDTO);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Đổi mật khẩu thành công")
+                .status(HttpStatus.OK)
+                .build());
+    }
     @GetMapping("/company-general-info")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getCompanyGeneralInfo(@AuthenticationPrincipal Jwt principal) throws DataNotFoundException {

@@ -1,6 +1,7 @@
 package com.pn.career.components;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pn.career.exceptions.RevokeTokenException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,11 +33,13 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         Map<String, Object> body = new HashMap<>();
         body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
         body.put("error", "Unauthorized");
-
-        if (authException instanceof OAuth2AuthenticationException) {
+        logger.info("authException: {}", authException.getClass());
+        if (authException instanceof RevokeTokenException) {
+            body.put("message", authException.getMessage());
+        }else if (authException instanceof OAuth2AuthenticationException) {
             OAuth2Error error = ((OAuth2AuthenticationException) authException).getError();
             body.put("message", "Bạn không có quyền truy cập vào tài nguyên này");
-        } else {
+        }else {
             body.put("message", "Token không hợp lệ hoặc đã hết hạn");
         }
         new ObjectMapper().writeValue(response.getOutputStream(), body);

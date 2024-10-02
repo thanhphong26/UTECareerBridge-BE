@@ -18,7 +18,7 @@ public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "token_id")
-    private int tokenId;
+    private Long tokenId;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -33,9 +33,10 @@ public class Token {
     private LocalDateTime refreshExpirationDate;
     @Column(name = "revoked")
     private boolean revoked;
+    @Column(name = "revoked_at")
+    private LocalDateTime revokedAt;
     @Column(name="expired_at")
     private boolean expired;
-
     public static String RESET_PASSWORD="RESET_PASSWORD";
     public static String EMAIL_VERIFICATION="EMAIL_VERIFICATION";
 }

@@ -59,4 +59,15 @@ public class GlobalExceptionHandler {
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.LOCKED);
     }
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(RevokeTokenException.class)
+    public ResponseEntity<?> handleRevokeTokenException(RevokeTokenException exception, WebRequest request) {
+        logger.error("Unauthorized error: {}", exception.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.UNAUTHORIZED.value());
+        body.put("error", "Unauthorized");
+        body.put("message", exception.getMessage());
+        return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+
+    }
 }

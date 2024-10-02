@@ -11,6 +11,7 @@ import com.pn.career.repositories.TokenRepository;
 import com.pn.career.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -111,6 +112,13 @@ public class TokenService implements ITokenService{
             token.setRevoked(true);
         });
         tokenRepository.saveAll(validUserTokens);
+    }
+
+    @Override
+    public boolean isTokenRevoked(String token) {
+        return tokenRepository.findByToken(token)
+                .map(Token::isRevoked)
+                .orElse(false);
     }
 
     private LocalDateTime convertToLocalDateTime(Instant instant) {

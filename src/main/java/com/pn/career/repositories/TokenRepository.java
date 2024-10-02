@@ -10,8 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-public interface TokenRepository extends JpaRepository<Token, Integer> {
+public interface TokenRepository extends JpaRepository<Token, Long> {
     List<Token> findByUser(User user);
+    Optional<Token> findByToken(String token);
     Token findByRefreshToken(String token);
     Optional<Token> findByTokenAndTokenType(String token, String tokenType);
     @Modifying
