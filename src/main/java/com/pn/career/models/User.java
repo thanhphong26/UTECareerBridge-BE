@@ -1,9 +1,7 @@
 package com.pn.career.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
@@ -14,7 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Data
+@Setter
+@Getter
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User extends BaseEntity {
     @Id

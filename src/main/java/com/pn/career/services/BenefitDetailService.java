@@ -50,7 +50,6 @@ public class BenefitDetailService implements IBenefitDetailService{
                 .filter(bd -> !updatedIds.contains(bd.getId()))
                 .forEach(benefitDetailRepository::delete);
     }
-
     @Override
     @Transactional
     public void updateOrCreateBenefitDetail(BenefitDetail benefitDetail, Employer employer, BenefitDetailDTO dto) {
@@ -61,7 +60,6 @@ public class BenefitDetailService implements IBenefitDetailService{
         benefitDetail.setEmployer(employer);
         benefitDetail.setBenefit(benefit);
         benefitDetail.setDescription(dto.getDescription());
-
         benefitDetailRepository.save(benefitDetail);
     }
 

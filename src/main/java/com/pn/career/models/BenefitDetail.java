@@ -1,23 +1,24 @@
 package com.pn.career.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Table(name="benefit_details")
 @Entity
-@Data
+@Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class BenefitDetail {
     @EmbeddedId
     private BenefitDetailId id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("employerId")
     @JoinColumn(name = "employer_id")
+    @JsonBackReference
     private Employer employer;
 
     @ManyToOne

@@ -15,20 +15,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BenefitDetailId implements Serializable {
+public class BenefitDetailId {
     private Integer employerId;
     private Integer benefitId;
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BenefitDetailId that = (BenefitDetailId) o;
-        return Objects.equals(benefitId, that.benefitId) &&
-                Objects.equals(employerId, that.employerId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(benefitId, employerId);
-    }
 }

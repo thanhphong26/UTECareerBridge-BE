@@ -1,9 +1,9 @@
 package com.pn.career.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
@@ -14,7 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Data
+@Setter
+@Getter
 @PrimaryKeyJoinColumn(name = "employer_id")
 public class Employer extends User{
     @Column(name = "company_name")
@@ -48,5 +49,6 @@ public class Employer extends User{
     @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmployerPackage> employerPackages = new ArrayList<>();
     @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // hoặc @JsonIgnore nếu không cần
     private List<BenefitDetail> benefitDetails = new ArrayList<>();
 }
