@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -39,7 +40,12 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         }else if (authException instanceof OAuth2AuthenticationException) {
             OAuth2Error error = ((OAuth2AuthenticationException) authException).getError();
             body.put("message", "Bạn không có quyền truy cập vào tài nguyên này");
-        }else {
+        }
+        else if (authException instanceof InsufficientAuthenticationException) {
+            body.put("message", "Bạn không có quyền truy cập vào tài nguyên này");
+        }
+        else {
+            logger.info("authException: {}", authException.getClass());
             body.put("message", "Token không hợp lệ hoặc đã hết hạn");
         }
         new ObjectMapper().writeValue(response.getOutputStream(), body);

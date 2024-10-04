@@ -96,7 +96,7 @@ public class EmployerService implements IEmployerService {
     @Transactional
     public Employer updateProfile(Integer employerId, UpdateProfileDTO updateProfileDTO) {
         Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
-        employer.setFirstName(updateProfileDTO.getFistName());
+        employer.setFirstName(updateProfileDTO.getFirstName());
         employer.setLastName(updateProfileDTO.getLastName());
         employer.setGender(updateProfileDTO.isGender());
         employer.setDob(updateProfileDTO.getDob());

@@ -18,4 +18,24 @@ public class JobLevelService implements IJobLevelService {
         }
         return jobLevelRepository.findAllByIsActiveTrue();
     }
+
+    @Override
+    public JobLevel getJobLevelById(Integer id) {
+        return null;
+    }
+
+    @Override
+    public JobLevel createJobLevel(JobLevel jobLevel) {
+        return null;
+    }
+
+    @Override
+    public JobLevel updateJobLevel(JobLevel jobLevel) {
+        return null;
+    }
+
+    @Override
+    public void deleteJobLevel(Integer id) {
+
+    }
 }

@@ -5,7 +5,11 @@ import com.pn.career.responses.JobListResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IJobService;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -22,6 +26,7 @@ import java.util.List;
 @AllArgsConstructor
 public class JobController {
     private final IJobService jobService;
+    private final Logger logger= LoggerFactory.getLogger(JobController.class);
     @PostMapping("/job-posting/new-job")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> createJobPosting(@AuthenticationPrincipal Jwt jwt, @RequestBody JobDTO jobDTO){
@@ -149,6 +154,32 @@ public class JobController {
                 .status(HttpStatus.OK)
                 .message("Từ chối công việc thành công")
                 .data(jobResponse)
+                .build());
+    }
+    @GetMapping("/search")
+    public ResponseEntity<ResponseObject> searchJobs(@RequestParam(defaultValue = "0") @Min(0) Integer page,
+                                                     @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer limit, @RequestParam String keyword,
+                                                     @RequestParam(defaultValue = "0") Integer categoryId, @RequestParam(defaultValue = "0") Integer industryId,
+                                                     @RequestParam(defaultValue = "0") Integer jobLevelId, @RequestParam(defaultValue = "0") Integer skillId){
+        int totalPages=0;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        logger.info("Pagerequest: "+pageRequest);
+        Page<JobResponse> jobs=jobService.searchJob(keyword,categoryId,industryId,jobLevelId,skillId,pageRequest);
+        logger.info("Jobs: "+jobs.getTotalPages());
+        if(jobs.isEmpty()){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Không có công việc nào")
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Tìm kiếm công việc thành công")
+                .data(JobListResponse.builder()
+                        .jobResponses(jobs.getContent())
+                        .totalPages(jobs.getTotalPages())
+                        .totalElements(jobs.getTotalElements())
+                        .build())
                 .build());
     }
 }

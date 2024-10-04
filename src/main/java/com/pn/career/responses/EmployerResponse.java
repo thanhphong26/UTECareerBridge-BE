@@ -62,7 +62,7 @@ public class EmployerResponse {
                                 .benefitId(benefitDetail.getBenefit().getBenefitId())
                                 .benefitName(benefitDetail.getBenefit().getBenefitName())
                                 .benefitIcon(benefitDetail.getBenefit().getBenefitIcon())
-                                .benefitDescription(benefitDetail.getDescription())
+                                .description(benefitDetail.getDescription())
                                 .build())
                         .collect(Collectors.toList()))
                 .build();

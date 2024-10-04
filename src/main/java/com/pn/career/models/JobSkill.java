@@ -1,16 +1,15 @@
 package com.pn.career.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Table(name = "job_skills")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 @Builder
 public class JobSkill {
     @EmbeddedId
@@ -18,6 +17,7 @@ public class JobSkill {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("jobId")
     @JoinColumn(name = "job_id")
+    @JsonBackReference
     private Job job;
 
     @ManyToOne(fetch = FetchType.LAZY)

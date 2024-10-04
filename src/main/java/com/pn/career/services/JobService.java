@@ -5,6 +5,9 @@ import com.pn.career.repositories.*;
 import com.pn.career.responses.JobResponse;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ public class JobService implements IJobService {
     private final JobLevelRepository jobLevelRepository;
     private final JobSkillService jobSkillService;
     private final JobSkillRepository jobSkillRepository;
+    private final Logger logger= LoggerFactory.getLogger(JobService.class);
 
     @Override
     @Transactional
@@ -148,6 +152,14 @@ public class JobService implements IJobService {
     }
     @Override
     public Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, PageRequest pageRequest) {
-        return null;
+        Page<Job> jobs=jobRepository.search(keyword, jobCategoryId, industryId, jobLevelId, skillId, pageRequest);
+        logger.info("Total elements: " + jobs.getTotalElements());
+        logger.info("Total pages: " + jobs.getTotalPages());
+        return jobs.map(job -> {
+            JobResponse jobResponse = JobResponse.fromJob(job);
+            List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
+            jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+            return jobResponse;
+        });
     }
 }

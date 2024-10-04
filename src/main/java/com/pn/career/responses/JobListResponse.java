@@ -13,4 +13,5 @@ import java.util.List;
 public class JobListResponse {
     List<JobResponse> jobResponses;
     int totalPages;
+    Long totalElements;
 }

@@ -7,7 +7,6 @@ import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IJobCategoryService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.hibernate.boot.archive.scan.spi.ClassDescriptor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateProfileDTO {
-    private String fistName;
+    private String firstName;
     private String lastName;
     private boolean gender;
     @JsonFormat(pattern = "dd/MM/yyyy")

@@ -147,11 +147,10 @@ public class EmployerController {
                                                                  @Valid @ModelAttribute EmployerUpdateDTO employerUpdateDTO) throws DataNotFoundException {
         Long userIdLong = principal.getClaim("userId");
         Integer userId = userIdLong != null ? userIdLong.intValue() : null;
-
         Employer employer = employerService.updateEmployer(userId, employerUpdateDTO);
         logger.debug("Employer updated successfully: {}", employer);
         return ResponseEntity.ok().body(ResponseObject.builder()
-                .message(localizationUtils.getLocalizedMessage(MessageKeys.EMPLOYER_UPDATE_SUCCESSFULLY))
+                .message("Cập nhật thông tin công ty thành công")
                 .data(EmployerResponse.fromUser(employer))
                 .status(HttpStatus.OK)
                 .build());
@@ -277,10 +276,11 @@ public class EmployerController {
         try{
             Long userIdLong = jwt.getClaim("userId");
             Integer userId = userIdLong != null ? userIdLong.intValue() : null;
-            employerService.addBusinessCertificate(userId,businessCertificate);
+            Employer employer=employerService.addBusinessCertificate(userId,businessCertificate);
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .message("Tải lên giấy phép kinh doanh thành công. Vui lòng chờ duyệt từ phía quản trị viên")
                     .status(HttpStatus.OK)
+                    .data(employer.getBusinessCertificate())
                     .build());
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
@@ -326,10 +326,9 @@ public class EmployerController {
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
-                    .message("Đã xảy ra lỗi khi từ chối nhà tuyển dụng. Vui lòng thử lại sau")
+                    .message("Đã có lỗi xảy ra đối với hệ thống. Vui lòng thử lại sau")
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .build());
         }
     }
-
 }

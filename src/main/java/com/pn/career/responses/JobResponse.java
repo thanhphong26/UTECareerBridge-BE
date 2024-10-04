@@ -21,6 +21,7 @@ import java.util.List;
 public class JobResponse {
     private Integer jobId;
     private Integer employerId;
+    private EmployerResponse employerResponse;
     private JobCategory jobCategory;
     private JobLevel jobLevel;
     private String jobTitle;
@@ -41,6 +42,7 @@ public class JobResponse {
         return JobResponse.builder()
                 .jobId(job.getJobId())
                 .employerId(job.getEmployer().getUserId())
+                .employerResponse(EmployerResponse.fromUser(job.getEmployer()))
                 .jobCategory(JobCategory.builder()
                         .jobCategoryId(job.getJobCategory().getJobCategoryId())
                         .jobCategoryName(job.getJobCategory().getJobCategoryName())
