@@ -2,6 +2,7 @@ package com.pn.career.controllers;
 
 import com.pn.career.dtos.BenefitDTO;
 import com.pn.career.dtos.BenefitUpdateDTO;
+import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.Benefit;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IBenefitDetailService;
@@ -37,7 +38,7 @@ public class BenefitController {
                 .build());
     }
     @GetMapping("/{benefitId})")
-    public ResponseEntity<ResponseObject> getBenefitById(@PathVariable  Integer benefitId){
+    public ResponseEntity<ResponseObject> getBenefitById(@PathVariable  Integer benefitId) throws DataNotFoundException {
         Benefit benefit=benefitService.getBenefitById(benefitId);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Lấy thông tin phúc lợi thành công")

@@ -1,15 +1,14 @@
 package com.pn.career.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
-
 import java.time.LocalDateTime;
 
 @Table(name = "coupons")
 @Entity
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
@@ -18,7 +17,7 @@ public class Coupon extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coupon_id")
     private int couponId;
-    @Column(name = "coupon_code")
+    @Column(name = "coupon_code", nullable = false, unique = true)
     private String couponCode;
     private int amount;
     private float discount;
