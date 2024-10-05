@@ -1,14 +1,20 @@
 package com.pn.career.models;
 
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-@Data
 @Embeddable
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Data
 public class EmployerPackageId implements Serializable {
-    private int employerId;
-    private int packageId;
+    private Integer employerId;
+    private Integer packageId;
 
     @Override
     public boolean equals(Object o) {

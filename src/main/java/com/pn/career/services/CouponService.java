@@ -63,7 +63,6 @@ public class CouponService implements ICouponService{
         existingCoupon.setActive(coupon.isActive());
         return couponRepository.save(existingCoupon);
     }
-
     @Override
     public void deleteCoupon(Integer couponId) {
         Coupon existingCoupon=couponRepository.findById(couponId).orElseThrow(()->new DataNotFoundException("Không tim thấy mã giảm giá"));

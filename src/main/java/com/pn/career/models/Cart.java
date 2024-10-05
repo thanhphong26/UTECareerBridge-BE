@@ -1,5 +1,6 @@
 package com.pn.career.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -26,5 +27,6 @@ public class Cart extends BaseEntity{
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "cart_id")
+    @JsonManagedReference
     private List<CartItem> items = new ArrayList<>();
 }
