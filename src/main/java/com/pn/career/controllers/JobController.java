@@ -1,6 +1,8 @@
 package com.pn.career.controllers;
 
 import com.pn.career.dtos.JobDTO;
+import com.pn.career.models.Job;
+import com.pn.career.models.JobStatus;
 import com.pn.career.responses.JobListResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.ResponseObject;
@@ -99,15 +101,45 @@ public class JobController {
                         .build())
                 .build());
     }
-    @PutMapping("/employer/job-posting/hide/{jobId}")
+    @GetMapping("/get-jobs-by-status")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> hideJob(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer jobId){
+    public ResponseEntity<ResponseObject> getJobsByStatus(@AuthenticationPrincipal Jwt jwt, @RequestParam JobStatus jobStatus,
+                                                          @RequestParam(defaultValue = "0") Integer page,
+                                                          @RequestParam(defaultValue = "10") Integer limit){
         Long userIdLong = jwt.getClaim("userId");
         Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
-        JobResponse jobResponse=jobService.hideJob(employerId,jobId);
+        int totalPages=0;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<JobResponse> jobs=jobService.getJobByStatus(employerId,jobStatus,pageRequest);
+        if(jobs.getTotalPages()>0){
+            totalPages=jobs.getTotalPages();
+        }
+        List<JobResponse> jobResponses=jobs.getContent();
+        if(jobResponses.isEmpty()){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Không có công việc nào")
+                    .build());
+        }
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .message("Ẩn công việc thành công")
+                .message("Lấy danh sách công việc thành công")
+                .data(JobListResponse.builder()
+                        .jobResponses(jobResponses)
+                        .totalPages(totalPages)
+                        .build())
+                .build());
+    }
+    @PutMapping("/employer/job-posting/hide/{jobId}")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> hideJob(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer jobId, @RequestParam JobStatus jobStatus){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        JobResponse jobResponse=jobService.hideOrEnableJob(employerId,jobId, jobStatus);
+        String message=jobStatus.equals(JobStatus.INACTIVE)? "Ẩn công việc thành công" : "Hiện công việc thành công";
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message(message)
                 .data(jobResponse)
                 .build());
     }

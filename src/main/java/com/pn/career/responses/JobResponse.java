@@ -38,6 +38,7 @@ public class JobResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDateTime updatedAt;
     private List<JobSkillDTO> jobSkills;
+    private String rejectionReason;
     public static JobResponse fromJob(Job job) {
         return JobResponse.builder()
                 .jobId(job.getJobId())
@@ -65,6 +66,7 @@ public class JobResponse {
                 .jobMaxSalary(job.getJobMaxSalary())
                 .amount(job.getAmount())
                 .jobDeadline(job.getJobDeadline())
+                .rejectionReason(job.getRejectionReason())
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
                 .build();

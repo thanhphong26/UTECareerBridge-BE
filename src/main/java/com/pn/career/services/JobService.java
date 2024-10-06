@@ -135,9 +135,10 @@ public class JobService implements IJobService {
         jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
         return jobResponse;
     }
+
     @Override
     @Transactional
-    public JobResponse hideJob(Integer employerId, Integer jobId) {
+    public JobResponse hideOrEnableJob(Integer employerId, Integer jobId, JobStatus jobStatus) {
         Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin công việc"));
         if (!Integer.valueOf(job.getEmployer().getUserId()).equals(employerId)) {
             throw new RuntimeException("Bạn không có quyền ẩn công việc này");
@@ -154,6 +155,17 @@ public class JobService implements IJobService {
         Page<Job> jobs=jobRepository.search(keyword, jobCategoryId, industryId, jobLevelId, skillId, pageRequest);
         logger.info("Total elements: " + jobs.getTotalElements());
         logger.info("Total pages: " + jobs.getTotalPages());
+        return jobs.map(job -> {
+            JobResponse jobResponse = JobResponse.fromJob(job);
+            List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
+            jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+            return jobResponse;
+        });
+    }
+
+    @Override
+    public Page<JobResponse> getJobByStatus(Integer employerId, JobStatus jobStatus, PageRequest pageRequest) {
+        Page<Job> jobs= jobRepository.findAllByEmployer_UserIdAndStatus(employerId, jobStatus, pageRequest);
         return jobs.map(job -> {
             JobResponse jobResponse = JobResponse.fromJob(job);
             List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);

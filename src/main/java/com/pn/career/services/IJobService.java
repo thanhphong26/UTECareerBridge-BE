@@ -2,6 +2,7 @@ package com.pn.career.services;
 
 import com.pn.career.dtos.JobDTO;
 import com.pn.career.models.Job;
+import com.pn.career.models.JobStatus;
 import com.pn.career.responses.JobResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ public interface IJobService {
     Page<JobResponse> getAllJobs(PageRequest pageRequest);
     JobResponse approveJob(Integer jobId);
     JobResponse rejectJob(Integer jobId, String reasonReject);
-    JobResponse hideJob(Integer employerId, Integer jobId);
+    JobResponse hideOrEnableJob(Integer employerId, Integer jobId, JobStatus jobStatus);
     Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, PageRequest pageRequest);
+    Page<JobResponse> getJobByStatus(Integer employerId, JobStatus jobStatus, PageRequest pageRequest);
 }
