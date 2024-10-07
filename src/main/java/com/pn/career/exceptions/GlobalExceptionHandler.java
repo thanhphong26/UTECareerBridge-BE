@@ -39,6 +39,15 @@ public class GlobalExceptionHandler {
                 .message(exception.getMessage())
                 .build());
     }
+    @ExceptionHandler(InvalidMultipartFile.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<?> handleResourceInvalidMultipartFile(InvalidMultipartFile exception) {
+        logger.error("Resource not found: {}", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseObject.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(exception.getMessage())
+                .build());
+    }
     @ExceptionHandler(OAuth2AuthenticationException.class)
     public ResponseEntity<Object> handleOAuth2AuthenticationException(OAuth2AuthenticationException ex, WebRequest request) {
         logger.error("Unauthorized error: {}", ex.getMessage());

@@ -17,10 +17,8 @@ import java.util.Date;
 public class StudentResponse {
     @JsonProperty("id")
     private int id;
-
     @JsonProperty("phone_number")
     private String phoneNumber;
-
     private String firstName;
     @JsonProperty("last_name")
     private String lastName;
