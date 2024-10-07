@@ -28,16 +28,11 @@ public class CloudinaryService {
         return uploadResult.get("url").toString();
     }
     public String uploadCvToCloudinary(MultipartFile file, String publicId) throws IOException {
-        File convFile = new File(file.getOriginalFilename());
-        convFile.createNewFile();
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(file.getBytes());
-        fos.close();
         Map<String, Object> params = ObjectUtils.asMap(
                 "public_id", publicId,
                 "folder", "student"
         );
-        Map uploadResult = cloudinary.uploader().upload(convFile, params);
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), params);
         return uploadResult.get("url").toString();
     }
     //validate file pdf or image
