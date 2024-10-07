@@ -1,5 +1,6 @@
 package com.pn.career.services;
 import com.pn.career.dtos.JobDTO;
+import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
 import com.pn.career.responses.JobResponse;
@@ -27,15 +28,15 @@ public class JobService implements IJobService {
     @Override
     @Transactional
     public JobResponse createJob(Integer employerId, JobDTO jobDTO) throws Exception {
-        Employer employer=employerRepository.findById(employerId).orElseThrow(()->new Exception("Không tìm thấy thông tin công ty"));
+        Employer employer=employerRepository.findById(employerId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công ty"));
         if(employer.getBusinessCertificate()== null || employer.getBusinessCertificate().isEmpty()){
             throw new Exception("Bạn cần cập nhật giấy phép kinh doanh trước khi thực hiện đăng tin tuyển dụng");
         }
         if(employer.getApprovalStatus()!= EmployerStatus.APPROVED){
             throw new Exception("Giấy phép kinh doanh của bạn chưa được duyệt, vui lòng chờ hoặc liên hệ với quản trị viên để được hỗ trợ");
         }
-        JobCategory jobCategory=jobCategoryRepository.findById(jobDTO.getJobCategoryId()).orElseThrow(()->new Exception("Không tìm thấy thông tin danh mục công việc"));
-        JobLevel jobLevel=jobLevelRepository.findById(jobDTO.getJobLevelId()).orElseThrow(()->new Exception("Không tìm thấy thông tin cấp độ công việc"));
+        JobCategory jobCategory=jobCategoryRepository.findById(jobDTO.getJobCategoryId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin danh mục công việc"));
+        JobLevel jobLevel=jobLevelRepository.findById(jobDTO.getJobLevelId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin cấp độ công việc"));
         Job job=Job.builder()
                 .jobCategory(jobCategory)
                 .jobLevel(jobLevel)
@@ -59,7 +60,7 @@ public class JobService implements IJobService {
     }
     @Override
     public Optional<JobResponse> getJobById(Integer jobId) {
-        Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy công việc"));
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy công việc"));
         List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
         JobResponse jobResponse=JobResponse.fromJob(job);
         jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
@@ -67,8 +68,9 @@ public class JobService implements IJobService {
     }
     @Override
     public Page<JobResponse> getJobsByEmployerId(Integer employerId, PageRequest page) {
-        Employer employer=employerRepository.findById(employerId).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin công ty"));
-        Page<Job> jobs=jobRepository.findAllByEmployer(employer, page);
+        Employer employer=employerRepository.findById(employerId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công ty"));
+        List<JobStatus> jobStatuses=List.of(JobStatus.APPROVED, JobStatus.ACTIVE);
+        Page<Job> jobs=jobRepository.findAllByEmployerAndStatusIn(employer, jobStatuses , page);
         return jobs.map(job -> {
             JobResponse jobResponse = JobResponse.fromJob(job);
             List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
@@ -83,8 +85,8 @@ public class JobService implements IJobService {
         if (!Integer.valueOf(job.getEmployer().getUserId()).equals(employerId)) {
             throw new Exception("Bạn không có quyền chỉnh sửa công việc này");
         }
-        JobCategory jobCategory=jobCategoryRepository.findById(jobDTO.getJobCategoryId()).orElseThrow(()->new Exception("Không tìm thấy thông tin danh mục công việc"));
-        JobLevel jobLevel=jobLevelRepository.findById(jobDTO.getJobLevelId()).orElseThrow(()->new Exception("Không tìm thấy thông tin cấp độ công việc"));
+        JobCategory jobCategory=jobCategoryRepository.findById(jobDTO.getJobCategoryId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin danh mục công việc"));
+        JobLevel jobLevel=jobLevelRepository.findById(jobDTO.getJobLevelId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin cấp độ công việc"));
         job.setJobCategory(jobCategory);
         job.setJobLevel(jobLevel);
         job.setJobTitle(jobDTO.getJobTitle());
@@ -115,7 +117,7 @@ public class JobService implements IJobService {
     @Override
     @Transactional
     public JobResponse approveJob(Integer jobId) {
-        Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin công việc"));
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công việc"));
         job.setStatus(JobStatus.APPROVED);
         jobRepository.save(job);
         JobResponse jobResponse=JobResponse.fromJob(job);
@@ -126,7 +128,7 @@ public class JobService implements IJobService {
     @Override
     @Transactional
     public JobResponse rejectJob(Integer jobId, String reasonReject) {
-        Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin công việc"));
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công việc"));
         job.setStatus(JobStatus.REJECTED);
         job.setRejectionReason(reasonReject);
         jobRepository.save(job);
@@ -139,7 +141,7 @@ public class JobService implements IJobService {
     @Override
     @Transactional
     public JobResponse hideOrEnableJob(Integer employerId, Integer jobId, JobStatus jobStatus) {
-        Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy thông tin công việc"));
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công việc"));
         if (!Integer.valueOf(job.getEmployer().getUserId()).equals(employerId)) {
             throw new RuntimeException("Bạn không có quyền ẩn công việc này");
         }
@@ -172,5 +174,14 @@ public class JobService implements IJobService {
             jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
             return jobResponse;
         });
+    }
+
+    @Override
+    public void deleteJob(Integer employerId, Integer jobId) {
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công việc"));
+        if (!Integer.valueOf(job.getEmployer().getUserId()).equals(employerId)) {
+            throw new RuntimeException("Bạn không có quyền xóa công việc này");
+        }
+        jobRepository.delete(job);
     }
 }

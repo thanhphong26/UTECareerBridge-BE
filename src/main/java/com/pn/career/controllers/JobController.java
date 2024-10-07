@@ -74,11 +74,8 @@ public class JobController {
                     .build());
         }
     }
-    @GetMapping("/employers/all-jobs")
-    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> getAllJobsByEmployer(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit){
-        Long userIdLong = jwt.getClaim("userId");
-        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+    @GetMapping("/employers/{employerId}/all-jobs")
+    public ResponseEntity<ResponseObject> getAllJobsByEmployer(@PathVariable Integer employerId,@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit){
         int totalPages=0;
         PageRequest pageRequest=PageRequest.of(page,limit);
         Page<JobResponse> jobs=jobService.getJobsByEmployerId(employerId,pageRequest);
@@ -141,6 +138,17 @@ public class JobController {
                 .status(HttpStatus.OK)
                 .message(message)
                 .data(jobResponse)
+                .build());
+    }
+    @DeleteMapping("/employer/job-posting/delete/{jobId}")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> deleteJob(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer jobId){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        jobService.deleteJob(employerId,jobId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Xóa công việc thành công")
                 .build());
     }
     @GetMapping("/admin/all-jobs")

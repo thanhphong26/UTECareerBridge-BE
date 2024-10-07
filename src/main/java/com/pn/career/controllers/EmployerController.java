@@ -4,11 +4,9 @@ import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.*;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.*;
+import com.pn.career.repositories.EmployerPackageRepository;
 import com.pn.career.responses.*;
-import com.pn.career.services.IBenefitDetailService;
-import com.pn.career.services.IEmployerService;
-import com.pn.career.services.ITokenService;
-import com.pn.career.services.IUserService;
+import com.pn.career.services.*;
 import com.pn.career.utils.MessageKeys;
 import com.pn.career.utils.ValidationUtils;
 import jakarta.servlet.http.Cookie;
@@ -45,6 +43,7 @@ public class EmployerController {
     private final IUserService userService;
     private final IEmployerService employerService;
     private final ITokenService tokenService;
+    private final IEmployerPackageService employerPackageService;
     private final LocalizationUtils localizationUtils;
     private final JwtDecoder jwtDecoder;
     private final IBenefitDetailService benefitDetailService;
@@ -330,5 +329,18 @@ public class EmployerController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .build());
         }
+    }
+
+    @GetMapping("/manage-package/get-all")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getAllEmployerPackage(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        List<EmployerPackage> employerPackages = employerPackageService.getAllEmployerPackages(userId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách gói các gói dịch vụ còn sử dụng thành công")
+                .status(HttpStatus.OK)
+                .data(employerPackages.stream().map(EmployerPackageResponse::fromEmployerPackage).toList())
+                .build());
     }
 }

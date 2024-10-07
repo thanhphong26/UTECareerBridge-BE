@@ -23,4 +23,5 @@ public interface IJobService {
     JobResponse hideOrEnableJob(Integer employerId, Integer jobId, JobStatus jobStatus);
     Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, PageRequest pageRequest);
     Page<JobResponse> getJobByStatus(Integer employerId, JobStatus jobStatus, PageRequest pageRequest);
+    void deleteJob(Integer employerId, Integer jobId);
 }

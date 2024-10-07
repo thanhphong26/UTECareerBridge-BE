@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
-    Page<Job> findAllByEmployer(Employer employer, Pageable pageable);
+    Page<Job> findAllByEmployerAndStatusIn(Employer employer, List<JobStatus> jobStatus,Pageable pageable);
     Page<Job> findAllByEmployer_UserIdAndStatus(Integer employerId, JobStatus status, Pageable pageable);
     List<Job> findAllByJobCategory(JobCategory jobCategory);
     @EntityGraph(attributePaths = {"jobCategory", "employer", "employer.industry", "jobLevel", "jobSkills", "jobSkills.skill"})
