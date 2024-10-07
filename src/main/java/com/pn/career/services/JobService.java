@@ -69,7 +69,7 @@ public class JobService implements IJobService {
     @Override
     public Page<JobResponse> getJobsByEmployerId(Integer employerId, PageRequest page) {
         Employer employer=employerRepository.findById(employerId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công ty"));
-        List<JobStatus> jobStatuses=List.of(JobStatus.APPROVED, JobStatus.ACTIVE);
+        List<JobStatus> jobStatuses=List.of(JobStatus.ACTIVE);
         Page<Job> jobs=jobRepository.findAllByEmployerAndStatusIn(employer, jobStatuses , page);
         return jobs.map(job -> {
             JobResponse jobResponse = JobResponse.fromJob(job);
@@ -118,7 +118,7 @@ public class JobService implements IJobService {
     @Transactional
     public JobResponse approveJob(Integer jobId) {
         Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công việc"));
-        job.setStatus(JobStatus.APPROVED);
+        job.setStatus(JobStatus.ACTIVE);
         jobRepository.save(job);
         JobResponse jobResponse=JobResponse.fromJob(job);
         List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);

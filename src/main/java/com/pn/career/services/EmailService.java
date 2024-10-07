@@ -37,4 +37,38 @@ public class EmailService {
 
         mailSender.send(mimeMessage);
     }
+    //send job application email
+    public void sendJobApplicationEmail(String recipientEmail, String name, String jobTitle) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
+
+        helper.setTo(recipientEmail);
+        helper.setSubject("Thông báo ứng tuyển");
+
+        Context context = new Context();
+        context.setVariable("name", name);
+        context.setVariable("jobTitle", jobTitle);
+        String emailContent = thymeleafTemplateEngine.process("job-application", context);
+
+        helper.setText(emailContent, true); // true indicates HTML
+
+        mailSender.send(mimeMessage);
+    }
+    //send suitable job for student
+    public void sendSuitableJobEmail(String recipientEmail, String name, String jobTitle) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
+
+        helper.setTo(recipientEmail);
+        helper.setSubject("Thông báo việc làm phù hợp");
+
+        Context context = new Context();
+        context.setVariable("name", name);
+        context.setVariable("jobTitle", jobTitle);
+        String emailContent = thymeleafTemplateEngine.process("job-recommendations", context);
+
+        helper.setText(emailContent, true); // true indicates HTML
+
+        mailSender.send(mimeMessage);
+    }
 }

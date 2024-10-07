@@ -58,7 +58,6 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
             }
             // Chỉ lấy các công việc đang hoạt động
             predicates.add(cb.or(
-                    cb.equal(root.get("status"), JobStatus.APPROVED),
                     cb.equal(root.get("status"), JobStatus.ACTIVE)
             ));
             query.distinct(true);
