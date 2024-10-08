@@ -145,7 +145,7 @@ public class JobService implements IJobService {
         if (!Integer.valueOf(job.getEmployer().getUserId()).equals(employerId)) {
             throw new RuntimeException("Bạn không có quyền ẩn công việc này");
         }
-        job.setStatus(JobStatus.INACTIVE);
+        job.setStatus(jobStatus);
         jobRepository.save(job);
         JobResponse jobResponse=JobResponse.fromJob(job);
         List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);

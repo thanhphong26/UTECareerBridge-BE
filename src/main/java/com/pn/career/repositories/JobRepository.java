@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.domain.Specification;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,5 +64,29 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
             query.distinct(true);
             return cb.and( predicates.toArray(new Predicate[0]));
         }, pageable);
+    }
+    //Get Jobs by jobSkills.skillId
+    default List<Job> findAllByJobSkills_SkillId(Integer skillId) {
+        return findAll((Specification<Job>) (root, query, cb) -> {
+            Join<Job, JobSkill> jobSkillJoin = root.join("jobSkills", JoinType.LEFT);
+            Join<JobSkill, Skill> skillJoin = jobSkillJoin.join("skill", JoinType.LEFT);
+            return cb.equal(skillJoin.get("skillId"), skillId);
+        });
+    }
+    default List<Job> findAllByJobSkillsAndJobSkillsIn(List<Integer> skillIds) {
+        if (skillIds == null || skillIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return findAll((Specification<Job>) (root, query, cb) -> {
+            Join<Job, JobSkill> jobSkillJoin = root.join("jobSkills", JoinType.LEFT);
+            Join<JobSkill, Skill> skillJoin = jobSkillJoin.join("skill", JoinType.LEFT);
+            //job status is active
+            Predicate isActive = cb.equal(root.get("status"), JobStatus.ACTIVE);
+            Predicate skillIn = skillJoin.get("skillId").in(skillIds);
+
+            query.distinct(true);
+            return cb.and(isActive, skillIn);
+        });
     }
 }

@@ -1,5 +1,10 @@
 package com.pn.career.services;
 
+import com.pn.career.models.Job;
+import com.pn.career.models.Student;
+import com.pn.career.models.User;
+import com.pn.career.responses.ApplicationResponse;
+import com.pn.career.responses.JobResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
@@ -11,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import org.thymeleaf.context.Context;
+
+import java.util.List;
 
 @Service
 public class EmailService {
@@ -38,7 +45,7 @@ public class EmailService {
         mailSender.send(mimeMessage);
     }
     //send job application email
-    public void sendJobApplicationEmail(String recipientEmail, String name, String jobTitle) throws MessagingException {
+    public void sendJobApplicationEmail(String recipientEmail, ApplicationResponse applicationResponse) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
 
@@ -46,16 +53,15 @@ public class EmailService {
         helper.setSubject("Thông báo ứng tuyển");
 
         Context context = new Context();
-        context.setVariable("name", name);
-        context.setVariable("jobTitle", jobTitle);
-        String emailContent = thymeleafTemplateEngine.process("job-application", context);
+        context.setVariable("application", applicationResponse);
+        String emailContent = thymeleafTemplateEngine.process("job-apply-successful", context);
 
         helper.setText(emailContent, true); // true indicates HTML
 
         mailSender.send(mimeMessage);
     }
     //send suitable job for student
-    public void sendSuitableJobEmail(String recipientEmail, String name, String jobTitle) throws MessagingException {
+    public void sendSuitableJobEmail(String recipientEmail, Student student, List<JobResponse> jobs) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
 
@@ -63,8 +69,8 @@ public class EmailService {
         helper.setSubject("Thông báo việc làm phù hợp");
 
         Context context = new Context();
-        context.setVariable("name", name);
-        context.setVariable("jobTitle", jobTitle);
+        context.setVariable("student", student);
+        context.setVariable("jobs", jobs);
         String emailContent = thymeleafTemplateEngine.process("job-recommendations", context);
 
         helper.setText(emailContent, true); // true indicates HTML

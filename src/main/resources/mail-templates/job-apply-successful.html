@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ứng tuyển thành công</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #F6F8FC; line-height: 1.6; margin: 0; padding: 0;">
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 650px; margin: 0 auto; background-color: #ffffff; border: 1px solid #ddd; border-radius: 5px;">
+    <tr>
+        <td style="background: linear-gradient(90deg, #001743, #004CD6); color: white; padding: 10px; border-radius: 5px 5px 0 0;">
+            <table width="100%">
+                <tr>
+                    <td width="20%" style="text-align: left;">
+                        <img src="https://res.cloudinary.com/utejobhub/image/upload/v1723888103/rg2do6iommv6wp840ixr.png" alt="UTE Career Logo" style="max-width: 150px; max-height: 54px;">
+                    </td>
+                    <td width="60%" style="text-align: center;">
+                        <h1 style="margin: 0;">Ứng tuyển thành công</h1>
+                    </td>
+                    <td width="20%" style="text-align: right;">
+                        <img th:src="${application.getJobResponse().getEmployerResponse().getCompanyLogo()}" alt="Company Logo" style="max-width: 150px; max-height: 54px;">
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 20px;">
+            <p>Xin chào <span th:text="${application.getResumeResponse().getStudentResponse().getFirstName()}"></span>,</p>
+            <p>Chúng tôi rất vui mừng thông báo rằng bạn đã ứng tuyển thành công công việc tại <strong th:text="${application.getJobResponse().getEmployerResponse().getCompanyName()}"></strong>.</p>
+            <div style="background-color: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 5px; padding: 15px; margin-top: 20px;">
+                <h2 style="text-align: center;">Thông tin chi tiết về đơn ứng tuyển của bạn</h2>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li style="margin-bottom: 10px;">Hồ sơ ứng tuyển: <strong><a th:href="${application.getResumeResponse().getResumeFile()}" target="_blank" th:text="${application.getResumeResponse().getResumeFile()}" style="color: #0066cc;">Xem hồ sơ</a></strong></li>
+                    <li style="margin-bottom: 10px;">Ngày ứng tuyển: <strong th:text="${#temporals.format(application.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></strong></li>
+                    <li style="margin-bottom: 10px;">Vị trí: <strong><a th:href="@{'http://localhost:3000/jobs/' + ${application.getJobResponse().getJobId()}}" target="_blank" th:text="${application.getJobResponse().getJobTitle()}" style="color: #0066cc;"></a></strong></li>
+                    <li style="margin-bottom: 10px;">Mức lương: <strong>
+                        <span th:text="${#numbers.formatDecimal(application.getJobResponse().getJobMinSalary(), 1, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                        -
+                        <span th:text="${#numbers.formatDecimal(application.getJobResponse().getJobMaxSalary(), 1, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                    </strong></li>
+                </ul>
+            </div>
+            <p>Chúng tôi sẽ xem xét đơn ứng tuyển của bạn và liên hệ trong thời gian sớm nhất. Vui lòng kiểm tra email thường xuyên để không bỏ lỡ thông tin quan trọng.</p>
+            <p>Nếu bạn có bất kỳ câu hỏi nào, đừng ngại liên hệ với chúng tôi qua email hoặc số điện thoại dưới đây.</p>
+            <p>Chúc bạn may mắn trong quá trình tuyển dụng!</p>
+        </td>
+    </tr>
+    <tr>
+        <td style="background-color: #f4f4f4; text-align: center; padding: 20px; font-size: 0.9em; color: #777;">
+            <p>Trân trọng,</p>
+            <p>Đội ngũ hỗ trợ tuyển dụng <span th:text="${application.getJobResponse().getEmployerResponse().getCompanyName()}"></span></p>
+            <p>Email: <span th:text="${application.getJobResponse().getEmployerResponse().getCompanyEmail()}"></span> | Điện thoại: <span th:text="${application.getJobResponse().getEmployerResponse().getPhoneNumber()}"></span></p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

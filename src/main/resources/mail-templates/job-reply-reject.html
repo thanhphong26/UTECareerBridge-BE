@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông báo kết quả ứng tuyển</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F6F8FC;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(90deg, #001743, #004CD6);
+            color: white;
+            text-align: center;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px 5px 0 0;
+        }
+        .logo-container {
+            margin-bottom: 15px;
+        }
+        .img-logo {
+            max-width: 150px;
+            display: block;
+            margin: 0 auto;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo-container">
+            <img class="img-logo" src="https://res.cloudinary.com/utejobhub/image/upload/v1723888103/rg2do6iommv6wp840ixr.png" alt="Company Logo" />
+        </div>
+        <h1>Thông báo kết quả ứng tuyển</h1>
+    </div>
+    <div class="content">
+        <p>Xin chào <span th:text="${name}"></span>,</p>
+        <p>Cảm ơn bạn đã dành thời gian ứng tuyển vào vị trí <strong th:text="${position}"></strong> tại <strong th:text="${company}"></strong>. Chúng tôi đánh giá cao sự quan tâm của bạn đối với công ty chúng tôi.</p>
+        <p>Sau khi xem xét kỹ lưỡng hồ sơ của bạn, chúng tôi rất tiếc phải thông báo rằng chúng tôi sẽ không thể tiếp tục quá trình tuyển dụng với bạn cho vị trí này tại thời điểm hiện tại.</p>
+        <p>Mặc dù hồ sơ của bạn rất ấn tượng, nhưng chúng tôi đã nhận được nhiều ứng viên có kinh nghiệm và kỹ năng phù hợp hơn với yêu cầu cụ thể của vị trí này.</p>
+        <p>Chúng tôi khuyến khích bạn tiếp tục theo dõi các cơ hội nghề nghiệp khác tại công ty chúng tôi trong tương lai. Hồ sơ của bạn sẽ được lưu trong cơ sở dữ liệu của chúng tôi, và chúng tôi sẽ liên hệ nếu có vị trí phù hợp với kỹ năng và kinh nghiệm của bạn.</p>
+        <p>Một lần nữa, cảm ơn bạn đã quan tâm đến công ty chúng tôi. Chúc bạn may mắn trong quá trình tìm kiếm việc làm và trong sự nghiệp của mình.</p>
+    </div>
+    <div class="footer">
+        <p>Trân trọng,</p>
+        <p>Đội ngũ tuyển dụng <span th:text="${companyName}"></span></p>
+        <p>Email: <span th:text="${supportEmail}"></span> | Điện thoại: <span th:text="${supportPhone}"></span></p>
+    </div>
+</div>
+</body>
+</html>

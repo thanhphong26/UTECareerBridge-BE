@@ -3,12 +3,14 @@ package com.pn.career.controllers;
 import com.pn.career.dtos.ResumeDTO;
 import com.pn.career.models.Application;
 import com.pn.career.models.Resume;
+import com.pn.career.models.StudentSkill;
 import com.pn.career.responses.ApplicationResponse;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.responses.ResumeResponse;
+import com.pn.career.responses.StudentSkillResponse;
 import com.pn.career.services.IApplicationService;
 import com.pn.career.services.IResumeService;
-import lombok.Getter;
+import com.pn.career.services.IStudentSkillService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ import java.util.List;
 public class StudentController {
     private final IResumeService resumeService;
     private final IApplicationService applicationService;
+    private final IStudentSkillService studentSkillService;
     @PostMapping("/upload/resumes")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> uploadResume(@AuthenticationPrincipal Jwt jwt, @ModelAttribute ResumeDTO resumeDTO) {
@@ -62,11 +65,31 @@ public class StudentController {
     @PostMapping("/jobs/apply")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> applyJob(@RequestParam Integer jobId, @RequestParam Integer resumeId) {
-        Application application=applicationService.createApplication(jobId, resumeId);
+        try{
+            Application application=applicationService.createApplication(jobId, resumeId);
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .data(ApplicationResponse.fromApplication(application))
+                    .message("Ứng tuyển thành công")
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message(e.getMessage())
+                    .build());
+        }
+    }
+    @PostMapping("/skills/add")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> addSkill(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer skillId, @RequestParam Integer level) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        StudentSkill studentSkill=studentSkillService.createStudentSkill(studentId, skillId, level);
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .data(ApplicationResponse.fromApplication(application))
-                .message("Ứng tuyển thành công")
+                .data(StudentSkillResponse.fromStudentSkill(studentSkill))
+                .message("Thêm kỹ năng thành công")
                 .build());
     }
+    //@PostMapping("/send-email/job-recommendations")
 }

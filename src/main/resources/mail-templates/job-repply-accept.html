@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Mời phỏng vấn</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F6F8FC;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(90deg, #001743, #004CD6);
+      color: white;
+      text-align: center;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 5px 5px 0 0;
+    }
+    .logo-container {
+      margin-bottom: 15px;
+    }
+    .img-logo {
+      max-width: 150px;
+      display: block;
+      margin: 0 auto;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .content {
+      padding: 30px;
+    }
+    .footer {
+      background-color: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9em;
+      color: #777;
+    }
+    .interview-details {
+      background-color: #f0f7ff;
+      border: 1px solid #b3d7ff;
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo-container">
+      <img class="img-logo" src="https://res.cloudinary.com/utejobhub/image/upload/v1723888103/rg2do6iommv6wp840ixr.png" alt="Company Logo" />
+    </div>
+    <h1>Mời phỏng vấn</h1>
+  </div>
+  <div class="content">
+    <p>Xin chào <span th:text="${name}"></span>,</p>
+    <p>Chúng tôi vui mừng thông báo rằng hồ sơ ứng tuyển của bạn cho vị trí <strong th:text="${position}"></strong> tại <strong th:text="${company}"></strong> đã được chấp nhận để tiến hành phỏng vấn.</p>
+    <div class="interview-details">
+      <h2>Thông tin phỏng vấn:</h2>
+      <p><strong>Ngày:</strong> <span th:text="${interviewDate}"></span></p>
+      <p><strong>Thời gian:</strong> <span th:text="${interviewTime}"></span></p>
+      <p><strong>Địa điểm/Hình thức:</strong> <span th:text="${interviewLocation}"></span></p>
+      <p><strong>Người phỏng vấn:</strong> <span th:text="${interviewer}"></span></p>
+    </div>
+    <p>Vui lòng xác nhận sự tham gia của bạn bằng cách trả lời email này. Nếu bạn cần thay đổi lịch phỏng vấn, hãy liên hệ với chúng tôi càng sớm càng tốt.</p>
+    <p>Chúc bạn chuẩn bị tốt và chúng tôi rất mong được gặp bạn!</p>
+  </div>
+  <div class="footer">
+    <p>Trân trọng,</p>
+    <p>Đội ngũ tuyển dụng <span th:text="${companyName}"></span></p>
+    <p>Email: <span th:text="${supportEmail}"></span> | Điện thoại: <span th:text="${supportPhone}"></span></p>
+  </div>
+</div>
+</body>
+</html>

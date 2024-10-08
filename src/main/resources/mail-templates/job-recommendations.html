@@ -58,6 +58,8 @@
         .job-logo {
             flex: 0 0 80px;
             margin-right: 20px;
+            width: 140px;
+            height: 140px;
         }
         .job-logo img {
             max-width: 100%;
@@ -106,20 +108,20 @@
     <div class="email-container">
         <div class="header">
             <img src="https://res.cloudinary.com/utejobhub/image/upload/v1723888103/rg2do6iommv6wp840ixr.png" alt="Company Logo" />
-            <img class="img-profile" th:src="${profile_image}" alt="Profile Image" />
+            <img class="img-profile" th:src="${student.getProfileImage()}" alt="Profile Image" />
         </div>
         <div class="content">
             <h1>Việc Làm Gợi Ý Cho Bạn</h1>
-            <p>Xin chào <span th:text="${name}"></span>,</p>
+            <p>Xin chào <span th:text="${student.getFirstName()}"></span>,</p>
             <p>UTE Career Bridge mong muốn sẽ giúp bạn tìm được công việc mơ ước của mình. Dựa trên thông tin của bạn, chúng tôi đã tìm được những công việc mới nhất phù hợp bạn:</p>
 
             <div class="job-listing" th:each="job : ${jobs}">
                 <div class="job-logo">
-                    <img th:src="${job.employer.companyLogo}" alt="Company Logo" />
+                    <img th:src="${job.employerResponse.companyLogo}" alt="Company Logo" />
                 </div>
                 <div class="job-details">
                     <h3 th:text="${job.jobTitle}"></h3>
-                    <p th:text="${job.employer.companyName}"></p>
+                    <p th:text="${job.employerResponse.companyName}"></p>
                     <p>Thương lượng | <span th:text="${job.jobLocation}"></span></p>
                     <p>Cập nhật: <span th:text="${job.jobDeadline}"></span></p>
                 </div>
