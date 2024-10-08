@@ -33,7 +33,7 @@ public class OrderService implements IOrderService {
 
     @Override
     @Transactional
-    public Order saveOrder(Integer employerId, String couponCode,String accountNumber) {
+    public Order saveOrder(Integer employerId, String couponCode) {
         Employer employer = employerRepository.findById(employerId)
                 .orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
         Cart cart = cartRepository.findByEmployer(employer)
@@ -45,7 +45,6 @@ public class OrderService implements IOrderService {
 
         Order order = new Order();
         order.setEmployer(employer);
-        order.setAccountNumber(accountNumber);
         order.setOrderDate(LocalDateTime.now());
         order.setPaymentStatus(PaymentStatus.PENDING);
         order.setActive(true);

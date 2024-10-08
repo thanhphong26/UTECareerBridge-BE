@@ -1,5 +1,6 @@
 package com.pn.career.controllers;
 
+import com.pn.career.configurations.VNPAYConfig;
 import com.pn.career.exceptions.InvalidOperationException;
 import com.pn.career.models.Order;
 import com.pn.career.models.OrderDetail;
@@ -9,6 +10,8 @@ import com.pn.career.responses.OrderListResponse;
 import com.pn.career.responses.OrderResponse;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IOrderService;
+import com.pn.career.services.VNPAYService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +34,51 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
     private final IOrderService orderService;
+    private final VNPAYService vnpayService;
+
+    @PostMapping("/create-payment")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> createPayment(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer orderId, HttpServletRequest request){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        Order order = orderService.getOrderById(employerId, orderId);
+
+        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        String returnUrl = baseUrl +"/api/v1/orders" + VNPAYConfig.vnp_Returnurl;
+
+        String paymentUrl = vnpayService.createPaymentUrl(request, order, returnUrl);
+
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Tạo URL thanh toán thành công")
+                .status(HttpStatus.OK)
+                .data(paymentUrl)
+                .build());
+    }
+    @GetMapping("/vnpay-payment-return")
+    public ResponseEntity<ResponseObject> vnpayReturn(HttpServletRequest request) {
+        int paymentStatus =vnpayService.orderReturn(request);
+        if (paymentStatus==1) {
+            String orderId = request.getParameter("vnp_OrderInfo").split(": ")[1];
+            orderService.updatePaymentStatus(Integer.parseInt(orderId), PaymentStatus.PAID);
+
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Thanh toán thành công")
+                    .status(HttpStatus.OK)
+                    .build());
+        } else {
+            return ResponseEntity.badRequest().body(ResponseObject.builder()
+                    .message("Thanh toán thất bại")
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build());
+        }
+    }
     @PostMapping("/create-order")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> createOrder(@AuthenticationPrincipal Jwt jwt, @RequestParam(required = false) String couponCode,
                                                       @RequestParam(required = false) String accountNumber){
         Long userIdLong = jwt.getClaim("userId");
         Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
-        Order order = orderService.saveOrder(employerId, couponCode, accountNumber);
+        Order order = orderService.saveOrder(employerId, couponCode);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Mua gói dịch vụ thành công")
                 .status(HttpStatus.CREATED)

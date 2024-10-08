@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IOrderService {
-    Order saveOrder(Integer employerId, String couponCode, String accountNumber);
+    Order saveOrder(Integer employerId, String couponCode);
     Page<Order> getOrdersByEmployerId(Integer employerId, Pageable pageable);
     Order getOrderById( Integer currentUserId, Integer orderId);
     Order updatePaymentStatus(Integer orderId, PaymentStatus paymentStatus);
