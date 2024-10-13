@@ -9,6 +9,7 @@ import com.pn.career.responses.ResponseObject;
 import com.pn.career.responses.ResumeResponse;
 import com.pn.career.responses.StudentSkillResponse;
 import com.pn.career.services.IApplicationService;
+import com.pn.career.services.IFollowerService;
 import com.pn.career.services.IResumeService;
 import com.pn.career.services.IStudentSkillService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class StudentController {
     private final IResumeService resumeService;
     private final IApplicationService applicationService;
     private final IStudentSkillService studentSkillService;
+    private final IFollowerService followerService;
     @PostMapping("/upload/resumes")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> uploadResume(@AuthenticationPrincipal Jwt jwt, @ModelAttribute ResumeDTO resumeDTO) {
@@ -92,4 +94,28 @@ public class StudentController {
                 .build());
     }
     //@PostMapping("/send-email/job-recommendations")
+
+    @PostMapping("/follow")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> followEmployer(@RequestParam Integer employerId, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        followerService.createFollower(studentId, employerId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Theo dõi nhà tuyển dụng thành công")
+                .build());
+    }
+    @DeleteMapping("/unfollow")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> unfollowEmployer(@RequestParam Integer employerId, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        followerService.unFollow(studentId, employerId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Bỏ theo dõi nhà tuyển dụng thành công")
+                .build());
+    }
+
 }

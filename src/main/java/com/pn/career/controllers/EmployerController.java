@@ -343,4 +343,16 @@ public class EmployerController {
                 .data(employerPackages.stream().map(EmployerPackageResponse::fromEmployerPackage).toList())
                 .build());
     }
+    @GetMapping("/manage-package/get-all-non-expired")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getAllEmployerPackageWithNonExpiredAndAmount(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        List<EmployerPackage> employerPackages = employerPackageService.getAllByEmployerWithNonExpiredPackageAndAmount(userId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách gói dịch vụ còn sử dụng thành công")
+                .status(HttpStatus.OK)
+                .data(employerPackages.stream().map(EmployerPackageResponse::fromEmployerPackage).toList())
+                .build());
+    }
 }

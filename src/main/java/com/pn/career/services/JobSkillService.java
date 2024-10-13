@@ -62,7 +62,4 @@ public class JobSkillService implements IJobSkillService{
             createJobSkill(job, skillIdsToAdd);
         }
     }
-    @Override
-    public void deleteJobSkill(Integer jobId, Integer skillId) {
-    }
 }

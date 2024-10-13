@@ -17,12 +17,12 @@ public class Follower {
     private FollowerId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("followerId")
-    @JoinColumn(name = "follower_id")
-    private User follower;
+    @MapsId("studentId")
+    @JoinColumn(name = "student_id")
+    private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("followingId")
-    @JoinColumn(name = "following_id")
-    private User following;
+    @MapsId("employerId")
+    @JoinColumn(name = "employer_id")
+    private Employer employer;
 }

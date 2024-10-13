@@ -82,32 +82,6 @@ public class VNPAYService {
         String paymentUrl = VNPAYConfig.vnp_PayUrl + "?" + queryUrl;
         return paymentUrl;
     }
-
-    public boolean verifyPaymentReturn(HttpServletRequest request) {
-        Map fields = new HashMap();
-        for (Enumeration params = request.getParameterNames(); params.hasMoreElements();) {
-            String fieldName = (String) params.nextElement();
-            String fieldValue = request.getParameter(fieldName);
-            if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                fields.put(fieldName, fieldValue);
-            }
-        }
-
-        String vnp_SecureHash = request.getParameter("vnp_SecureHash");
-        if (fields.containsKey("vnp_SecureHashType")) {
-            fields.remove("vnp_SecureHashType");
-        }
-        if (fields.containsKey("vnp_SecureHash")) {
-            fields.remove("vnp_SecureHash");
-        }
-        String signValue = VNPAYConfig.hashAllFields(fields);
-        if (signValue.equals(vnp_SecureHash)) {
-            if ("00".equals(request.getParameter("vnp_ResponseCode"))) {
-                return true;
-            }
-        }
-        return false;
-    }
     public int orderReturn(HttpServletRequest request){
         Map fields = new HashMap();
         for (Enumeration params = request.getParameterNames(); params.hasMoreElements();) {

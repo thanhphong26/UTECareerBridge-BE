@@ -40,7 +40,7 @@ public class PackageService implements IPackageService{
     @Override
     @Transactional
     public Package updatePackage(Integer packageId, PackageDTO packageDTO) {
-        Package packageService=packageRepository.findById(packageId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin gói dịch vụ tương ứng"));
+        Package packageService=getPackageById(packageId);
         Feature feature=featureRepository.findById(packageDTO.getFeatureId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin tính năng tương ứng"));
         packageService.setPackageName(packageDTO.getPackageName());
         packageService.setPrice(packageDTO.getPrice());

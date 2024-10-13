@@ -23,6 +23,7 @@ public class JobService implements IJobService {
     private final JobLevelRepository jobLevelRepository;
     private final JobSkillService jobSkillService;
     private final JobSkillRepository jobSkillRepository;
+    private final IEmployerPackageService employerPackageService;
     private final Logger logger= LoggerFactory.getLogger(JobService.class);
 
     @Override
@@ -37,6 +38,9 @@ public class JobService implements IJobService {
         }
         JobCategory jobCategory=jobCategoryRepository.findById(jobDTO.getJobCategoryId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin danh mục công việc"));
         JobLevel jobLevel=jobLevelRepository.findById(jobDTO.getJobLevelId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin cấp độ công việc"));
+        EmployerPackage employerPackage = employerPackageService.validateExpiredPackage(employerId, jobDTO.getPackageId());
+        employerPackageService.updateEmployerPackage(employerId, jobDTO.getPackageId());
+
         Job job=Job.builder()
                 .jobCategory(jobCategory)
                 .jobLevel(jobLevel)
@@ -50,6 +54,7 @@ public class JobService implements IJobService {
                 .jobDeadline(jobDTO.getJobDeadline())
                 .employer(employer)
                 .status(JobStatus.PENDING)
+                .packageId(jobDTO.getPackageId())
                 .build();
         jobRepository.save(job);
         jobSkillService.createJobSkill(job, jobDTO.getSkillIds());

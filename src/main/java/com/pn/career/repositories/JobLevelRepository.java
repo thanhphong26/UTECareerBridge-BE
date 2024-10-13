@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface JobLevelRepository extends JpaRepository<JobLevel, Integer>{
     List<JobLevel> findAllByIsActiveTrue();
+    boolean existsByNameLevel(String nameLevel);
 }

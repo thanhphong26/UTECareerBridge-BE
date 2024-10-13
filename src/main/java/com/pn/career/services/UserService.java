@@ -16,7 +16,6 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -26,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -105,10 +103,6 @@ public class UserService implements IUserService {
             throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.AUTHENTICATION_FAILED)) {};
         }
     }
-    private User findUserByEmailOrPhone(LoginDTO loginDTO) {
-        return userRepository.findUserByEmailOrPhoneNumber(loginDTO.getEmail(), loginDTO.getPhoneNumber())
-                .orElseThrow(() -> new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD)));
-    }
     private void validateUserForLogin(User user, String... allowedRoles) throws Exception {
         if (!user.isActive()) {
             throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
@@ -138,7 +132,6 @@ public class UserService implements IUserService {
         String resetToken=generateToken();
         tokenRepository.revokeAllUserTokens(user.getUserId(),Token.RESET_PASSWORD);
         LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(passwordResetExpirations);
-        Instant now = Instant.now();
         Token token=Token.builder()
                 .user(user)
                 .token(resetToken)

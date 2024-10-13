@@ -35,10 +35,21 @@ public class CloudinaryService {
         Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), params);
         return uploadResult.get("url").toString();
     }
+    public String uploadImageEventToCloudinary(MultipartFile file, String publicId) throws IOException {
+        Map<String, Object> params = ObjectUtils.asMap(
+                "public_id", publicId,
+                "folder", "admin/event"
+        );
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), params);
+        return uploadResult.get("url").toString();
+    }
     //validate file pdf or image
     public boolean isFileValid(MultipartFile file) {
         String contentType = file.getContentType();
         return contentType.equals("application/pdf") || contentType.equals("image/jpeg") || contentType.equals("image/png");
     }
-
+    public boolean isValidImage(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType.equals("image/jpeg") || contentType.equals("image/png");
+    }
 }

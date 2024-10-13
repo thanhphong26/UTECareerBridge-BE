@@ -58,4 +58,6 @@ public class Job extends BaseEntity{
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference // hoặc @JsonIgnore nếu không cần
     private List<JobSkill> jobSkills=new ArrayList<>();
+    @Column(name = "package_id")
+    private int packageId;
 }

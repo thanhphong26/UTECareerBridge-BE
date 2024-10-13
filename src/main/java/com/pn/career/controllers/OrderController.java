@@ -74,8 +74,7 @@ public class OrderController {
     }
     @PostMapping("/create-order")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> createOrder(@AuthenticationPrincipal Jwt jwt, @RequestParam(required = false) String couponCode,
-                                                      @RequestParam(required = false) String accountNumber){
+    public ResponseEntity<ResponseObject> createOrder(@AuthenticationPrincipal Jwt jwt, @RequestParam(required = false) String couponCode){
         Long userIdLong = jwt.getClaim("userId");
         Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
         Order order = orderService.saveOrder(employerId, couponCode);

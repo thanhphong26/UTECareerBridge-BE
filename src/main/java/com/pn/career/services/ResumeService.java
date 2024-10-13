@@ -36,6 +36,7 @@ public class ResumeService implements IResumeService{
                     throw new InvalidMultipartFile("Vui lòng upload đúng định dạng được cho phép: file pdf hoặc ảnh.");
                 }
                 Random random = new Random();
+                int randomInt = random.nextInt(1000);
                 String publicId = student.getUserId() + "_" + resumeDTO.getResumeFile().getOriginalFilename() + random.nextInt(1000);
                 String resumeUrl = cloudinaryService.uploadCvToCloudinary(resumeDTO.getResumeFile(), publicId);
                 Resume resume = Resume.builder()

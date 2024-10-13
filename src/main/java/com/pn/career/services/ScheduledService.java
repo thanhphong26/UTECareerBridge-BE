@@ -6,6 +6,8 @@ import com.pn.career.repositories.StudentRepository;
 import com.pn.career.responses.JobResponse;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ public class ScheduledService {
     private final StudentRepository studentRepository;
     private final StudentSkillService studentSkillService;
     private final EmailService emailService;
+    private final Logger logger= LoggerFactory.getLogger(ScheduledService.class);
     @Scheduled(cron = "0 52 10 * * *")
     @Transactional
     public void sendSuitableJobEmail() {
@@ -27,7 +30,7 @@ public class ScheduledService {
                 emailService.sendSuitableJobEmail(student.getEmail(), student, jobResponses);
             } catch (MessagingException e) {
                 // Handle email sending errors here (e.g., logging)
-                System.err.println("Error sending job recommendations to: " + student.getEmail() + ". Error: " + e.getMessage());
+                logger.info("Error sending email to student with email: " + student.getEmail());
             }
         }
     }

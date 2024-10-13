@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class EmployerPackageService implements IEmployerPackageService{
@@ -31,7 +30,6 @@ public class EmployerPackageService implements IEmployerPackageService{
             employerPackageRepository.save(employerPackage);
         }
     }
-
     @Override
     public void updateEmployerPackage(Integer employerId, Integer packageId) {
         EmployerPackageId employerPackageId = new EmployerPackageId(employerId, packageId);
@@ -57,6 +55,12 @@ public class EmployerPackageService implements IEmployerPackageService{
         }
         return employerPackage;
     }
+
+    @Override
+    public List<EmployerPackage> getAllByEmployerWithNonExpiredPackageAndAmount(Integer employerId) {
+        return employerPackageRepository.findAllByEmployer_UserIdAndExpiredAtAfterAndAmountGreaterThan(employerId, LocalDateTime.now(), 0);
+    }
+
 
     private LocalDateTime calculateExpirationDate(Package jobPackage) {
         // Giả sử rằng mỗi gói có một trường duration (số ngày có hiệu lực)

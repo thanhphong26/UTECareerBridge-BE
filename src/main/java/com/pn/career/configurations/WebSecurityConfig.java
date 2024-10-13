@@ -63,6 +63,8 @@ public class WebSecurityConfig {
                             .requestMatchers(GET,
                                     String.format("%s/jobs/**", apiPrefix)).permitAll()
                             .requestMatchers(GET,
+                                    String.format("%s/admin/events/**", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
                                     String.format("%s/job-levels/**", apiPrefix)).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/benefits/**", apiPrefix)).permitAll()

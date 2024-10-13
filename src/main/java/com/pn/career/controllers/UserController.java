@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 @RestController
 @AllArgsConstructor
@@ -75,30 +76,42 @@ public class UserController {
             @Valid @RequestBody LoginDTO studentLoginDTO,
             HttpServletRequest request, HttpServletResponse response
     ) throws Exception {
-        TokenDTO token=userService.userLogin(studentLoginDTO,"student","admin");
-        String userAgent = request.getHeader("User-Agent");
-        User userDetail = userService.getUserDetailsFromToken(token.getAccessToken());
-        Token jwtToken = tokenService.addToken(userDetail, token); /* Sử dụng refresh token*/
-        Cookie refreshToken=new Cookie("refreshToken",token.getRefreshToken());
-        refreshToken.setHttpOnly(true);
-        refreshToken.setMaxAge(7*24*60*60);
-        refreshToken.setPath("/");
-        response.addCookie(refreshToken);
+        try{
+            TokenDTO token=userService.userLogin(studentLoginDTO,"student","admin");
+            String userAgent = request.getHeader("User-Agent");
+            User userDetail = userService.getUserDetailsFromToken(token.getAccessToken());
+            Token jwtToken = tokenService.addToken(userDetail, token); /* Sử dụng refresh token*/
+            Cookie refreshToken=new Cookie("refreshToken",token.getRefreshToken());
+            refreshToken.setHttpOnly(true);
+            refreshToken.setMaxAge(7*24*60*60);
+            refreshToken.setPath("/");
+            response.addCookie(refreshToken);
 
-        LoginResponse loginResponse = LoginResponse.builder()
-                .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
-                .token(token.getAccessToken())
-                .tokenType("Bearer")
-                .refreshToken(token.getRefreshToken())
-                .username((userDetail.getEmail()!=null)?userDetail.getEmail():userDetail.getPhoneNumber())
-                .id(userDetail.getUserId())
-                .roles(userDetail.getRole())
-                .build();
-        return ResponseEntity.ok().body(ResponseObject.builder()
-                .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
-                .data(loginResponse)
-                .status(HttpStatus.OK)
-                .build());
+            LoginResponse loginResponse = LoginResponse.builder()
+                    .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+                    .token(token.getAccessToken())
+                    .tokenType("Bearer")
+                    .refreshToken(token.getRefreshToken())
+                    .username((userDetail.getEmail()!=null)?userDetail.getEmail():userDetail.getPhoneNumber())
+                    .id(userDetail.getUserId())
+                    .roles(userDetail.getRole())
+                    .build();
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+                    .data(loginResponse)
+                    .status(HttpStatus.OK)
+                    .build());
+        }catch(BadCredentialsException e){
+            return ResponseEntity.badRequest().body(ResponseObject.builder()
+                    .message(e.getMessage())
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build());
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body(ResponseObject.builder()
+                    .message(e.getMessage())
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build());
+        }
     }
     @PutMapping("/block/{userId}/{active}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")

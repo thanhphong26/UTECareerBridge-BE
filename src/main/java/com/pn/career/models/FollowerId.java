@@ -2,6 +2,7 @@ package com.pn.career.models;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +12,8 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class FollowerId implements Serializable {
-    private int followerId;
-    private int followingId;
+    private int studentId;
+    private int employerId;
 }

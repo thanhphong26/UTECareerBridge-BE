@@ -137,10 +137,6 @@ public class OrderService implements IOrderService {
         }
         order.setPaymentStatus(PaymentStatus.CANCELLED);
         order.setActive(false);
-        // Remove related EmployerPackage entries
-       /* for (OrderDetail detail : order.getOrderDetails()) {
-            employerPackageRepository.deleteByEmployerAndJobPackage(order.getEmployer(), detail.getJobPackage());
-        }*/
         return orderRepository.save(order);
     }
 
