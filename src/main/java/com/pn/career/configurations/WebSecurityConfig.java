@@ -28,7 +28,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
 
 @Configuration
 @EnableMethodSecurity   // Enable method level security
@@ -52,6 +51,7 @@ public class WebSecurityConfig {
                                     String.format("%s/employers/login", apiPrefix),
                                     String.format("%s/auth/**", apiPrefix)
                             ).permitAll()
+                            .requestMatchers("/ws/**").permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/industries/**", apiPrefix)).permitAll()
                             .requestMatchers(GET,

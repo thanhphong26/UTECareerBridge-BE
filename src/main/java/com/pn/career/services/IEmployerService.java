@@ -6,9 +6,13 @@ import com.pn.career.dtos.UpdateProfileDTO;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.Employer;
 import com.pn.career.responses.EmployerResponse;
+import com.pn.career.responses.JobResponse;
+import com.pn.career.responses.StudentResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface IEmployerService{
     Employer updateEmployer(Integer employerId, EmployerUpdateDTO employerUpdateDTO);
@@ -20,4 +24,5 @@ public interface IEmployerService{
     Employer addBusinessCertificate(Integer employerId, MultipartFile businessCertificate);
     void approveEmployer(Integer employerId);
     void rejectEmployer(Integer employerId, String reason);
+    List<StudentResponse> getStudentsByApplication(Integer employerId);
 }

@@ -1,7 +1,6 @@
 package com.pn.career.controllers;
 
 import com.pn.career.dtos.JobDTO;
-import com.pn.career.models.Job;
 import com.pn.career.models.JobStatus;
 import com.pn.career.responses.JobListResponse;
 import com.pn.career.responses.JobResponse;
@@ -128,6 +127,23 @@ public class JobController {
                         .build())
                 .build());
     }
+    @GetMapping("/similar-jobs/{jobId}")
+    public ResponseEntity<ResponseObject> getSimilarJobs(@PathVariable Integer jobId){
+        List<JobResponse> jobResponses=jobService.getSimilarJobs(jobId);
+        if(jobResponses.isEmpty()){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Không có công việc nào")
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy danh sách công việc tương tự thành công")
+                .data(JobListResponse.builder()
+                        .jobResponses(jobResponses)
+                        .build())
+                .build());
+    }
     @PutMapping("/employer/job-posting/hide/{jobId}")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> hideJob(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer jobId, @RequestParam JobStatus jobStatus){
@@ -200,12 +216,13 @@ public class JobController {
     @GetMapping("/search")
     public ResponseEntity<ResponseObject> searchJobs(@RequestParam(defaultValue = "0") @Min(0) Integer page,
                                                      @RequestParam(defaultValue = "10") @Min(1) @Max(100) Integer limit, @RequestParam String keyword,
-                                                     @RequestParam(defaultValue = "0") Integer categoryId, @RequestParam(defaultValue = "0") Integer industryId,
-                                                     @RequestParam(defaultValue = "0") Integer jobLevelId, @RequestParam(defaultValue = "0") Integer skillId){
+                                                     @RequestParam(required = false,defaultValue = "0") Integer categoryId, @RequestParam(required = false, defaultValue = "0") Integer industryId,
+                                                     @RequestParam(required = false, defaultValue = "0") Integer jobLevelId, @RequestParam(required = false, defaultValue = "0") Integer skillId,
+                                                     @RequestParam(required = false, defaultValue = "createdAt") String sorting){
         int totalPages=0;
         PageRequest pageRequest=PageRequest.of(page,limit);
         logger.info("Pagerequest: "+pageRequest);
-        Page<JobResponse> jobs=jobService.searchJob(keyword,categoryId,industryId,jobLevelId,skillId,pageRequest);
+        Page<JobResponse> jobs=jobService.searchJob(keyword,categoryId,industryId,jobLevelId,skillId, sorting, pageRequest);
         logger.info("Jobs: "+jobs.getTotalPages());
         if(jobs.isEmpty()){
             return ResponseEntity.ok().body(ResponseObject.builder()

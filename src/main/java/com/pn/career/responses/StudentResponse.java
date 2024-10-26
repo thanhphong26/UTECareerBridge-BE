@@ -2,6 +2,7 @@ package com.pn.career.responses;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pn.career.models.Role;
+import com.pn.career.models.Student;
 import com.pn.career.models.User;
 import jakarta.persistence.Column;
 import lombok.*;
@@ -34,6 +35,7 @@ public class StudentResponse {
     private int wardId;
     @JsonProperty("address")
     private String address;
+    private String imgProfile;
     @JsonProperty("role")
     private Role role;
     public static StudentResponse fromUser(User user) {
@@ -50,5 +52,15 @@ public class StudentResponse {
                 .address(user.getAddress())
                 .role(user.getRole())
                 .build();
+    }
+    public static StudentResponse fromStudent(Student student) {
+        return StudentResponse.builder()
+                .id(student.getUserId())
+                .phoneNumber(student.getPhoneNumber())
+                .firstName(student.getFirstName())
+                .imgProfile(student.getProfileImage())
+                .lastName(student.getLastName())
+                .build();
+
     }
 }

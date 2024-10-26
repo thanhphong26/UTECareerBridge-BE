@@ -355,4 +355,16 @@ public class EmployerController {
                 .data(employerPackages.stream().map(EmployerPackageResponse::fromEmployerPackage).toList())
                 .build());
     }
+    @GetMapping("/get-students-by-application")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getStudentsByApplication(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        List<StudentResponse> studentResponses = employerService.getStudentsByApplication(userId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách sinh viên đã ứng tuyển thành công")
+                .status(HttpStatus.OK)
+                .data(studentResponses)
+                .build());
+    }
 }

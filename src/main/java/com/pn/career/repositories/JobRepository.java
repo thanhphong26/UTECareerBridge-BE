@@ -1,15 +1,19 @@
 package com.pn.career.repositories;
 
+import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.*;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
+import com.pn.career.models.Package;
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.Order;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.domain.Specification;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,7 +26,7 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
     List<Job> findAllByJobCategory(JobCategory jobCategory);
     @EntityGraph(attributePaths = {"jobCategory", "employer", "employer.industry", "jobLevel", "jobSkills", "jobSkills.skill"})
     default Page<Job> search(String keyword, Integer categoryId, Integer industryId,
-                                     Integer jobLevelId, Integer skillId, Pageable pageable) {
+                                     Integer jobLevelId, Integer skillId, String sorting, Pageable pageable) {
         return findAll((Specification<Job>) (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             // Join các bảng liên quan
@@ -32,6 +36,19 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
             Join<Job, JobLevel> jobLevelJoin = root.join("jobLevel", JoinType.LEFT);
             Join<Job, JobSkill> jobSkillJoin = root.join("jobSkills", JoinType.LEFT);
             Join<JobSkill, Skill> skillJoin = jobSkillJoin.join("skill", JoinType.LEFT);
+
+            Subquery<Object> featurePrioritySubquery = query.subquery(Object.class);
+            Root<Package> packageRoot = featurePrioritySubquery.from(Package.class);
+            Join<Package, Feature> featureJoin = packageRoot.join("feature", JoinType.INNER);
+
+            featurePrioritySubquery.select(cb.coalesce(
+                    cb.selectCase()
+                            .when(cb.equal(featureJoin.get("featureId"), 1), 3)
+                            .when(cb.equal(featureJoin.get("featureId"), 2), 2)
+                            .when(cb.equal(featureJoin.get("featureId"), 3), 1)
+                            .otherwise(0),
+                    0
+            )).where(cb.equal(packageRoot.get("packageId"), root.get("packageId")));
             // Tìm kiếm theo keyword
             if (keyword != null && !keyword.isEmpty()) {
                 String[] keywords = keyword.toLowerCase().split("\\s+");
@@ -62,7 +79,34 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
                     cb.equal(root.get("status"), JobStatus.ACTIVE)
             ));
             query.distinct(true);
-            return cb.and( predicates.toArray(new Predicate[0]));
+            List<Order> orders = new ArrayList<>();
+            orders.add(cb.desc(featurePrioritySubquery));
+            orders.add(cb.desc(cb.selectCase()
+                    .when(cb.isNotNull(root.get("packageId")), 1)
+                    .otherwise(0)));
+
+            //Sorting
+            if (sorting != null && !sorting.isEmpty()) {
+                switch (sorting.toLowerCase()) {
+                    case "newest":
+                        orders.add(cb.desc(root.get("createdAt")));
+                        break;
+                    case "oldest":
+                        orders.add(cb.asc(root.get("createdAt")));
+                        break;
+                    case "salary_desc":
+                        orders.add(cb.desc(root.get("jobMaxSalary")));
+                        break;
+                    case "salary_asc":
+                        orders.add(cb.asc(root.get("jobMinSalary")));
+                        break;
+                    default:
+                        orders.add(cb.desc(root.get("createdAt")));
+                        break;
+                }
+            }
+            query.orderBy(orders);
+            return cb.and(predicates.toArray(new Predicate[0]));
         }, pageable);
     }
     //Get Jobs by jobSkills.skillId
@@ -87,6 +131,80 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
 
             query.distinct(true);
             return cb.and(isActive, skillIn);
+        });
+    }
+    default List<Job> getSimilarJobs(Integer jobId) {
+        Job referenceJob = findById(jobId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy công việc"));
+
+        return findAll((Specification<Job>) (root, query, cb) -> {
+            // Create joins
+            Join<Job, JobCategory> categoryJoin = root.join("jobCategory", JoinType.INNER);
+            Join<Job, JobLevel> levelJoin = root.join("jobLevel", JoinType.INNER);
+            Join<Job, JobSkill> skillJoin = root.join("jobSkills", JoinType.LEFT);
+            // Subquery for skills
+            Subquery<Integer> skillSubquery = query.subquery(Integer.class);
+            Root<Job> subRoot = skillSubquery.from(Job.class);
+            Join<Job, JobSkill> subSkillJoin = subRoot.join("jobSkills");
+            skillSubquery.select(subSkillJoin.get("skill").get("id"))
+                    .where(cb.equal(subRoot.get("jobId"), jobId));
+            // Count matching skills subquery
+            Subquery<Long> skillCountSubquery = query.subquery(Long.class);
+            Root<Job> skillCountRoot = skillCountSubquery.from(Job.class);
+            Join<Job, JobSkill> countSkillJoin = skillCountRoot.join("jobSkills");
+            skillCountSubquery.select(cb.count(countSkillJoin))
+                    .where(
+                            cb.and(
+                                    cb.equal(skillCountRoot.get("jobId"), root.get("jobId")),
+                                    countSkillJoin.get("skill").get("id").in(skillSubquery)
+                            )
+                    );
+
+            // Main predicates
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.notEqual(root.get("jobId"), jobId)); // Not the same job
+            predicates.add(cb.equal(root.get("status"), JobStatus.ACTIVE)); // Must be active
+            // Must be same category
+            predicates.add(cb.equal(
+                    categoryJoin.get("id"),
+                    referenceJob.getJobCategory().getJobCategoryId()
+            ));
+            if (referenceJob.getJobTitle() != null) {
+                String cleanTitle = referenceJob.getJobTitle()
+                        .toLowerCase()
+                        .replaceAll("[\\(\\)\\[\\]\\{\\}]", " ")
+                        .replaceAll("[^a-z0-9\\s]", " ")
+                        .trim();
+
+                String[] keywords = cleanTitle.split("\\s+");
+
+                List<Predicate> titlePredicates = new ArrayList<>();
+                for (String keyword : keywords) {
+                    if (keyword.length() > 3) { // Bỏ qua các từ ngắn dưới 3 ký tự
+                        titlePredicates.add(
+                                cb.like(
+                                        cb.lower(root.get("jobTitle")),
+                                        "%" + keyword + "%"  // Tìm kiếm mọi title chứa keyword
+                                )
+                        );
+                    }
+                }
+                // Thêm điều kiện OR - chỉ cần match một trong các keywords
+                if (!titlePredicates.isEmpty()) {
+                    predicates.add(cb.or(titlePredicates.toArray(new Predicate[0])));
+                }
+            }
+
+            query.distinct(true);
+            query.orderBy(
+                    cb.desc(skillCountSubquery),
+                    cb.desc(cb.selectCase()
+                            .when(cb.equal(levelJoin.get("id"),
+                                    referenceJob.getJobLevel().getJobLevelId()), 1)
+                            .otherwise(0)),
+                    cb.desc(root.get("createdAt"))
+            );
+            return cb.and(predicates.toArray(new Predicate[0]));
         });
     }
 }

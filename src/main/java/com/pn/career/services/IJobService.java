@@ -21,7 +21,8 @@ public interface IJobService {
     JobResponse approveJob(Integer jobId);
     JobResponse rejectJob(Integer jobId, String reasonReject);
     JobResponse hideOrEnableJob(Integer employerId, Integer jobId, JobStatus jobStatus);
-    Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, PageRequest pageRequest);
+    Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, String sorting, PageRequest pageRequest);
     Page<JobResponse> getJobByStatus(Integer employerId, JobStatus jobStatus, PageRequest pageRequest);
     void deleteJob(Integer employerId, Integer jobId);
+    List<JobResponse> getSimilarJobs(Integer jobId);
 }

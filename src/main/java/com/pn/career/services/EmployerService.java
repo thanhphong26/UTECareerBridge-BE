@@ -9,8 +9,10 @@ import com.pn.career.models.EmployerStatus;
 import com.pn.career.models.Token;
 import com.pn.career.repositories.EmployerRepository;
 import com.pn.career.repositories.IndustryRepository;
+import com.pn.career.repositories.StudentRepository;
 import com.pn.career.repositories.TokenRepository;
 import com.pn.career.responses.EmployerResponse;
+import com.pn.career.responses.StudentResponse;
 import com.pn.career.utils.MessageKeys;
 import com.pn.career.utils.SlugConverter;
 import jakarta.transaction.Transactional;
@@ -34,6 +36,7 @@ public class EmployerService implements IEmployerService {
     private final IndustryRepository industryRepository;
     private final IBenefitDetailService benefitDetailService;
     private final AsyncCloudinaryService asyncCloudinaryService;
+    private final StudentRepository studentRepository;
     private final CloudinaryService cloudinaryService;
     private final LocalizationUtils localizationUtils;
     private final Logger logger= LoggerFactory.getLogger(EmployerService.class);
@@ -186,5 +189,11 @@ public class EmployerService implements IEmployerService {
         employer.setReasonBlocked(reason);
         tokenRepository.deleteByUser(employer);
         employerRepository.save(employer);
+    }
+
+    @Override
+    public List<StudentResponse> getStudentsByApplication(Integer employerId) {
+        Employer employer=getEmployerById(employerId);
+        return studentRepository.findAllStudentsByApplication(employerId);
     }
 }

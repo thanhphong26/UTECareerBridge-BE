@@ -1,12 +1,15 @@
 package com.pn.career.repositories;
 
 import com.pn.career.models.Employer;
+import com.pn.career.responses.StudentResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.w3c.dom.stylesheets.LinkStyle;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EmployerRepository extends JpaRepository<Employer, Integer> {

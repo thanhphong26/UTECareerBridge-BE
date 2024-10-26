@@ -1,6 +1,7 @@
 package com.pn.career.services;
 import com.pn.career.dtos.JobDTO;
 import com.pn.career.exceptions.DataNotFoundException;
+import com.pn.career.exceptions.PermissionDenyException;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
 import com.pn.career.responses.JobResponse;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -66,6 +68,9 @@ public class JobService implements IJobService {
     @Override
     public Optional<JobResponse> getJobById(Integer jobId) {
         Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy công việc"));
+        if(job.getStatus()!=JobStatus.ACTIVE){
+            throw new DataNotFoundException("Công việc đã bị ẩn bởi nhà tuyển dụng hoặc vi phạm quy định của hệ thống");
+        }
         List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
         JobResponse jobResponse=JobResponse.fromJob(job);
         jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
@@ -157,9 +162,12 @@ public class JobService implements IJobService {
         jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
         return jobResponse;
     }
+
+
+
     @Override
-    public Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, PageRequest pageRequest) {
-        Page<Job> jobs=jobRepository.search(keyword, jobCategoryId, industryId, jobLevelId, skillId, pageRequest);
+    public Page<JobResponse> searchJob(String keyword, Integer jobCategoryId, Integer industryId, Integer jobLevelId, Integer skillId, String sorting, PageRequest pageRequest) {
+        Page<Job> jobs=jobRepository.search(keyword, jobCategoryId, industryId, jobLevelId, skillId, sorting, pageRequest);
         logger.info("Total elements: " + jobs.getTotalElements());
         logger.info("Total pages: " + jobs.getTotalPages());
         return jobs.map(job -> {
@@ -185,8 +193,23 @@ public class JobService implements IJobService {
     public void deleteJob(Integer employerId, Integer jobId) {
         Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công việc"));
         if (!Integer.valueOf(job.getEmployer().getUserId()).equals(employerId)) {
-            throw new RuntimeException("Bạn không có quyền xóa công việc này");
+            throw new PermissionDenyException("Bạn không có quyền xóa công việc này");
         }
         jobRepository.delete(job);
+    }
+
+    @Override
+    public List<JobResponse> getSimilarJobs(Integer jobId) {
+        Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin công việc"));
+        if(job.getStatus()!=JobStatus.ACTIVE){
+            throw new DataNotFoundException("Công việc đã bị ẩn bởi nhà tuyển dụng hoặc vi phạm quy định của hệ thống");
+        }
+        List<Job> jobs=jobRepository.getSimilarJobs(jobId);
+        return jobs.stream().map(j -> {
+            JobResponse jobResponse = JobResponse.fromJob(j);
+            List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(j);
+            jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+            return jobResponse;
+        }).collect(Collectors.toList());
     }
 }

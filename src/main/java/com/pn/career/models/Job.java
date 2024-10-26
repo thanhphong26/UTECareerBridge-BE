@@ -59,5 +59,5 @@ public class Job extends BaseEntity{
     @JsonManagedReference // hoặc @JsonIgnore nếu không cần
     private List<JobSkill> jobSkills=new ArrayList<>();
     @Column(name = "package_id")
-    private int packageId;
+    private Integer packageId;
 }
