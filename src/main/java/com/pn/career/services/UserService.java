@@ -6,12 +6,15 @@ import com.pn.career.dtos.*;
 import com.pn.career.exceptions.*;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
+import com.pn.career.responses.UserResponse;
 import com.pn.career.utils.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -171,6 +174,13 @@ public class UserService implements IUserService {
         user.setActive(active);
         userRepository.save(user);
     }
+
+    @Override
+    public Page<UserResponse> getAllUsers(String keyword, String roleName, String sorting, PageRequest pageRequest) {
+        Page<User> users=userRepository.getAllUsersByRole(keyword,roleName, sorting, pageRequest);
+        return users.map(UserResponse::fromUser);
+    }
+
     private String generateToken(){
         return UUID.randomUUID().toString();
     }

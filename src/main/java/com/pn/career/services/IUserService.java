@@ -4,6 +4,9 @@ import com.pn.career.dtos.LoginDTO;
 import com.pn.career.dtos.RegistrationDTO;
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.models.User;
+import com.pn.career.responses.UserResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 public interface IUserService {
     User registerUser(RegistrationDTO registrationDTO, String roleName) throws Exception;
@@ -12,4 +15,5 @@ public interface IUserService {
     void initiatePasswordReset(String email) throws Exception;
     void resetPassword(String resetToken, String newPassword) throws Exception;
     void blockOrEnable(Integer userId, boolean active) throws Exception;
+    Page<UserResponse> getAllUsers(String keyword, String roleName, String sorting, PageRequest pageRequest);
 }

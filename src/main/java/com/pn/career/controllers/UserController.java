@@ -6,9 +6,7 @@ import com.pn.career.dtos.StudentRegisterDTO;
 import com.pn.career.dtos.TokenDTO;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
-import com.pn.career.responses.LoginResponse;
-import com.pn.career.responses.ResponseObject;
-import com.pn.career.responses.StudentResponse;
+import com.pn.career.responses.*;
 import com.pn.career.services.ITokenService;
 import com.pn.career.services.IUserService;
 import com.pn.career.services.UserService;
@@ -21,6 +19,8 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -128,6 +128,36 @@ public class UserController {
                         .build()
         );
     }
-
+    @GetMapping("/get-all-users")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getAllUsers(
+            @RequestParam(name = "keyword", required = false, defaultValue = "") String keyword,
+            @RequestParam(name = "role", defaultValue = "") String role,
+            @RequestParam(name="sorting", required = false, defaultValue = "createdAt") String sorting,
+            @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") Integer size
+    ) {
+        try{
+            PageRequest pageRequest = PageRequest.of(page, size);
+            Page<UserResponse> users = userService.getAllUsers(keyword, role, sorting, pageRequest);
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .message("Lấy danh sách người dùng thành công")
+                            .data(UserListResponse.builder()
+                                    .userResponses(users.getContent())
+                                    .totalPages(users.getTotalPages())
+                                    .build())
+                            .status(HttpStatus.OK)
+                            .build()
+            );
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .build()
+            );
+        }
+    }
 
 }
