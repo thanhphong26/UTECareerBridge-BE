@@ -7,8 +7,10 @@ import com.pn.career.repositories.*;
 import com.pn.career.responses.JobResponse;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JobService implements IJobService {
     private final JobRepository jobRepository;
     private final EmployerRepository employerRepository;
@@ -26,7 +28,10 @@ public class JobService implements IJobService {
     private final JobSkillService jobSkillService;
     private final JobSkillRepository jobSkillRepository;
     private final IEmployerPackageService employerPackageService;
+    private final FCMService fcmService;
     private final Logger logger= LoggerFactory.getLogger(JobService.class);
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     @Override
     @Transactional
@@ -40,8 +45,10 @@ public class JobService implements IJobService {
         }
         JobCategory jobCategory=jobCategoryRepository.findById(jobDTO.getJobCategoryId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin danh mục công việc"));
         JobLevel jobLevel=jobLevelRepository.findById(jobDTO.getJobLevelId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy thông tin cấp độ công việc"));
-        EmployerPackage employerPackage = employerPackageService.validateExpiredPackage(employerId, jobDTO.getPackageId());
-        employerPackageService.updateEmployerPackage(employerId, jobDTO.getPackageId());
+        if(jobDTO.getPackageId()!=null){
+            EmployerPackage employerPackage = employerPackageService.validateExpiredPackage(employerId, jobDTO.getPackageId());
+            employerPackageService.updateEmployerPackage(employerId, jobDTO.getPackageId());
+        }
 
         Job job=Job.builder()
                 .jobCategory(jobCategory)
@@ -63,6 +70,8 @@ public class JobService implements IJobService {
         JobResponse jobResponse=JobResponse.fromJob(job);
         List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
         jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+        String jobUrl=frontendUrl+"/employer/view/"+job.getJobId();
+        fcmService.sendNotificationToAdmin("Có công việc mới cần duyệt", "Công ty "+employer.getCompanyName()+" vừa đăng một công việc mới, vui lòng kiểm tra và duyệt công việc", jobUrl);
         return jobResponse;
     }
     @Override

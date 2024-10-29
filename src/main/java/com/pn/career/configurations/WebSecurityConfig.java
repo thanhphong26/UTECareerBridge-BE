@@ -74,6 +74,8 @@ public class WebSecurityConfig {
                                     String.format("%s/job-categories/**", apiPrefix)).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/employers/get-all-employers", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
+                                    String.format("%s/employers/get-company", apiPrefix)).permitAll()
                             .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)

@@ -16,6 +16,7 @@ target/
 ### IntelliJ IDEA ###
 .env
 /access-refresh-token-keys/
+/src/main/resources/firebase-adminsdk.json
 .idea
 *.iws
 *.iml

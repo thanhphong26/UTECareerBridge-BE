@@ -55,4 +55,6 @@ logging:
     root: INFO
     org.springframework.security: DEBUG
     com.pn.career: DEBUG
+firebase:
+  configuration: firebase-adminsdk.json
 

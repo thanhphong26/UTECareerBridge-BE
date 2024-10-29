@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
+    User findUserByRole_RoleName(String roleName);
     Optional<User> findUserByEmail(String email);
     Optional<User> findUserByPhoneNumber(String phoneNumber);
     Optional<User> findUserByEmailOrPhoneNumber(String email, String phoneNumber);

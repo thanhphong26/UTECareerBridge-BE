@@ -181,6 +181,14 @@ public class UserService implements IUserService {
         return users.map(UserResponse::fromUser);
     }
 
+    @Override
+    public UserResponse getUserBydId(Integer userId) {
+        User user=userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
+        return UserResponse.fromUser(user);
+
+    }
+
     private String generateToken(){
         return UUID.randomUUID().toString();
     }

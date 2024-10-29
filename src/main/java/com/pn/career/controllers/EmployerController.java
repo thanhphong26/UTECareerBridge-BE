@@ -367,4 +367,20 @@ public class EmployerController {
                 .data(studentResponses)
                 .build());
     }
+    @GetMapping("/get-company")
+    public ResponseEntity<ResponseObject> getCompanyById(@RequestParam Integer id){
+        try {
+            Employer employer = employerService.getEmployerById(id);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Lấy thông tin công ty thành công")
+                    .status(HttpStatus.OK)
+                    .data(EmployerResponse.fromUser(employer))
+                    .build());
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .message("Không tìm thấy công ty tương ứng")
+                    .status(HttpStatus.NOT_FOUND)
+                    .build());
+        }
+    }
 }

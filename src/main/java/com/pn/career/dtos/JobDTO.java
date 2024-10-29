@@ -29,5 +29,6 @@ public class JobDTO {
     @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate jobDeadline;
     private Set<Integer> skillIds;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer packageId;
 }

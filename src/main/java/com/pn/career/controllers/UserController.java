@@ -25,6 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 @RestController
 @AllArgsConstructor
@@ -147,6 +149,38 @@ public class UserController {
                                     .userResponses(users.getContent())
                                     .totalPages(users.getTotalPages())
                                     .build())
+                            .status(HttpStatus.OK)
+                            .build()
+            );
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .build()
+            );
+        }
+    }
+    @GetMapping("/get-user/{userId}")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER') || hasAuthority('ROLE_STUDENT') || hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getUserById(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer userId){
+        try{
+            Long userIdLong = jwt.getClaim("userId");
+            String role = jwt.getClaim("roles");
+            Integer id = userIdLong != null ? userIdLong.intValue() : null;
+            if(id == null || !id.equals(userId) && !role.equals("ADMIN")){
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .message("Bạn không có quyền truy cập thông tin người dùng này")
+                                .status(HttpStatus.BAD_REQUEST)
+                                .build()
+                );
+            }
+            UserResponse userResponse = userService.getUserBydId(userId);
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .message("Lấy thông tin người dùng thành công")
+                            .data(userResponse)
                             .status(HttpStatus.OK)
                             .build()
             );

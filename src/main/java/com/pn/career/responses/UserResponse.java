@@ -23,6 +23,7 @@ public class UserResponse {
     private LocalDate dob;
     private String address;
     private String role;
+    private boolean active;
     public static UserResponse fromUser(User user) {
         return UserResponse.builder()
                 .userId(user.getUserId())
@@ -33,6 +34,7 @@ public class UserResponse {
                 .dob(user.getDob())
                 .address(user.getAddress())
                 .role(user.getRole().getRoleName())
+                .active(user.isActive())
                 .build();
     }
 }

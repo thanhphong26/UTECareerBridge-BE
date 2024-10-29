@@ -27,7 +27,7 @@ public class Notification {
     private String content;
     private String url;
     @Column(name = "is_read")
-    private boolean isRead;
+    private boolean read;
     @Column(name = "notification_date")
     private LocalDateTime notificationDate;
 }

@@ -16,4 +16,5 @@ public interface IUserService {
     void resetPassword(String resetToken, String newPassword) throws Exception;
     void blockOrEnable(Integer userId, boolean active) throws Exception;
     Page<UserResponse> getAllUsers(String keyword, String roleName, String sorting, PageRequest pageRequest);
+    UserResponse getUserBydId(Integer userId);
 }
