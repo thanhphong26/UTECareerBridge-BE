@@ -193,5 +193,24 @@ public class UserController {
             );
         }
     }
-
+    @DeleteMapping("/delete/{userId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> deleteUser(@PathVariable Integer userId){
+        try{
+            userService.deleteUser(userId);
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .message("Xóa người dùng thành công")
+                            .status(HttpStatus.OK)
+                            .build()
+            );
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .build()
+            );
+        }
+    }
 }

@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -187,6 +188,15 @@ public class UserService implements IUserService {
                 .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
         return UserResponse.fromUser(user);
 
+    }
+
+    @Override
+    public void deleteUser(Integer userId) {
+        User user=userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
+        List<Token> tokens=tokenRepository.findByUser(user);
+        tokenRepository.deleteAll(tokens);
+        userRepository.delete(user);
     }
 
     private String generateToken(){
