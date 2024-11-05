@@ -191,6 +191,21 @@ public class UserService implements IUserService {
     }
 
     @Override
+    public UserResponse updateUser(Integer userId, UpdateUserDTO user) {
+        User userToUpdate=userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
+        userToUpdate.setFirstName(user.getFirstName());
+        userToUpdate.setLastName(user.getLastName());
+        userToUpdate.setPhoneNumber(user.getPhone());
+        userToUpdate.setEmail(user.getEmail());
+        userToUpdate.setAddress(user.getAddress());
+        userToUpdate.setDob(user.getDob());
+        userToUpdate.setActive(user.getActive());
+        userRepository.save(userToUpdate);
+        return UserResponse.fromUser(userToUpdate);
+    }
+
+    @Override
     public void deleteUser(Integer userId) {
         User user=userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));

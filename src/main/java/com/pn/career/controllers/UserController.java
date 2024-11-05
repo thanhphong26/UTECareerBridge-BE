@@ -4,6 +4,7 @@ import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.LoginDTO;
 import com.pn.career.dtos.StudentRegisterDTO;
 import com.pn.career.dtos.TokenDTO;
+import com.pn.career.dtos.UpdateUserDTO;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.responses.*;
@@ -213,4 +214,41 @@ public class UserController {
             );
         }
     }
+    @PutMapping("/update-user/{userId}")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT') || hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> updateUser(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Integer userId,
+            @RequestBody UpdateUserDTO user
+    ){
+        try{
+            Long userIdLong = jwt.getClaim("userId");
+            String role = jwt.getClaim("roles");
+            Integer id = userIdLong != null ? userIdLong.intValue() : null;
+            if(id == null || !id.equals(userId) && !role.equals("ADMIN")){
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .message("Bạn không có quyền truy cập thông tin người dùng này")
+                                .status(HttpStatus.BAD_REQUEST)
+                                .build()
+                );
+            }
+            UserResponse userResponse = userService.updateUser(userId, user);
+            return ResponseEntity.ok().body(
+                    ResponseObject.builder()
+                            .message("Cập nhật thông tin người dùng thành công")
+                            .data(userResponse)
+                            .status(HttpStatus.OK)
+                            .build()
+            );
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .build()
+            );
+        }
+    }
+
 }
