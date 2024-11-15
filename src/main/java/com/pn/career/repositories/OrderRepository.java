@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,5 +40,15 @@ public interface OrderRepository extends JpaRepository<Order, Integer>, JpaSpeci
             return cb.and(predicates.toArray(new Predicate[0]));
         }, pageable);
     }
+    @Query("SELECT MONTH(o.paymentDate) AS month, " +
+            "COUNT(od.jobPackage.packageId) AS packageCount, " +
+            "SUM(o.total) AS totalRevenue " +
+            "FROM Order o " +
+            "JOIN o.orderDetails od " +
+            "WHERE YEAR(o.paymentDate) = :year " +
+            "AND o.paymentStatus = 'PAID' " +
+            "GROUP BY MONTH(o.paymentDate) " +
+            "ORDER BY MONTH(o.paymentDate)")
+    List<Object[]> getRevenueByMonth(@Param("year") Integer year);
 }
 

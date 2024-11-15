@@ -1,5 +1,6 @@
 package com.pn.career.repositories;
 
+import com.pn.career.dtos.UserStatisticDTO;
 import com.pn.career.models.User;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
@@ -7,8 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
@@ -63,4 +66,11 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
 
         return findAll(spec, pageable);
     }
+    //get all user , user by role
+    @Query("SELECT new map(" +
+            "SUM(CASE WHEN u.role.roleName = 'employer' THEN 1 ELSE 0 END) as totalEmployers, " +
+            "SUM(CASE WHEN u.role.roleName = 'student' THEN 1 ELSE 0 END) as totalCandidates) " +
+            "FROM User u")
+    Map<String, Object> countUsersByRole();
+
 }

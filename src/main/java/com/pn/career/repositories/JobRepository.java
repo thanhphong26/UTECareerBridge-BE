@@ -12,8 +12,9 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -195,7 +196,7 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
                 }
             }
 
-            query.distinct(true);
+//            query.distinct(true);
             query.orderBy(
                     cb.desc(skillCountSubquery),
                     cb.desc(cb.selectCase()
@@ -207,4 +208,18 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
             return cb.and(predicates.toArray(new Predicate[0]));
         });
     }
+    @Query("SELECT jc.jobCategoryId, jc.jobCategoryName,COUNT(j.jobId) as jobCount " +
+            "FROM JobCategory jc " +
+            "LEFT JOIN Job j ON j.jobCategory.jobCategoryId = jc.jobCategoryId " +
+            "AND j.status = 'ACTIVE' " +
+            "AND (:month IS NULL OR MONTH(j.createdAt) = :month) " +
+            "AND (:year IS NULL OR YEAR(j.createdAt) = :year) " +
+            "GROUP BY jc.jobCategoryId, jc.jobCategoryName " +
+            "HAVING COUNT(j.jobId) > 0 " +
+            "ORDER BY jobCount DESC " +
+            "LIMIT 10")
+    List<Object[]> countJobsByCategory(
+            @Param("month") Integer month,
+            @Param("year") Integer year
+    );
 }

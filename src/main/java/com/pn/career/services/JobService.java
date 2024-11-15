@@ -49,7 +49,6 @@ public class JobService implements IJobService {
             EmployerPackage employerPackage = employerPackageService.validateExpiredPackage(employerId, jobDTO.getPackageId());
             employerPackageService.updateEmployerPackage(employerId, jobDTO.getPackageId());
         }
-
         Job job=Job.builder()
                 .jobCategory(jobCategory)
                 .jobLevel(jobLevel)
