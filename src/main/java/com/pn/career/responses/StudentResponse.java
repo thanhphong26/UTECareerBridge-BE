@@ -16,27 +16,19 @@ import java.util.Date;
 @NoArgsConstructor
 @Builder
 public class StudentResponse {
-    @JsonProperty("id")
     private int id;
-    @JsonProperty("phone_number")
     private String phoneNumber;
     private String firstName;
-    @JsonProperty("last_name")
     private String lastName;
-    @JsonProperty("gender")
     private boolean gender;
-    @JsonProperty("dob")
     private LocalDate dob;
-    @JsonProperty("province_id")
     private int provinceId;
-    @JsonProperty("district_id")
     private int districtId;
-    @JsonProperty("ward_id")
     private int wardId;
-    @JsonProperty("address")
     private String address;
     private String imgProfile;
-    @JsonProperty("role")
+    private String universityEmail;
+    private int categoryId;
     private Role role;
     public static StudentResponse fromUser(User user) {
         return StudentResponse.builder()
@@ -58,8 +50,17 @@ public class StudentResponse {
                 .id(student.getUserId())
                 .phoneNumber(student.getPhoneNumber())
                 .firstName(student.getFirstName())
-                .imgProfile(student.getProfileImage())
                 .lastName(student.getLastName())
+                .universityEmail(student.getUniversityEmail())
+                .gender(student.isGender())
+                .dob(student.getDob())
+                .provinceId(student.getProvinceId())
+                .districtId(student.getDistrictId())
+                .wardId(student.getWardId())
+                .address(student.getAddress())
+                .categoryId(student.getCategoryId())
+                .imgProfile(student.getProfileImage())
+                .role(student.getRole())
                 .build();
 
     }

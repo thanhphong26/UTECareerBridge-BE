@@ -28,30 +28,16 @@ public class ResumeService implements IResumeService{
     @Override
     @Transactional
     public Resume createResume(Integer studentId, ResumeDTO resumeDTO) {
-        try {
-            Student student = studentRepository.findById(studentId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy sinh viên"));
-            JobLevel jobLevel=jobLevelRepository.findById(resumeDTO.getLevelId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy cấp độ công việc"));
-            if (!resumeDTO.getResumeFile().isEmpty()) {
-                if(!cloudinaryService.isFileValid(resumeDTO.getResumeFile())) {
-                    throw new InvalidMultipartFile("Vui lòng upload đúng định dạng được cho phép: file pdf hoặc ảnh.");
-                }
-                Random random = new Random();
-                int randomInt = random.nextInt(1000);
-                String publicId = student.getUserId() + "_" + resumeDTO.getResumeFile().getOriginalFilename() + random.nextInt(1000);
-                String resumeUrl = cloudinaryService.uploadCvToCloudinary(resumeDTO.getResumeFile(), publicId);
-                Resume resume = Resume.builder()
-                        .resumeTitle(resumeDTO.getResumeTitle())
-                        .resumeDescription(resumeDTO.getResumeDescription())
-                        .resumeFile(resumeUrl)
-                        .student(student)
-                        .jobLevel(jobLevel)
-                        .build();
-                return resumeRepository.save(resume);
-            }
-            throw new InvalidMultipartFile("Vui lòng upload CV để tiếp tục cập nhật hồ sơ.");
-        } catch (IOException e) {
-            throw new RuntimeException("Đã xảy ra lỗi trong quá trình upload. Vui lòng thử lại sau", e);
-        }
+        Student student = studentRepository.findById(studentId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy sinh viên"));
+        JobLevel jobLevel=jobLevelRepository.findById(resumeDTO.getLevelId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy cấp độ công việc"));
+        Resume resume = Resume.builder()
+                .resumeTitle(resumeDTO.getResumeTitle())
+                .resumeDescription(resumeDTO.getResumeDescription())
+                .resumeFile(resumeDTO.getResumeFile())
+                .student(student)
+                .jobLevel(jobLevel)
+                .build();
+        return resumeRepository.save(resume);
     }
     @Override
     public List<Resume> getResumesByStudentId(Integer studentId) {

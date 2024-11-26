@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 public class ResumeDTO {
     private String resumeTitle;
-    private MultipartFile resumeFile;
+    private String resumeFile;
     private String resumeDescription;
     private Integer levelId;
 }

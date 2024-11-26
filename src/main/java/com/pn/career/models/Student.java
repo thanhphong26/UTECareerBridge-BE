@@ -24,6 +24,8 @@ public class Student extends User{
     private int year;
     @Column(name="profile_image")
     private String profileImage;
+    @Column(name = "category_id")
+    private Integer categoryId;
     @Column(name = "is_find")
     private boolean isFind;
     @OneToMany(mappedBy = "student")

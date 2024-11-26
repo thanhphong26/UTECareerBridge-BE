@@ -1,17 +1,12 @@
 package com.pn.career.controllers;
 
 import com.pn.career.dtos.ResumeDTO;
+import com.pn.career.dtos.StudentDTO;
 import com.pn.career.models.Application;
 import com.pn.career.models.Resume;
 import com.pn.career.models.StudentSkill;
-import com.pn.career.responses.ApplicationResponse;
-import com.pn.career.responses.ResponseObject;
-import com.pn.career.responses.ResumeResponse;
-import com.pn.career.responses.StudentSkillResponse;
-import com.pn.career.services.IApplicationService;
-import com.pn.career.services.IFollowerService;
-import com.pn.career.services.IResumeService;
-import com.pn.career.services.IStudentSkillService;
+import com.pn.career.responses.*;
+import com.pn.career.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +21,33 @@ import java.util.List;
 @RequestMapping("${api.prefix}/students")
 @RequiredArgsConstructor
 public class StudentController {
+    private final IStudentService studentService;
     private final IResumeService resumeService;
     private final IApplicationService applicationService;
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
+    @PutMapping("/update-infor")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> updateStudent(@AuthenticationPrincipal Jwt jwt, @RequestBody StudentDTO studentDTO) {
+        try{
+            Long userIdLong = jwt.getClaim("userId");
+            Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+            StudentResponse studentResponse=studentService.updateStudent(studentId, studentDTO);
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .data(studentResponse)
+                    .message("Cập nhật thông tin sinh viên thành công")
+                    .build());
+        }catch(Exception e){
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message(e.getMessage())
+                    .build());
+        }
+    }
     @PostMapping("/upload/resumes")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> uploadResume(@AuthenticationPrincipal Jwt jwt, @ModelAttribute ResumeDTO resumeDTO) {
+    public ResponseEntity<ResponseObject> uploadResume(@AuthenticationPrincipal Jwt jwt, @RequestBody ResumeDTO resumeDTO) {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
         Resume resume= resumeService.createResume(studentId, resumeDTO);

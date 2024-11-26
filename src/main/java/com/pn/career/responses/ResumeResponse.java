@@ -21,7 +21,7 @@ public class ResumeResponse {
     public static ResumeResponse fromResume(Resume resume) {
         return ResumeResponse.builder()
                 .resumeId(resume.getResumeId())
-                .studentResponse(StudentResponse.fromUser(resume.getStudent()))
+                .studentResponse(StudentResponse.fromStudent(resume.getStudent()))
                 .resumeTitle(resume.getResumeTitle())
                 .resumeFile(resume.getResumeFile())
                 .resumeDescription(resume.getResumeDescription())
