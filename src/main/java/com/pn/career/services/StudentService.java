@@ -32,4 +32,11 @@ public class StudentService implements IStudentService{
         studentRepository.save(student);
         return StudentResponse.fromStudent(student);
     }
+
+    @Override
+    public StudentResponse getStudentById(Integer studentId) {
+        return studentRepository.findById(studentId)
+                .map(StudentResponse::fromStudent)
+                .orElseThrow(()->new RuntimeException("Không tìm thấy sinh viên"));
+    }
 }

@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface IStudentSkillService {
         StudentSkill createStudentSkill(Integer studentId, Integer skillId, Integer level);
+        List<StudentSkill> getStudentSkills(Integer studentId);
+        void deleteStudentSkill(Integer studentId, Integer skillId);
         List<Job> getJobsBySkill(Integer skillId);
 }

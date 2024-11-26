@@ -33,6 +33,16 @@ public class StudentSkillService implements IStudentSkillService{
         return studentSkillRepository.save(studentSkill);
     }
     @Override
+    public List<StudentSkill> getStudentSkills(Integer studentId) {
+        return studentSkillRepository.findAllByStudent_UserId(studentId);
+    }
+
+    @Override
+    public void deleteStudentSkill(Integer studentId, Integer skillId) {
+        studentSkillRepository.deleteByStudent_UserIdAndSkill_SkillId(studentId, skillId);
+    }
+
+    @Override
     public List<Job> getJobsBySkill(Integer skillId) {
         return jobRepository.findAllByJobSkills_SkillId(skillId);
     }

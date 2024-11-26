@@ -1,10 +1,13 @@
 package com.pn.career.responses;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pn.career.models.Resume;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -18,6 +21,10 @@ public class ResumeResponse {
     private String resumeDescription;
     private Integer levelId;
     private String levelName;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime createdAt;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime updatedAt;
     public static ResumeResponse fromResume(Resume resume) {
         return ResumeResponse.builder()
                 .resumeId(resume.getResumeId())
@@ -27,7 +34,8 @@ public class ResumeResponse {
                 .resumeDescription(resume.getResumeDescription())
                 .levelId(resume.getJobLevel().getJobLevelId())
                 .levelName(resume.getJobLevel().getNameLevel())
+                .createdAt(resume.getCreatedAt())
+                .updatedAt(resume.getUpdatedAt())
                 .build();
     }
-
 }

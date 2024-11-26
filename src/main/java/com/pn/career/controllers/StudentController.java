@@ -26,6 +26,18 @@ public class StudentController {
     private final IApplicationService applicationService;
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
+    @GetMapping("/infor")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getStudentInfor(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        StudentResponse studentResponse=studentService.getStudentById(studentId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(studentResponse)
+                .message("Lấy thông tin sinh viên thành công")
+                .build());
+    }
     @PutMapping("/update-infor")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> updateStudent(@AuthenticationPrincipal Jwt jwt, @RequestBody StudentDTO studentDTO) {
@@ -106,6 +118,29 @@ public class StudentController {
                 .status(HttpStatus.OK)
                 .data(StudentSkillResponse.fromStudentSkill(studentSkill))
                 .message("Thêm kỹ năng thành công")
+                .build());
+    }
+    @GetMapping("/skills")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getSkills(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        List<StudentSkill> studentSkills=studentSkillService.getStudentSkills(studentId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(studentSkills.stream().map(StudentSkillResponse::fromStudentSkill).toList())
+                .message("Lấy danh sách kỹ năng thành công")
+                .build());
+    }
+    @DeleteMapping("/skills/delete")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> deleteSkill(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer skillId) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        studentSkillService.deleteStudentSkill(studentId, skillId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Xóa kỹ năng thành công")
                 .build());
     }
     //@PostMapping("/send-email/job-recommendations")
