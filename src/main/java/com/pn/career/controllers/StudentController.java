@@ -26,6 +26,40 @@ public class StudentController {
     private final IApplicationService applicationService;
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
+    @DeleteMapping("/resume")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> deleteResume(@RequestParam Integer resumeId, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        resumeService.deleteResume(studentId, resumeId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Xóa cv thành công")
+                .build());
+    }
+    @PutMapping("/resume/{resumeId}")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> updateResume(@RequestParam Integer resumeId, @RequestParam boolean isActive, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        resumeService.updateActiveResume(resumeId, studentId, isActive);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(ResumeResponse.fromResume(resumeService.getResumeById(resumeId)))
+                .message("Cập nhật cv thành công")
+                .build());
+    }
+    @PutMapping("/is-finding-job")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> updateIsFindingJob(@AuthenticationPrincipal Jwt jwt, @RequestParam boolean isFindingJob) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        studentService.updateIsFindingJob(studentId, isFindingJob);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Bật tìm việc thành công")
+                .build());
+    }
     @GetMapping("/infor")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> getStudentInfor(@AuthenticationPrincipal Jwt jwt) {

@@ -2,7 +2,7 @@ package com.pn.career.services;
 
 import com.pn.career.dtos.ResumeDTO;
 import com.pn.career.exceptions.DataNotFoundException;
-import com.pn.career.exceptions.InvalidMultipartFile;
+import com.pn.career.exceptions.PermissionDenyException;
 import com.pn.career.models.JobLevel;
 import com.pn.career.models.Resume;
 import com.pn.career.models.Student;
@@ -12,10 +12,7 @@ import com.pn.career.repositories.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -51,5 +48,25 @@ public class ResumeService implements IResumeService{
     @Override
     public Resume updateResume(Integer resumeId, ResumeDTO resumeDTO) {
         return null;
+    }
+
+    @Override
+    public void deleteResume(Integer studentId, Integer resumeId) {
+        Resume resume=getResumeById(resumeId);
+        if(resume.getStudent().getUserId()!=studentId){
+            throw new PermissionDenyException("Bạn không có quyền thực hiện chức năng này");
+        }
+        resumeRepository.deleteById(resumeId);
+    }
+
+    @Override
+    public boolean updateActiveResume(Integer resumeId, Integer studentId, boolean isActive) {
+        Resume resume=getResumeById(resumeId);
+        if(resume.getStudent().getUserId()!=studentId){
+            throw new PermissionDenyException("Bạn không có quyền thực hiện chức năng này");
+        }
+        resume.setActive(isActive);
+        resumeRepository.save(resume);
+        return true;
     }
 }

@@ -6,4 +6,5 @@ import com.pn.career.responses.StudentResponse;
 public interface IStudentService {
     StudentResponse updateStudent(Integer studentId, StudentDTO studentDTO);
     StudentResponse getStudentById(Integer studentId);
+    void updateIsFindingJob(Integer studentId, boolean isFindingJob);
 }

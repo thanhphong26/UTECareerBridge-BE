@@ -1,5 +1,6 @@
 package com.pn.career.responses;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pn.career.models.Role;
 import com.pn.career.models.Student;
@@ -17,18 +18,21 @@ import java.util.Date;
 @Builder
 public class StudentResponse {
     private int id;
+    private String email;
     private String phoneNumber;
     private String firstName;
     private String lastName;
     private boolean gender;
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dob;
     private int provinceId;
     private int districtId;
     private int wardId;
     private String address;
-    private String imgProfile;
+    private String profileImage;
     private String universityEmail;
     private int categoryId;
+    private int year;
     private Role role;
     public static StudentResponse fromUser(User user) {
         return StudentResponse.builder()
@@ -48,6 +52,7 @@ public class StudentResponse {
     public static StudentResponse fromStudent(Student student) {
         return StudentResponse.builder()
                 .id(student.getUserId())
+                .email(student.getEmail())
                 .phoneNumber(student.getPhoneNumber())
                 .firstName(student.getFirstName())
                 .lastName(student.getLastName())
@@ -59,9 +64,9 @@ public class StudentResponse {
                 .wardId(student.getWardId())
                 .address(student.getAddress())
                 .categoryId(student.getCategoryId())
-                .imgProfile(student.getProfileImage())
+                .profileImage(student.getProfileImage())
+                .year(student.getYear())
                 .role(student.getRole())
                 .build();
-
     }
 }

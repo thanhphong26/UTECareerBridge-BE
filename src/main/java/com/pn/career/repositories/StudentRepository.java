@@ -7,11 +7,16 @@ import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public interface StudentRepository extends JpaRepository<Student, Integer>, JpaSpecificationExecutor<Student> {
+    @Modifying
+    @Query("update Student s set s.isFind = ?2 where s.userId = ?1")
+    void updateIsFindingJob(Integer studnetId, boolean isFindingJob);
     List<Student> findAllByRole_RoleName(String role);
     default List<StudentResponse> findAllStudentsByApplication(Integer employerId) {
         Specification<Student> spec = (root, query, criteriaBuilder) -> {
