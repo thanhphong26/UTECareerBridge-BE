@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -17,18 +16,20 @@ import java.time.LocalDateTime;
 @Builder
 public class ApplicationResponse {
     private Integer applicationId;
-    private ResumeResponse resumeResponse;
-    private JobResponse jobResponse;
-    private ApplicationStatus applicationStatus;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
+    private String jobTitle;
+    private String companyName;
+    private String resumeFile;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime createdAt;
+    private ApplicationStatus applicationStatus;
     public static ApplicationResponse fromApplication(Application application) {
         return ApplicationResponse.builder()
                 .applicationId(application.getApplicationId())
-                .resumeResponse(ResumeResponse.fromResume(application.getResume()))
-                .jobResponse(JobResponse.fromJob(application.getJob()))
-                .applicationStatus(application.getApplicationStatus())
+                .jobTitle(application.getJob().getJobTitle())
+                .companyName(application.getJob().getEmployer().getCompanyName())
+                .resumeFile(application.getResume().getResumeFile())
                 .createdAt(application.getCreatedAt())
+                .applicationStatus(application.getApplicationStatus())
                 .build();
     }
 }

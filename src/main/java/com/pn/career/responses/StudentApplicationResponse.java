@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
 
@@ -48,7 +49,7 @@ public class StudentApplicationResponse {
                 .email(resume.getStudent().getEmail())
                 .universityEmail(resume.getStudent().getUniversityEmail())
                 .phoneNumber(resume.getStudent().getPhoneNumber())
-                .dob(resume.getStudent().getDob().toString())
+                .dob(DateTimeFormatter.ofPattern("dd/MM/yyyy").format(resume.getStudent().getDob()))
                 .year(resume.getStudent().getYear())
                 .provinceId(resume.getStudent().getProvinceId())
                 .districtId(resume.getStudent().getDistrictId())

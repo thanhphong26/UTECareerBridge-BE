@@ -6,10 +6,9 @@ import com.pn.career.models.JobCategory;
 import com.pn.career.models.Resume;
 import com.pn.career.models.Student;
 import com.pn.career.models.User;
-import com.pn.career.repositories.JobCategoryRepository;
-import com.pn.career.repositories.ResumeRepository;
-import com.pn.career.repositories.StudentRepository;
-import com.pn.career.repositories.UserRepository;
+import com.pn.career.repositories.*;
+import com.pn.career.responses.ApplicationResponse;
+import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.StudentResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +23,7 @@ public class StudentService implements IStudentService{
     private final StudentRepository studentRepository;
     private final ResumeRepository resumeRepository;
     private final JobCategoryRepository jobCategoryRepository;
+    private final ApplicationRepository applicationRepository;
     @Override
     public StudentResponse updateStudent(Integer studentId, StudentDTO studentDTO) {
         Student student=studentRepository.findById(studentId).orElseThrow(()-> new RuntimeException("Thông tin sinh viên không tồn tại"));
@@ -69,5 +69,13 @@ public class StudentService implements IStudentService{
             throw new DataNotFoundException("Hồ sơ của bạn chưa được active. Vui lòng thực hiện");
         }
         studentRepository.updateIsFindingJob(studentId,isFindingJob);
+    }
+
+    @Override
+    public List<ApplicationResponse> getJobApplyByStudentId(Integer studentId) {
+        return applicationRepository.findAppliedApplicationsByStudentIdOrderedByDate(studentId)
+                .stream()
+                .map(ApplicationResponse::fromApplication)
+                .toList();
     }
 }

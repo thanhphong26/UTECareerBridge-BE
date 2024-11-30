@@ -9,5 +9,4 @@ public interface IApplicationService {
     Application createApplication(Integer jobId, Integer resumeId) throws Exception;
     List<Application> getAllApplicationByJobId(Integer jobId);
     StudentApplicationResponse getApplicationById(Integer applicationId);
-
 }

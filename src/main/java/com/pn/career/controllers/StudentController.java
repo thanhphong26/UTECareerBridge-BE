@@ -26,6 +26,25 @@ public class StudentController {
     private final IApplicationService applicationService;
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
+
+    @GetMapping("/jobs")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getJobApplyByStudentId(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        List<ApplicationResponse> jobResponses=studentService.getJobApplyByStudentId(studentId);
+        if(jobResponses.isEmpty()){
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.NO_CONTENT)
+                    .message("Bạn chưa ứng tuyển công việc nào. Vui lòng ứng tuyển công việc để xem danh sách công việc đã ứng tuyển")
+                    .build());
+        }
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(jobResponses)
+                .message("Lấy danh sách công việc đã ứng tuyển thành công")
+                .build());
+    }
     @GetMapping("/resumes/{resumeId}")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> getResumeByStudentId(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer resumeId) {
@@ -204,5 +223,16 @@ public class StudentController {
                 .message("Bỏ theo dõi nhà tuyển dụng thành công")
                 .build());
     }
-
+    @GetMapping("/get-all-followed-employers")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getAllFollowedEmployers(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        List<EmployerResponse> employerResponses=followerService.getFollowedEmployers(studentId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(employerResponses)
+                .message("Lấy danh sách nhà tuyển dụng theo dõi thành công")
+                .build());
+    }
 }
