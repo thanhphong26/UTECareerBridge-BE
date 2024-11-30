@@ -26,6 +26,18 @@ public class StudentController {
     private final IApplicationService applicationService;
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
+    @GetMapping("/resumes/{resumeId}")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getResumeByStudentId(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer resumeId) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        Resume resume = resumeService.getResumeById(studentId, resumeId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(StudentApplicationResponse.fromStudent(resume))
+                .message("Lấy hồ sơ thành công")
+                .build());
+    }
     @DeleteMapping("/resume")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> deleteResume(@RequestParam Integer resumeId, @AuthenticationPrincipal Jwt jwt) {
@@ -39,13 +51,13 @@ public class StudentController {
     }
     @PutMapping("/resume/{resumeId}")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> updateResume(@RequestParam Integer resumeId, @RequestParam boolean isActive, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseObject> updateResume(@PathVariable Integer resumeId, @AuthenticationPrincipal Jwt jwt) {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
-        resumeService.updateActiveResume(resumeId, studentId, isActive);
+        resumeService.updateActiveResume(resumeId, studentId, true);
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .data(ResumeResponse.fromResume(resumeService.getResumeById(resumeId)))
+                .data(ResumeResponse.fromResume(resumeService.getResumeById(studentId,resumeId)))
                 .message("Cập nhật cv thành công")
                 .build());
     }
@@ -114,15 +126,6 @@ public class StudentController {
                 .status(HttpStatus.OK)
                 .data(resumes.stream().map(ResumeResponse::fromResume).toList())
                 .message("Lấy danh sách cv thành công")
-                .build());
-    }
-    @GetMapping("/resumes/{resumeId}")
-    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> getResumeById(@PathVariable Integer resumeId) {
-        return ResponseEntity.ok(ResponseObject.builder()
-                .status(HttpStatus.OK)
-                .data(ResumeResponse.fromResume(resumeService.getResumeById(resumeId)))
-                .message("Lấy cv thành công")
                 .build());
     }
     @PostMapping("/jobs/apply")

@@ -44,18 +44,18 @@ public class UserController {
                 return ResponseEntity.badRequest().body(ResponseObject.builder()
                         .status(HttpStatus.BAD_REQUEST)
                         .data(null)
-                        .message("At least email or phone number is required")
+                        .message("Không được để trống email hoặc số điện thoại")
                         .build());
             } else {
                 //phone number not blank
                 if (!ValidationUtils.isValidPhoneNumber(studentRegistrationDTO.getPhoneNumber())) {
-                    throw new Exception("Invalid phone number");
+                    throw new Exception("Số điện thoại không hợp lệ");
                 }
             }
         } else {
             //Email not blank
             if (!ValidationUtils.isValidEmail(studentRegistrationDTO.getEmail())) {
-                throw new Exception("Invalid email format");
+                throw new Exception("Email không hợp lệ");
             }
         }
         if (!studentRegistrationDTO.getPassword().equals(studentRegistrationDTO.getRetypePassword())) {
@@ -63,14 +63,14 @@ public class UserController {
             return ResponseEntity.badRequest().body(ResponseObject.builder()
                     .status(HttpStatus.BAD_REQUEST)
                     .data(null)
-                    .message(localizationUtils.getLocalizedMessage(MessageKeys.PASSWORD_NOT_MATCH))
+                    .message("Mật khẩu không khớp")
                     .build());
         }
         User user = userService.registerUser(studentRegistrationDTO,"student");
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.CREATED)
                 .data(StudentResponse.fromUser(user))
-                .message(localizationUtils.getLocalizedMessage(MessageKeys.STUDENT_REGISTER_SUCCESSFULLY))
+                .message("Đăng ký tài khoản thành công")
                 .build());
 
     }
@@ -91,7 +91,7 @@ public class UserController {
             response.addCookie(refreshToken);
 
             LoginResponse loginResponse = LoginResponse.builder()
-                    .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+                    .message("Đăng nhập thành oông")
                     .token(token.getAccessToken())
                     .tokenType("Bearer")
                     .refreshToken(token.getRefreshToken())
@@ -100,7 +100,7 @@ public class UserController {
                     .roles(userDetail.getRole())
                     .build();
             return ResponseEntity.ok().body(ResponseObject.builder()
-                    .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+                    .message("Đăng nhập thành oông")
                     .data(loginResponse)
                     .status(HttpStatus.OK)
                     .build());

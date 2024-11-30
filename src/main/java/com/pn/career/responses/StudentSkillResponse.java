@@ -13,11 +13,13 @@ import lombok.NoArgsConstructor;
 public class StudentSkillResponse {
     private Integer studentId;
     private Integer skillId;
+    private String skillName;
     private Integer level;
     public static StudentSkillResponse fromStudentSkill(StudentSkill studentSkill){
         return StudentSkillResponse.builder()
                 .studentId(studentSkill.getStudent().getUserId())
                 .skillId(studentSkill.getSkill().getSkillId())
+                .skillName(studentSkill.getSkill().getSkillName())
                 .level(studentSkill.getLevel())
                 .build();
     }

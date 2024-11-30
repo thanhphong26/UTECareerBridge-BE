@@ -2,9 +2,11 @@ package com.pn.career.services;
 
 import com.pn.career.dtos.StudentDTO;
 import com.pn.career.exceptions.DataNotFoundException;
+import com.pn.career.models.JobCategory;
 import com.pn.career.models.Resume;
 import com.pn.career.models.Student;
 import com.pn.career.models.User;
+import com.pn.career.repositories.JobCategoryRepository;
 import com.pn.career.repositories.ResumeRepository;
 import com.pn.career.repositories.StudentRepository;
 import com.pn.career.repositories.UserRepository;
@@ -21,6 +23,7 @@ public class StudentService implements IStudentService{
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final ResumeRepository resumeRepository;
+    private final JobCategoryRepository jobCategoryRepository;
     @Override
     public StudentResponse updateStudent(Integer studentId, StudentDTO studentDTO) {
         Student student=studentRepository.findById(studentId).orElseThrow(()-> new RuntimeException("Thông tin sinh viên không tồn tại"));
@@ -36,7 +39,9 @@ public class StudentService implements IStudentService{
         student.setUniversityEmail(studentDTO.getUniversityEmail());
         student.setYear(studentDTO.getYear());
         student.setProfileImage(studentDTO.getProfileImage());
-        student.setCategoryId(studentDTO.getCategoryId());
+        JobCategory jobCategory=new JobCategory();
+        jobCategory=jobCategoryRepository.findById(studentDTO.getCategoryId()).orElseThrow(()->new RuntimeException("Không tìm thấy danh mục công việc"));
+        student.setJobCategory(jobCategory);
         studentRepository.save(student);
         return StudentResponse.fromStudent(student);
     }

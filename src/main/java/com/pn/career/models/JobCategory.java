@@ -20,4 +20,7 @@ public class JobCategory extends BaseEntity{
     private String jobCategoryName;
     @Column(name = "is_active")
     private boolean isActive;
+    @OneToOne(mappedBy = "jobCategory", fetch = FetchType.LAZY)
+    private Student student;
+
 }

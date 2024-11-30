@@ -41,8 +41,12 @@ public class ResumeService implements IResumeService{
         return resumeRepository.findAllByStudent_UserId(studentId);
     }
     @Override
-    public Resume getResumeById(Integer resumeId) {
-        return resumeRepository.findById(resumeId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy hồ sơ"));
+    public Resume getResumeById(Integer studentId, Integer resumeId) {
+        Resume resume=resumeRepository.findById(resumeId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy hồ sơ"));
+        if(resume.getStudent().getUserId()!=studentId){
+            throw new PermissionDenyException("Bạn không có quyền thực hiện chức năng này");
+        }
+        return resume;
     }
 
     @Override
@@ -52,7 +56,7 @@ public class ResumeService implements IResumeService{
 
     @Override
     public void deleteResume(Integer studentId, Integer resumeId) {
-        Resume resume=getResumeById(resumeId);
+        Resume resume=getResumeById(studentId, resumeId);
         if(resume.getStudent().getUserId()!=studentId){
             throw new PermissionDenyException("Bạn không có quyền thực hiện chức năng này");
         }
@@ -61,7 +65,17 @@ public class ResumeService implements IResumeService{
 
     @Override
     public boolean updateActiveResume(Integer resumeId, Integer studentId, boolean isActive) {
-        Resume resume=getResumeById(resumeId);
+        Resume resume=getResumeById(studentId, resumeId);
+        List<Resume> resumes=resumeRepository.findAllByStudent_UserId(studentId);
+        //inactive resume if student has another active resume
+        if(isActive){
+            for(Resume r:resumes){
+                if(r.isActive() && r.getResumeId()!=resumeId){
+                    r.setActive(false);
+                    resumeRepository.save(r);
+                }
+            }
+        }
         if(resume.getStudent().getUserId()!=studentId){
             throw new PermissionDenyException("Bạn không có quyền thực hiện chức năng này");
         }

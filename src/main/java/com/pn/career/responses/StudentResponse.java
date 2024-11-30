@@ -31,7 +31,7 @@ public class StudentResponse {
     private String address;
     private String profileImage;
     private String universityEmail;
-    private int categoryId;
+    private Integer categoryId;
     private int year;
     private Role role;
     public static StudentResponse fromUser(User user) {
@@ -63,7 +63,7 @@ public class StudentResponse {
                 .districtId(student.getDistrictId())
                 .wardId(student.getWardId())
                 .address(student.getAddress())
-                .categoryId(student.getCategoryId())
+                .categoryId(student.getJobCategory().getJobCategoryId())
                 .profileImage(student.getProfileImage())
                 .year(student.getYear())
                 .role(student.getRole())

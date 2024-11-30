@@ -39,7 +39,7 @@ import java.util.List;
 @RequestMapping("${api.prefix}/employers")
 public class EmployerController {
     private static final Logger logger = LoggerFactory.getLogger(EmployerController.class);
-
+    private final IApplicationService applicationService;
     private final IUserService userService;
     private final IEmployerService employerService;
     private final ITokenService tokenService;
@@ -48,7 +48,26 @@ public class EmployerController {
     private final JwtDecoder jwtDecoder;
     private final IBenefitDetailService benefitDetailService;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
+    @GetMapping("/student-application/{jobId}")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getAllApplicationWithJobId(@PathVariable Integer jobId) {
+        List<Application> applications=applicationService.getAllApplicationByJobId(jobId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách sinh viên ứng tuyển thành công")
+                .status(HttpStatus.OK)
+                .data(applications.stream().map(ApplicationResponse::fromApplication).toList())
+                .build());
+    }
+    @GetMapping("/student-application/detail/{applicationId}")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getApplicationById(@PathVariable Integer applicationId) {
+        StudentApplicationResponse studentApplicationResponse = applicationService.getApplicationById(applicationId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy thông tin sinh viên ứng tuyển thành công")
+                .status(HttpStatus.OK)
+                .data(studentApplicationResponse)
+                .build());
+    }
     @PostMapping("/register")
     public ResponseEntity<ResponseObject> registerEmployer(@Valid @RequestBody EmployerRegisterDTO employerRegistrationDTO, BindingResult result) throws Exception {
         if (result.hasErrors()) {

@@ -3,6 +3,7 @@ package com.pn.career.services;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,7 @@ public class StudentSkillService implements IStudentSkillService{
     }
 
     @Override
+    @Transactional
     public void deleteStudentSkill(Integer studentId, Integer skillId) {
         studentSkillRepository.deleteByStudent_UserIdAndSkill_SkillId(studentId, skillId);
     }

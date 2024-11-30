@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
 import java.util.Set;
 
 @Table(name = "students")
@@ -24,10 +25,14 @@ public class Student extends User{
     private int year;
     @Column(name="profile_image")
     private String profileImage;
-    @Column(name = "category_id")
-    private Integer categoryId;
     @Column(name = "is_find")
     private boolean isFind;
     @OneToMany(mappedBy = "student")
     private Set<Resume> resumes;
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<StudentSkill> studentSkills;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", referencedColumnName = "category_id")
+    private JobCategory jobCategory;
+
 }
