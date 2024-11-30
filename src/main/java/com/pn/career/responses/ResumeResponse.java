@@ -20,6 +20,7 @@ public class ResumeResponse {
     private String resumeFile;
     private String resumeDescription;
     private Integer levelId;
+    private Boolean isActive;
     private String levelName;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime createdAt;
@@ -36,6 +37,7 @@ public class ResumeResponse {
                 .levelName(resume.getJobLevel().getNameLevel())
                 .createdAt(resume.getCreatedAt())
                 .updatedAt(resume.getUpdatedAt())
+                .isActive(resume.isActive())
                 .build();
     }
 }

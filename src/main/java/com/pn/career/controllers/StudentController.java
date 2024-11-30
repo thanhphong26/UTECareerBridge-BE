@@ -109,7 +109,7 @@ public class StudentController {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
         Resume resume= resumeService.createResume(studentId, resumeDTO);
-        return ResponseEntity.ok(ResponseObject.builder()
+            return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .data(ResumeResponse.fromResume(resume))
                 .message("Upload cv thành công")

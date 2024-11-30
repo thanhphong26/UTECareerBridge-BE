@@ -16,7 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ResumeService implements IResumeService{
+public class ResumeService implements IResumeService {
     private final ResumeRepository resumeRepository;
     private final JobLevelRepository jobLevelRepository;
     private final CloudinaryService cloudinaryService;
@@ -26,7 +26,7 @@ public class ResumeService implements IResumeService{
     @Transactional
     public Resume createResume(Integer studentId, ResumeDTO resumeDTO) {
         Student student = studentRepository.findById(studentId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy sinh viên"));
-        JobLevel jobLevel=jobLevelRepository.findById(resumeDTO.getLevelId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy cấp độ công việc"));
+        JobLevel jobLevel = jobLevelRepository.findById(resumeDTO.getLevelId()).orElseThrow(() -> new DataNotFoundException("Không tìm thấy cấp độ công việc"));
         Resume resume = Resume.builder()
                 .resumeTitle(resumeDTO.getResumeTitle())
                 .resumeDescription(resumeDTO.getResumeDescription())
@@ -36,10 +36,12 @@ public class ResumeService implements IResumeService{
                 .build();
         return resumeRepository.save(resume);
     }
+
     @Override
     public List<Resume> getResumesByStudentId(Integer studentId) {
         return resumeRepository.findAllByStudent_UserId(studentId);
     }
+
     @Override
     public Resume getResumeById(Integer studentId, Integer resumeId) {
         Resume resume=resumeRepository.findById(resumeId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy hồ sơ"));

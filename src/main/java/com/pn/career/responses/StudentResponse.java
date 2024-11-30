@@ -32,6 +32,7 @@ public class StudentResponse {
     private String profileImage;
     private String universityEmail;
     private Integer categoryId;
+    private boolean findingJob;
     private int year;
     private Role role;
     public static StudentResponse fromUser(User user) {
@@ -66,6 +67,7 @@ public class StudentResponse {
                 .categoryId(student.getJobCategory().getJobCategoryId())
                 .profileImage(student.getProfileImage())
                 .year(student.getYear())
+                .findingJob(student.isFind())
                 .role(student.getRole())
                 .build();
     }
