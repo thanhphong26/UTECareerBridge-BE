@@ -221,9 +221,7 @@ public class JobController {
                                                      @RequestParam(required = false, defaultValue = "createdAt") String sorting){
         int totalPages=0;
         PageRequest pageRequest=PageRequest.of(page,limit);
-        logger.info("Pagerequest: "+pageRequest);
         Page<JobResponse> jobs=jobService.searchJob(keyword,categoryId,industryId,jobLevelId,skillId, sorting, pageRequest);
-        logger.info("Jobs: "+jobs.getTotalPages());
         if(jobs.isEmpty()){
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .status(HttpStatus.OK)

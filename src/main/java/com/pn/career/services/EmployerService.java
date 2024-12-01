@@ -137,9 +137,9 @@ public class EmployerService implements IEmployerService {
     }
 
     @Override
-    public Page<EmployerResponse> getAllEmployers(String keyword, Integer industryId, PageRequest pageRequest) {
+    public Page<EmployerResponse> getAllEmployers(String keyword, Integer industryId, PageRequest pageRequest, EmployerStatus status) {
         Page<Employer> employers;
-        employers=employerRepository.searchEmployers(keyword,industryId,pageRequest);
+        employers=employerRepository.searchEmployers(keyword,industryId,pageRequest, status);
         return employers.map(EmployerResponse::fromUser);
     }
     @Override

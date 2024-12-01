@@ -231,10 +231,11 @@ public class EmployerController {
     public ResponseEntity<ResponseObject> getAllEmployers( @RequestParam(defaultValue = "") String keyword,
                                                            @RequestParam(defaultValue = "0", name = "industry_id") Integer industryId,
                                                            @RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "10") int limit) {
+                                                           @RequestParam(defaultValue = "10") int limit,
+                                                           @RequestParam(defaultValue = "") EmployerStatus status) {
         int totalPage = 0;
         PageRequest pageRequest=PageRequest.of(page,limit);
-        Page<EmployerResponse> employers = employerService.getAllEmployers(keyword, industryId, pageRequest);
+        Page<EmployerResponse> employers = employerService.getAllEmployers(keyword, industryId, pageRequest, status);
         if (employers.getTotalPages() > 0) {
             totalPage = employers.getTotalPages();
         }

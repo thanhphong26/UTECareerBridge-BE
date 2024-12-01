@@ -5,6 +5,7 @@ import com.pn.career.dtos.UpdatePasswordDTO;
 import com.pn.career.dtos.UpdateProfileDTO;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.Employer;
+import com.pn.career.models.EmployerStatus;
 import com.pn.career.responses.EmployerResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.StudentResponse;
@@ -20,7 +21,7 @@ public interface IEmployerService{
     Employer updateProfile(Integer employerId, UpdateProfileDTO updateProfileDTO);
     Employer updatePassword(Integer employerId, UpdatePasswordDTO updatePasswordDTO);
     void revokedTokens(Integer employerId);
-    Page<EmployerResponse>getAllEmployers(String keyword, Integer industryId, PageRequest pageRequest);
+    Page<EmployerResponse>getAllEmployers(String keyword, Integer industryId, PageRequest pageRequest, EmployerStatus status);
     Employer addBusinessCertificate(Integer employerId, MultipartFile businessCertificate);
     void approveEmployer(Integer employerId);
     void rejectEmployer(Integer employerId, String reason);
