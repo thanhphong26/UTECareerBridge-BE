@@ -170,10 +170,10 @@ public class JobController {
     }
     @GetMapping("/admin/all-jobs")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ResponseObject> getAllJobs(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit){
+    public ResponseEntity<ResponseObject> getAllJobs(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit, @RequestParam(defaultValue = "") JobStatus status){
         int totalPages=0;
         PageRequest pageRequest=PageRequest.of(page,limit);
-        Page<JobResponse> jobs=jobService.getAllJobs(pageRequest);
+        Page<JobResponse> jobs=jobService.getAllJobs(status,pageRequest);
         if(jobs.getTotalPages()>0){
             totalPages=jobs.getTotalPages();
         }

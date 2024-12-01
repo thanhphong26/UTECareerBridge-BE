@@ -31,7 +31,7 @@ public class Student extends User{
     private Set<Resume> resumes;
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<StudentSkill> studentSkills;
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "category_id")
     private JobCategory jobCategory;
 

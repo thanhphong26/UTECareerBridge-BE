@@ -123,8 +123,8 @@ public class JobService implements IJobService {
         return jobResponse;
     }
     @Override
-    public Page<JobResponse> getAllJobs(PageRequest pageRequest) {
-        Page<Job> jobs=jobRepository.findAll(pageRequest);
+    public Page<JobResponse> getAllJobs(JobStatus status, PageRequest pageRequest) {
+        Page<Job> jobs=jobRepository.findAllByStatusOrderByCreatedAtDesc(status, pageRequest);
         return jobs.map(job -> {
             JobResponse jobResponse = JobResponse.fromJob(job);
             List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);

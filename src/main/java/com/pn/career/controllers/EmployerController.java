@@ -3,6 +3,7 @@ package com.pn.career.controllers;
 import com.pn.career.components.LocalizationUtils;
 import com.pn.career.dtos.*;
 import com.pn.career.exceptions.DataNotFoundException;
+import com.pn.career.exceptions.UnUpdatedLicense;
 import com.pn.career.models.*;
 import com.pn.career.repositories.EmployerPackageRepository;
 import com.pn.career.responses.*;
@@ -322,7 +323,13 @@ public class EmployerController {
                     .message("Không tìm thấy nhà tuyển dụng tương ứng")
                     .status(HttpStatus.NOT_FOUND)
                     .build());
-        } catch (Exception e) {
+        }catch (UnUpdatedLicense e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseObject.builder()
+                    .message("Giấy phép kinh doanh của nhà tuyển dụng chưa được cập nhật")
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build());
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
                     .message("Đã xảy ra lỗi khi duyệt nhà tuyển dụng. Vui lòng thử lại sau")
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -222,4 +222,5 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
             @Param("month") Integer month,
             @Param("year") Integer year
     );
+    Page<Job> findAllByStatusOrderByCreatedAtDesc(JobStatus status, Pageable pageable);
 }

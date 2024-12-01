@@ -4,6 +4,7 @@ import com.pn.career.dtos.EmployerUpdateDTO;
 import com.pn.career.dtos.UpdatePasswordDTO;
 import com.pn.career.dtos.UpdateProfileDTO;
 import com.pn.career.exceptions.DataNotFoundException;
+import com.pn.career.exceptions.UnUpdatedLicense;
 import com.pn.career.models.Employer;
 import com.pn.career.models.EmployerStatus;
 import com.pn.career.models.Token;
@@ -174,7 +175,7 @@ public class EmployerService implements IEmployerService {
     public void approveEmployer(Integer employerId) {
         Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
         if(employer.getBusinessCertificate()==null || employer.getBusinessCertificate().isEmpty()){
-            throw new RuntimeException("Nhà tuyển dụng chưa cung cấp giấy phép kinh doanh");
+            throw new UnUpdatedLicense("Nhà tuyển dụng chưa cung cấp giấy phép kinh doanh");
         }
         employer.setApprovalStatus(EmployerStatus.APPROVED);
         employerRepository.save(employer);

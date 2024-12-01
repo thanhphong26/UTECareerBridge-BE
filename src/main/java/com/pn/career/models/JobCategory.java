@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Set;
+
 @Table(name = "job_categories")
 @Entity
 @Getter
@@ -20,7 +22,6 @@ public class JobCategory extends BaseEntity{
     private String jobCategoryName;
     @Column(name = "is_active")
     private boolean isActive;
-    @OneToOne(mappedBy = "jobCategory", fetch = FetchType.LAZY)
-    private Student student;
-
+    @OneToMany(mappedBy = "jobCategory", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Student> students;
 }
