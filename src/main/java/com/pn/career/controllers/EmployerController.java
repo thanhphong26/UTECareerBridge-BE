@@ -49,10 +49,24 @@ public class EmployerController {
     private final JwtDecoder jwtDecoder;
     private final IBenefitDetailService benefitDetailService;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    @PutMapping("/application/{applicationId}")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> updateApplicationStatus(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer applicationId, @Valid @RequestBody ApplicationStatusDTO status) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        Application application = applicationService.updateStatus(userId, applicationId, status.status());
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Cập nhật trạng thái ứng tuyển thành công")
+                .status(HttpStatus.OK)
+                .data(ApplicationResponse.fromApplication(application))
+                .build());
+    }
     @GetMapping("/student-application/{jobId}")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> getAllApplicationWithJobId(@PathVariable Integer jobId) {
-        List<Application> applications=applicationService.getAllApplicationByJobId(jobId);
+    public ResponseEntity<ResponseObject> getAllApplicationWithJobId(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer jobId, @RequestParam(defaultValue = "PENDING") ApplicationStatus status) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        List<Application> applications=applicationService.getAllApplicationByJobId(userId, jobId, status);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Lấy danh sách sinh viên ứng tuyển thành công")
                 .status(HttpStatus.OK)

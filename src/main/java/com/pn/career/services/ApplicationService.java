@@ -2,6 +2,7 @@ package com.pn.career.services;
 
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.DuplicateNameException;
+import com.pn.career.exceptions.PermissionDenyException;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
 import com.pn.career.responses.ApplicationResponse;
@@ -40,15 +41,18 @@ public class ApplicationService implements IApplicationService{
     }
 
     @Override
-    public List<Application> getAllApplicationByJobId(Integer jobId) {
+    public List<Application> getAllApplicationByJobId(Integer employerId, Integer jobId, ApplicationStatus status) {
         if(jobId==null){
             throw new RuntimeException("JobId không được để trống");
         }
         Job job=jobRepository.findById(jobId).orElseThrow(()->new RuntimeException("Không tìm thấy công việc"));
+        if(job.getEmployer().getUserId()!=employerId){
+            throw new PermissionDenyException("Bạn không có quyền xem hồ sơ ứng viên");
+        }
         if(job==null){
             throw new DataNotFoundException("Không tìm thấy công việc");
         }
-        return applicationRepository.findAllByJob_JobId(jobId);
+        return applicationRepository.findAllByJob_JobIdAndApplicationStatus(jobId, status);
     }
 
     @Override
@@ -74,5 +78,15 @@ public class ApplicationService implements IApplicationService{
                 .studentSkills(studentSkills.stream().map(StudentSkillResponse::fromStudentSkill).toList())
                 .categoryName(categoryName)
                 .build();
+    }
+
+    @Override
+    public Application updateStatus(Integer employerId, Integer applicationId, ApplicationStatus status) {
+        Application application=applicationRepository.findById(applicationId).orElseThrow(()->new DataNotFoundException("Không tìm thấy hồ sơ ứng viên"));
+        if(application.getJob().getEmployer().getUserId()!=employerId){
+            throw new PermissionDenyException("Bạn không có quyền cập nhật trạng thái hồ sơ ứng viên");
+        }
+        application.setApplicationStatus(status);
+        return applicationRepository.save(application);
     }
 }

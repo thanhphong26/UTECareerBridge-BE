@@ -19,7 +19,6 @@ import java.io.IOException;
 public class EventService implements IEventService{
     private final EventRepository eventRepository;
     private final CloudinaryService cloudinaryService;
-
     @Override
     @Transactional
     public Event createEvent(EventDTO eventDTO) {
