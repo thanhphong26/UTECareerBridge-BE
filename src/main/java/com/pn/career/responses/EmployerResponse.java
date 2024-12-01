@@ -36,6 +36,7 @@ public class EmployerResponse {
     private String companySize;
     private String businessCertificate;
     private Industry industry;
+    private String rejectedReason;
     private List<BenefitResponse> benefitDetails;
     public static EmployerResponse fromUser(Employer employer) {
         return EmployerResponse.builder()
@@ -57,6 +58,7 @@ public class EmployerResponse {
                 .companySize(employer.getCompanySize())
                 .businessCertificate(employer.getBusinessCertificate())
                 .industry(employer.getIndustry())
+                .rejectedReason(employer.getRejectedReason())
                 .benefitDetails(employer.getBenefitDetails().stream()
                         .map(benefitDetail -> BenefitResponse.builder()
                                 .benefitId(benefitDetail.getBenefit().getBenefitId())
