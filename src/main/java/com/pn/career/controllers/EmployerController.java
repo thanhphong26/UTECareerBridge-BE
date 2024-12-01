@@ -197,7 +197,7 @@ public class EmployerController {
                 .status(HttpStatus.OK)
                 .build());
     }
-    @GetMapping("/company-general-info")
+    @GetMapping("/company-general-info/{employerId}")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getCompanyGeneralInfo(@AuthenticationPrincipal Jwt principal) throws DataNotFoundException {
         try {
@@ -230,7 +230,7 @@ public class EmployerController {
     }
     @GetMapping("/get-all-employers")
     public ResponseEntity<ResponseObject> getAllEmployers( @RequestParam(defaultValue = "") String keyword,
-                                                           @RequestParam(defaultValue = "0", name = "industry_id") Integer industryId,
+                                                           @RequestParam(defaultValue = "0") Integer industryId,
                                                            @RequestParam(defaultValue = "0") int page,
                                                            @RequestParam(defaultValue = "10") int limit,
                                                            @RequestParam(defaultValue = "") EmployerStatus status) {
@@ -395,7 +395,7 @@ public class EmployerController {
                 .build());
     }
     @GetMapping("/get-company")
-    public ResponseEntity<ResponseObject> getCompanyById(@RequestParam Integer id){
+    public ResponseEntity<ResponseObject> getCompanyById(@AuthenticationPrincipal Jwt jwt,@RequestParam Integer id){
         try {
             Employer employer = employerService.getEmployerById(id);
             return ResponseEntity.ok().body(ResponseObject.builder()
@@ -409,5 +409,31 @@ public class EmployerController {
                     .status(HttpStatus.NOT_FOUND)
                     .build());
         }
+    }
+    @GetMapping("/get-employers-by-industry")
+    public ResponseEntity<ResponseObject> getEmployersByIndustry(@RequestParam Integer industryId,
+                                                                @RequestParam(defaultValue = "0") int page,
+                                                                @RequestParam(defaultValue = "10") int limit) {
+        int totalPage = 0;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<EmployerResponse> employers = employerService.getEmployersByIndustry(industryId, pageRequest);
+        if (employers.getTotalPages() > 0) {
+            totalPage = employers.getTotalPages();
+        }
+        List<EmployerResponse> employerResponses = employers.getContent();
+        if (employerResponses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .status(HttpStatus.NOT_FOUND)
+                    .message("Không tìm thấy công ty nào")
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách công ty thành công")
+                .data(EmployerListResponse.builder()
+                        .employerResponses(employerResponses)
+                        .totalPages(totalPage)
+                        .build())
+                .status(HttpStatus.OK)
+                .build());
     }
 }

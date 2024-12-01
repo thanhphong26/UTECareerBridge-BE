@@ -74,10 +74,10 @@ public class JobService implements IJobService {
         return jobResponse;
     }
     @Override
-    public Optional<JobResponse> getJobById(Integer jobId) {
-        Job job=jobRepository.findById(jobId).orElseThrow(()->new DataNotFoundException("Không tìm thấy công việc"));
-        if(job.getStatus()!=JobStatus.ACTIVE){
-            throw new DataNotFoundException("Công việc đã bị ẩn bởi nhà tuyển dụng hoặc vi phạm quy định của hệ thống");
+    public Optional<JobResponse> getJobById(Integer jobId, JobStatus jobStatus) {
+        Job job=jobRepository.findJobByJobIdAndStatus(jobId, jobStatus);
+        if(job==null){
+            throw new DataNotFoundException("Không tìm thấy thông tin công việc");
         }
         List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
         JobResponse jobResponse=JobResponse.fromJob(job);

@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface IJobService {
     JobResponse createJob(Integer employerId,JobDTO jobDTO) throws Exception;
-    Optional<JobResponse> getJobById(Integer jobId);
+    Optional<JobResponse> getJobById(Integer jobId, JobStatus jobStatus);
     Page<JobResponse> getJobsByEmployerId(Integer employerId, PageRequest page);
     JobResponse updateJob(Integer employerId, Integer jobId, JobDTO jobDTO) throws Exception;
     Page<JobResponse> getAllJobs(JobStatus status, PageRequest pageRequest);

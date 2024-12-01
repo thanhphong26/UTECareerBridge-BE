@@ -17,7 +17,7 @@ import java.util.List;
 
 public interface IEmployerService{
     Employer updateEmployer(Integer employerId, EmployerUpdateDTO employerUpdateDTO);
-    Employer getEmployerById(Integer employerId) throws DataNotFoundException;
+    Employer getEmployerById (Integer employerId) throws DataNotFoundException;
     Employer updateProfile(Integer employerId, UpdateProfileDTO updateProfileDTO);
     Employer updatePassword(Integer employerId, UpdatePasswordDTO updatePasswordDTO);
     void revokedTokens(Integer employerId);
@@ -26,4 +26,5 @@ public interface IEmployerService{
     void approveEmployer(Integer employerId);
     void rejectEmployer(Integer employerId, String reason);
     List<StudentResponse> getStudentsByApplication(Integer employerId);
+    Page<EmployerResponse> getEmployersByIndustry(Integer industryId, PageRequest pageRequest);
 }

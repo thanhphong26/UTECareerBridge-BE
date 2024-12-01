@@ -8,10 +8,8 @@ import com.pn.career.exceptions.UnUpdatedLicense;
 import com.pn.career.models.Employer;
 import com.pn.career.models.EmployerStatus;
 import com.pn.career.models.Token;
-import com.pn.career.repositories.EmployerRepository;
-import com.pn.career.repositories.IndustryRepository;
-import com.pn.career.repositories.StudentRepository;
-import com.pn.career.repositories.TokenRepository;
+import com.pn.career.models.User;
+import com.pn.career.repositories.*;
 import com.pn.career.responses.EmployerResponse;
 import com.pn.career.responses.StudentResponse;
 import com.pn.career.utils.MessageKeys;
@@ -43,6 +41,8 @@ public class EmployerService implements IEmployerService {
     private final Logger logger= LoggerFactory.getLogger(EmployerService.class);
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+
     @Override
     @Transactional
     public Employer updateEmployer(Integer employerId, EmployerUpdateDTO employerUpdateDTO) {
@@ -196,5 +196,11 @@ public class EmployerService implements IEmployerService {
     public List<StudentResponse> getStudentsByApplication(Integer employerId) {
         Employer employer=getEmployerById(employerId);
         return studentRepository.findAllStudentsByApplication(employerId);
+    }
+
+    @Override
+    public Page<EmployerResponse> getEmployersByIndustry(Integer industryId, PageRequest pageRequest) {
+        Page<Employer> employers=employerRepository.findRandomEmployersByIndustry(industryId,pageRequest);
+        return employers.map(EmployerResponse::fromUser);
     }
 }

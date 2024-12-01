@@ -1,6 +1,7 @@
 package com.pn.career.controllers;
 
 import com.pn.career.dtos.JobDTO;
+import com.pn.career.dtos.RejectDTO;
 import com.pn.career.models.JobStatus;
 import com.pn.career.responses.JobListResponse;
 import com.pn.career.responses.JobResponse;
@@ -48,8 +49,8 @@ public class JobController {
         }
     }
     @GetMapping("/{jobId}")
-    public ResponseEntity<ResponseObject> getJobById(@PathVariable Integer jobId){
-        JobResponse jobResponse = jobService.getJobById(jobId).orElseThrow(() -> new RuntimeException("Không tìm thấy công việc"));
+    public ResponseEntity<ResponseObject> getJobById(@PathVariable Integer jobId, @RequestParam(defaultValue = "ACTIVE") JobStatus status){
+        JobResponse jobResponse = jobService.getJobById(jobId, status).orElseThrow(() -> new RuntimeException("Không tìm thấy công việc"));
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Lấy thông tin công việc thành công")
                 .status(HttpStatus.OK)
@@ -205,8 +206,8 @@ public class JobController {
     }
     @PutMapping("/admin/job-approval/reject/{jobId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ResponseObject> rejectJob(@PathVariable Integer jobId, @RequestParam String reasonReject){
-        JobResponse jobResponse=jobService.rejectJob(jobId,reasonReject);
+    public ResponseEntity<ResponseObject> rejectJob(@PathVariable Integer jobId, @RequestBody RejectDTO reasonReject){
+        JobResponse jobResponse=jobService.rejectJob(jobId,reasonReject.reason());
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .message("Từ chối công việc thành công")

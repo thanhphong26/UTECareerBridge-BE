@@ -15,13 +15,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
+    Job findJobByJobIdAndStatus(Integer jobId, JobStatus status);
     Page<Job> findAllByEmployerAndStatusIn(Employer employer, List<JobStatus> jobStatus,Pageable pageable);
     Page<Job> findAllByEmployer_UserIdAndStatus(Integer employerId, JobStatus status, Pageable pageable);
     List<Job> findAllByJobCategory(JobCategory jobCategory);
