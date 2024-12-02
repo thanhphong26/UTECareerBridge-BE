@@ -17,6 +17,11 @@ import java.time.LocalDateTime;
 public class ApplicationResponse {
     private Integer applicationId;
     private String jobTitle;
+    private String profileImage;
+    private String lastName;
+    private String firstName;
+    private int year;
+    private String email;
     private String companyName;
     private String resumeFile;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -25,6 +30,11 @@ public class ApplicationResponse {
     public static ApplicationResponse fromApplication(Application application) {
         return ApplicationResponse.builder()
                 .applicationId(application.getApplicationId())
+                .profileImage(application.getResume().getStudent().getProfileImage())
+                .lastName(application.getResume().getStudent().getLastName())
+                .firstName(application.getResume().getStudent().getFirstName())
+                .year(application.getResume().getStudent().getYear())
+                .email(application.getResume().getStudent().getEmail())
                 .jobTitle(application.getJob().getJobTitle())
                 .companyName(application.getJob().getEmployer().getCompanyName())
                 .resumeFile(application.getResume().getResumeFile())
