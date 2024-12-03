@@ -5,10 +5,10 @@ import com.pn.career.exceptions.DuplicateNameException;
 import com.pn.career.exceptions.PermissionDenyException;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
-import com.pn.career.responses.ApplicationResponse;
-import com.pn.career.responses.StudentApplicationResponse;
-import com.pn.career.responses.StudentSkillResponse;
+import com.pn.career.responses.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,12 +36,12 @@ public class ApplicationService implements IApplicationService{
                 .applicationStatus(ApplicationStatus.PENDING)
                 .build();
         applicationRepository.save(application);
-        emailService.sendJobApplicationEmail(resume.getStudent().getEmail(), ApplicationResponse.fromApplication(application));
+        emailService.sendJobApplicationEmail(resume.getStudent().getEmail(), ResumeResponse.fromResume(resume), JobResponse.fromJob(job),ApplicationResponse.fromApplication(application));
         return application;
     }
 
     @Override
-    public List<Application> getAllApplicationByJobId(Integer employerId, Integer jobId, ApplicationStatus status) {
+    public Page<ApplicationResponse> getAllApplicationByJobId(Integer employerId, Integer jobId, ApplicationStatus status, PageRequest pageRequest) {
         if(jobId==null){
             throw new RuntimeException("JobId không được để trống");
         }
@@ -52,7 +52,8 @@ public class ApplicationService implements IApplicationService{
         if(job==null){
             throw new DataNotFoundException("Không tìm thấy công việc");
         }
-        return applicationRepository.findAllByJob_JobIdAndApplicationStatus(jobId, status);
+        Page<Application> applications=applicationRepository.findAllByJob_JobIdAndApplicationStatus(jobId,status,pageRequest);
+        return applications.map(ApplicationResponse::fromApplication);
     }
 
     @Override
@@ -69,10 +70,19 @@ public class ApplicationService implements IApplicationService{
                     .orElse("Chưa cập nhật ngành nghề");
         }
         return StudentApplicationResponse.builder()
+                .studentId(resume.getStudent().getUserId())
+                .resumeId(resume.getResumeId())
                 .lastName(resume.getStudent().getLastName())
                 .firstName(resume.getStudent().getFirstName())
                 .email(resume.getStudent().getEmail())
                 .phoneNumber(resume.getStudent().getPhoneNumber())
+                .profileImage(resume.getStudent().getProfileImage())
+                .universityEmail(resume.getStudent().getUniversityEmail())
+                .dob(resume.getStudent().getDob())
+                .year(resume.getStudent().getYear())
+                .provinceId(resume.getStudent().getProvinceId())
+                .districtId(resume.getStudent().getDistrictId())
+                .wardId(resume.getStudent().getWardId())
                 .address(resume.getStudent().getAddress())
                 .resumeFile(resume.getResumeFile())
                 .studentSkills(studentSkills.stream().map(StudentSkillResponse::fromStudentSkill).toList())

@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
@@ -28,7 +29,7 @@ public class StudentApplicationResponse {
     private String universityEmail;
     private String phoneNumber;
     @JsonFormat(pattern = "dd/MM/yyyy")
-    private String dob;
+    private LocalDate dob;
     private Integer year;
     private Integer provinceId;
     private Integer districtId;
@@ -49,7 +50,7 @@ public class StudentApplicationResponse {
                 .email(resume.getStudent().getEmail())
                 .universityEmail(resume.getStudent().getUniversityEmail())
                 .phoneNumber(resume.getStudent().getPhoneNumber())
-                .dob(DateTimeFormatter.ofPattern("dd/MM/yyyy").format(resume.getStudent().getDob()))
+                .dob(resume.getStudent().getDob())
                 .year(resume.getStudent().getYear())
                 .provinceId(resume.getStudent().getProvinceId())
                 .districtId(resume.getStudent().getDistrictId())

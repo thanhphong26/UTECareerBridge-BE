@@ -1,10 +1,12 @@
 package com.pn.career.services;
 
 import com.pn.career.models.Job;
+import com.pn.career.models.Resume;
 import com.pn.career.models.Student;
 import com.pn.career.models.User;
 import com.pn.career.responses.ApplicationResponse;
 import com.pn.career.responses.JobResponse;
+import com.pn.career.responses.ResumeResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
@@ -45,7 +47,7 @@ public class EmailService {
         mailSender.send(mimeMessage);
     }
     //send job application email
-    public void sendJobApplicationEmail(String recipientEmail, ApplicationResponse applicationResponse) throws MessagingException {
+    public void sendJobApplicationEmail(String recipientEmail, ResumeResponse resume, JobResponse job, ApplicationResponse applicationResponse) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
 
@@ -54,6 +56,8 @@ public class EmailService {
 
         Context context = new Context();
         context.setVariable("application", applicationResponse);
+        context.setVariable("job", job);
+        context.setVariable("resume", resume);
         String emailContent = thymeleafTemplateEngine.process("job-apply-successful", context);
 
         helper.setText(emailContent, true); // true indicates HTML

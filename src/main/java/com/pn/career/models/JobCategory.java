@@ -1,5 +1,7 @@
 package com.pn.career.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -22,6 +24,7 @@ public class JobCategory extends BaseEntity{
     private String jobCategoryName;
     @Column(name = "is_active")
     private boolean isActive;
+    @JsonBackReference
     @OneToMany(mappedBy = "jobCategory", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Student> students;
 }

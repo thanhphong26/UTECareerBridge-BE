@@ -63,14 +63,15 @@ public class EmployerController {
     }
     @GetMapping("/student-application/{jobId}")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> getAllApplicationWithJobId(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer jobId, @RequestParam(defaultValue = "PENDING") ApplicationStatus status) {
+    public ResponseEntity<ResponseObject> getAllApplicationWithJobId(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer jobId, @RequestParam(defaultValue = "PENDING") ApplicationStatus status, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit) {
         Long userIdLong = jwt.getClaim("userId");
         Integer userId = userIdLong != null ? userIdLong.intValue() : null;
-        List<Application> applications=applicationService.getAllApplicationByJobId(userId, jobId, status);
+        PageRequest pageRequest = PageRequest.of(page, limit);
+        Page<ApplicationResponse> applications=applicationService.getAllApplicationByJobId(userId, jobId, status, pageRequest);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Lấy danh sách sinh viên ứng tuyển thành công")
                 .status(HttpStatus.OK)
-                .data(applications.stream().map(ApplicationResponse::fromApplication).toList())
+                .data(applications)
                 .build());
     }
     @GetMapping("/student-application/detail/{applicationId}")
@@ -211,7 +212,7 @@ public class EmployerController {
                 .status(HttpStatus.OK)
                 .build());
     }
-    @GetMapping("/company-general-info/{employerId}")
+    @GetMapping("/company-general-info")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getCompanyGeneralInfo(@AuthenticationPrincipal Jwt principal) throws DataNotFoundException {
         try {

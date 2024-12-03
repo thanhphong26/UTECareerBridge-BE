@@ -12,6 +12,8 @@ import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.StudentResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -72,10 +74,8 @@ public class StudentService implements IStudentService{
     }
 
     @Override
-    public List<ApplicationResponse> getJobApplyByStudentId(Integer studentId) {
-        return applicationRepository.findAppliedApplicationsByStudentIdOrderedByDate(studentId)
-                .stream()
-                .map(ApplicationResponse::fromApplication)
-                .toList();
+    public Page<ApplicationResponse> getJobApplyByStudentId(Integer studentId, PageRequest pageRequest) {
+        return applicationRepository.findAppliedApplicationsByStudentIdOrderedByDate(studentId,pageRequest)
+                .map(ApplicationResponse::fromApplication);
     }
 }

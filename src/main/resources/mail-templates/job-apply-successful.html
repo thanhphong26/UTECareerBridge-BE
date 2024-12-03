@@ -17,7 +17,7 @@
                         <h1 style="margin: 0;">Ứng tuyển thành công</h1>
                     </td>
                     <td width="20%" style="text-align: right;">
-                        <img th:src="${application.getJobResponse().getEmployerResponse().getCompanyLogo()}" alt="Company Logo" style="max-width: 150px; max-height: 54px;">
+                        <img th:src="${job.getEmployerResponse().getCompanyLogo()}" alt="Company Logo" style="max-width: 150px; max-height: 54px;">
                     </td>
                 </tr>
             </table>
@@ -25,18 +25,18 @@
     </tr>
     <tr>
         <td style="padding: 20px;">
-            <p>Xin chào <span th:text="${application.getResumeResponse().getStudentResponse().getFirstName()}"></span>,</p>
-            <p>Chúng tôi rất vui mừng thông báo rằng bạn đã ứng tuyển thành công công việc tại <strong th:text="${application.getJobResponse().getEmployerResponse().getCompanyName()}"></strong>.</p>
+            <p>Xin chào <span th:text="${resume.getStudentResponse().getFirstName()}"></span>,</p>
+            <p>Chúng tôi rất vui mừng thông báo rằng bạn đã ứng tuyển thành công công việc tại <strong th:text="${job.getEmployerResponse().getCompanyName()}"></strong>.</p>
             <div style="background-color: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 5px; padding: 15px; margin-top: 20px;">
                 <h2 style="text-align: center;">Thông tin chi tiết về đơn ứng tuyển của bạn</h2>
                 <ul style="list-style-type: none; padding-left: 0;">
-                    <li style="margin-bottom: 10px;">Hồ sơ ứng tuyển: <strong><a th:href="${application.getResumeResponse().getResumeFile()}" target="_blank" th:text="${application.getResumeResponse().getResumeFile()}" style="color: #0066cc;">Xem hồ sơ</a></strong></li>
+                    <li style="margin-bottom: 10px;">Hồ sơ ứng tuyển: <strong><a th:href="${resume.getResumeFile()}" target="_blank" th:text="${resume.getResumeFile()}" style="color: #0066cc;">Xem hồ sơ</a></strong></li>
                     <li style="margin-bottom: 10px;">Ngày ứng tuyển: <strong th:text="${#temporals.format(application.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></strong></li>
-                    <li style="margin-bottom: 10px;">Vị trí: <strong><a th:href="@{'http://localhost:3000/jobs/' + ${application.getJobResponse().getJobId()}}" target="_blank" th:text="${application.getJobResponse().getJobTitle()}" style="color: #0066cc;"></a></strong></li>
+                    <li style="margin-bottom: 10px;">Vị trí: <strong><a th:href="@{'http://localhost:3000/jobs/' + ${job.getJobId()}}" target="_blank" th:text="${job.getJobTitle()}" style="color: #0066cc;"></a></strong></li>
                     <li style="margin-bottom: 10px;">Mức lương: <strong>
-                        <span th:text="${#numbers.formatDecimal(application.getJobResponse().getJobMinSalary(), 1, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                        <span th:text="${#numbers.formatDecimal(job.getJobMinSalary(), 1, 'COMMA', 0, 'POINT')} + ' VND'"></span>
                         -
-                        <span th:text="${#numbers.formatDecimal(application.getJobResponse().getJobMaxSalary(), 1, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                        <span th:text="${#numbers.formatDecimal(job.getJobMaxSalary(), 1, 'COMMA', 0, 'POINT')} + ' VND'"></span>
                     </strong></li>
                 </ul>
             </div>
@@ -48,8 +48,8 @@
     <tr>
         <td style="background-color: #f4f4f4; text-align: center; padding: 20px; font-size: 0.9em; color: #777;">
             <p>Trân trọng,</p>
-            <p>Đội ngũ hỗ trợ tuyển dụng <span th:text="${application.getJobResponse().getEmployerResponse().getCompanyName()}"></span></p>
-            <p>Email: <span th:text="${application.getJobResponse().getEmployerResponse().getCompanyEmail()}"></span> | Điện thoại: <span th:text="${application.getJobResponse().getEmployerResponse().getPhoneNumber()}"></span></p>
+            <p>Đội ngũ hỗ trợ tuyển dụng <span th:text="${job.getEmployerResponse().getCompanyName()}"></span></p>
+            <p>Email: <span th:text="${job.getEmployerResponse().getCompanyEmail()}"></span> | Điện thoại: <span th:text="${job.getEmployerResponse().getPhoneNumber()}"></span></p>
         </td>
     </tr>
 </table>
