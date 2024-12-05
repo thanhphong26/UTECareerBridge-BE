@@ -31,6 +31,7 @@ public class JobResponse {
     private BigDecimal jobMinSalary;
     private BigDecimal jobMaxSalary;
     private int amount;
+    private Integer packageId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate jobDeadline;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
@@ -65,6 +66,7 @@ public class JobResponse {
                 .jobLocation(job.getJobLocation())
                 .jobMinSalary(job.getJobMinSalary())
                 .jobMaxSalary(job.getJobMaxSalary())
+                .packageId(job.getPackageId())
                 .amount(job.getAmount())
                 .jobDeadline(job.getJobDeadline())
                 .rejectionReason(job.getRejectionReason())

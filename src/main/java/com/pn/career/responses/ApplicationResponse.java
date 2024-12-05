@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 @Builder
 public class ApplicationResponse {
     private Integer applicationId;
+    private Integer companyId;
+    private Integer jobId;
     private String jobTitle;
     private String profileImage;
     private String lastName;
@@ -30,6 +32,8 @@ public class ApplicationResponse {
     public static ApplicationResponse fromApplication(Application application) {
         return ApplicationResponse.builder()
                 .applicationId(application.getApplicationId())
+                .companyId(application.getJob().getEmployer().getUserId())
+                .jobId(application.getJob().getJobId())
                 .profileImage(application.getResume().getStudent().getProfileImage())
                 .lastName(application.getResume().getStudent().getLastName())
                 .firstName(application.getResume().getStudent().getFirstName())

@@ -263,9 +263,9 @@ public class StudentController {
     }
     //@PostMapping("/send-email/job-recommendations")
 
-    @PostMapping("/follow")
+    @PostMapping("/follow/{employerId}")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> followEmployer(@RequestParam Integer employerId, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseObject> followEmployer(@PathVariable Integer employerId, @AuthenticationPrincipal Jwt jwt) {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
         followerService.createFollower(studentId, employerId);
@@ -274,9 +274,9 @@ public class StudentController {
                 .message("Theo dõi nhà tuyển dụng thành công")
                 .build());
     }
-    @DeleteMapping("/unfollow")
+    @DeleteMapping("/unfollow/{employerId}")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> unfollowEmployer(@RequestParam Integer employerId, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseObject> unfollowEmployer(@PathVariable Integer employerId, @AuthenticationPrincipal Jwt jwt) {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
         followerService.unFollow(studentId, employerId);
