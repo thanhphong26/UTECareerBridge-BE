@@ -39,6 +39,7 @@ public class JobResponse {
     private LocalDateTime updatedAt;
     private List<JobSkillDTO> jobSkills;
     private String rejectionReason;
+    private Integer packageId;
     public static JobResponse fromJob(Job job) {
         return JobResponse.builder()
                 .jobId(job.getJobId())
@@ -67,6 +68,7 @@ public class JobResponse {
                 .amount(job.getAmount())
                 .jobDeadline(job.getJobDeadline())
                 .rejectionReason(job.getRejectionReason())
+                .packageId(job.getPackageId())
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
                 .build();

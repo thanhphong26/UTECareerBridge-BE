@@ -28,6 +28,65 @@ public class StudentController {
     private final IApplicationService applicationService;
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
+    private final ISaveJobService saveJobService;
+    @GetMapping("/jobs/check")
+    public ResponseEntity<ResponseObject> checkJobSaved(@RequestParam Integer jobId, @AuthenticationPrincipal Jwt jwt) {
+        if(jwt==null){
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .data(null)
+                    .message("Kiểm tra công việc đã lưu thành công")
+                    .build());
+        }
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        boolean isSaved = saveJobService.isSaved(studentId, jobId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(isSaved)
+                .message("Kiểm tra công việc đã lưu thành công")
+                .build());
+    }
+    @PostMapping("/jobs/saved/{jobId}")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> saveJob(@PathVariable Integer jobId, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        saveJobService.saveJob(studentId, jobId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lưu công việc thành công")
+                .build());
+    }
+    @DeleteMapping("/jobs/unsaved/{jobId}")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> unsaveJob(@PathVariable Integer jobId, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        saveJobService.unsaveJob(studentId, jobId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Hủy lưu công việc thành công")
+                .build());
+    }
+    @GetMapping("/jobs/saved")
+    public ResponseEntity<ResponseObject> getAllJobSaved(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<JobResponse> jobResponses=saveJobService.getSavedJobs(studentId, pageRequest);
+        if(jobResponses.isEmpty()){
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.NO_CONTENT)
+                    .message("Bạn chưa lưu công việc nào. Vui lòng lưu công việc để xem danh sách công việc đã lưu")
+                    .build());
+        }
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(jobResponses)
+                .message("Lấy danh sách công việc đã lưu thành công")
+                .build());
+    }
 
     @GetMapping("/jobs")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")

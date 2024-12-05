@@ -87,6 +87,7 @@ public class ApplicationService implements IApplicationService{
                 .resumeFile(resume.getResumeFile())
                 .studentSkills(studentSkills.stream().map(StudentSkillResponse::fromStudentSkill).toList())
                 .categoryName(categoryName)
+                .levelName(resume.getJobLevel().getNameLevel())
                 .build();
     }
 
