@@ -6,10 +6,13 @@ import com.pn.career.models.FollowerId;
 import com.pn.career.models.Student;
 import com.pn.career.repositories.EmployerRepository;
 import com.pn.career.repositories.FollowerRepository;
+import com.pn.career.repositories.JobRepository;
 import com.pn.career.repositories.StudentRepository;
 import com.pn.career.responses.EmployerResponse;
 import com.pn.career.responses.StudentResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +23,8 @@ public class FollowerService implements IFollowerService{
     private final FollowerRepository followerRepository;
     private final StudentRepository studentRepository;
     private final EmployerRepository employerRepository;
+    private final JobRepository jobRepository;
+
     @Override
     public void createFollower(Integer studentId, Integer employerId) {
         Student student=studentRepository.findById(studentId).orElseThrow(()->
@@ -63,14 +68,19 @@ public class FollowerService implements IFollowerService{
     }
 
     @Override
-    public List<EmployerResponse> getFollowedEmployers(Integer studentId) {
-        List<Employer> employers=followerRepository.findByStudent_UserId(studentId);
-        return employers.stream().map(EmployerResponse::fromUser).toList();
+    public Page<EmployerResponse> getFollowedEmployers(Integer studentId, PageRequest pageRequest) {
+        Page<Employer> employers=followerRepository.findByStudent_UserId(studentId, pageRequest);
+        return employers.map(employer -> {
+            EmployerResponse employerResponse=EmployerResponse.fromUser(employer);
+            employerResponse.setCountJob(jobRepository.countByEmployer_UserId(employer.getUserId()));
+            employerResponse.setCountFollower(followerRepository.countByEmployer_UserId(employer.getUserId()));
+            return employerResponse;
+        });
     }
 
     @Override
-    public List<StudentResponse> getFollowers(Integer employerId) {
-        List<Student> students=followerRepository.findByEmployer_UserId(employerId);
-        return students.stream().map(StudentResponse::fromUser).toList();
+    public Page<StudentResponse> getFollowers(Integer employerId, PageRequest pageRequest) {
+        Page<Student> students=followerRepository.findByEmployer_UserId(employerId, pageRequest);
+        return students.map(StudentResponse::fromUser);
     }
 }

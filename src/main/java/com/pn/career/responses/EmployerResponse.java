@@ -38,6 +38,8 @@ public class EmployerResponse {
     private Industry industry;
     private String rejectedReason;
     private List<BenefitResponse> benefitDetails;
+    private Integer countFollower;
+    private Integer countJob;
     public static EmployerResponse fromUser(Employer employer) {
         return EmployerResponse.builder()
                 .id(employer.getUserId())

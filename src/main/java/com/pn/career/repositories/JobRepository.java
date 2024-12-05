@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
+    Integer countByEmployer_UserId(Integer employerId);
     Job findJobByJobIdAndStatus(Integer jobId, JobStatus status);
     Page<Job> findAllByEmployerAndStatusIn(Employer employer, List<JobStatus> jobStatus,Pageable pageable);
     Page<Job> findAllByEmployer_UserIdAndStatus(Integer employerId, JobStatus status, Pageable pageable);

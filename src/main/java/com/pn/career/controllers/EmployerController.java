@@ -49,6 +49,9 @@ public class EmployerController {
     private final JwtDecoder jwtDecoder;
     private final IBenefitDetailService benefitDetailService;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final IFollowerService followerService;
+    private final JobService jobService;
+
     @PutMapping("/application/{applicationId}")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> updateApplicationStatus(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer applicationId, @Valid @RequestBody ApplicationStatusDTO status) {
@@ -413,10 +416,15 @@ public class EmployerController {
     public ResponseEntity<ResponseObject> getCompanyById(@AuthenticationPrincipal Jwt jwt,@RequestParam Integer id){
         try {
             Employer employer = employerService.getEmployerById(id);
+            Integer countFollower = followerService.getFollowerCount(id);
+            Integer countJob = jobService.countJobByEmployerId(id);
+            EmployerResponse employerResponse=EmployerResponse.fromUser(employer);
+            employerResponse.setCountFollower(countFollower);
+            employerResponse.setCountJob(countJob);
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .message("Lấy thông tin công ty thành công")
                     .status(HttpStatus.OK)
-                    .data(EmployerResponse.fromUser(employer))
+                    .data(employerResponse)
                     .build());
         } catch (DataNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()

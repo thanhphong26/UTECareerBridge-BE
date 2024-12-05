@@ -220,4 +220,8 @@ public class JobService implements IJobService {
             return jobResponse;
         }).collect(Collectors.toList());
     }
+    @Override
+    public Integer countJobByEmployerId(Integer employerId) {
+        return jobRepository.countByEmployer_UserId(employerId);
+    }
 }

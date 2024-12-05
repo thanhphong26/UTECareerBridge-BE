@@ -29,6 +29,25 @@ public class StudentController {
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
     private final ISaveJobService saveJobService;
+
+    @GetMapping("/follow/company")
+    public ResponseEntity<ResponseObject> checkFollowCompany(@RequestParam Integer companyId, @AuthenticationPrincipal Jwt jwt) {
+        if(jwt==null){
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .data(null)
+                    .message("Kiểm tra theo dõi nhà tuyển dụng thành công")
+                    .build());
+        }
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        boolean isFollowed = followerService.isFollowing(studentId, companyId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(isFollowed)
+                .message("Kiểm tra theo dõi nhà tuyển dụng thành công")
+                .build());
+    }
     @GetMapping("/jobs/check")
     public ResponseEntity<ResponseObject> checkJobSaved(@RequestParam Integer jobId, @AuthenticationPrincipal Jwt jwt) {
         if(jwt==null){
@@ -287,10 +306,11 @@ public class StudentController {
     }
     @GetMapping("/get-all-followed-employers")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> getAllFollowedEmployers(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseObject> getAllFollowedEmployers(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit) {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
-        List<EmployerResponse> employerResponses=followerService.getFollowedEmployers(studentId);
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<EmployerResponse> employerResponses=followerService.getFollowedEmployers(studentId, pageRequest);
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .data(employerResponses)
