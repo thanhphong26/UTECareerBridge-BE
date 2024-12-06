@@ -4,6 +4,8 @@ import com.pn.career.models.*;
 import com.pn.career.responses.StudentResponse;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -41,4 +43,5 @@ public interface StudentRepository extends JpaRepository<Student, Integer>, JpaS
         };
         return findAll(spec).stream().map(StudentResponse::fromStudent).collect(Collectors.toList());
     }
+    Page<Student> findAllByIsFindTrueAndJobCategory_JobCategoryId(Integer categoryId, Pageable pageable);
 }

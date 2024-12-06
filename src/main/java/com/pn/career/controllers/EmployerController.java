@@ -51,7 +51,27 @@ public class EmployerController {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final IFollowerService followerService;
     private final JobService jobService;
-
+    @GetMapping("/top-company")
+    public ResponseEntity<ResponseObject> getTopEmployersByJobCount(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit) {
+        int totalPage = 0;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<TopEmployerResponse> employers = employerService.getTopEmployersByJobCount(pageRequest);
+        if (employers.getTotalPages() > 0) {
+            totalPage = employers.getTotalPages();
+        }
+        List<TopEmployerResponse> employerResponses = employers.getContent();
+        if (employerResponses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                    .status(HttpStatus.NOT_FOUND)
+                    .message("Không tìm thấy công ty nào")
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách công ty thành công")
+                .data(employers)
+                .status(HttpStatus.OK)
+                .build());
+    }
     @PutMapping("/application/{applicationId}")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> updateApplicationStatus(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer applicationId, @Valid @RequestBody ApplicationStatusDTO status) {

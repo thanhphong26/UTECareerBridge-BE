@@ -1,5 +1,6 @@
 package com.pn.career.services;
 import com.pn.career.components.LocalizationUtils;
+import com.pn.career.dtos.EmployerJobCountDTO;
 import com.pn.career.dtos.EmployerUpdateDTO;
 import com.pn.career.dtos.UpdatePasswordDTO;
 import com.pn.career.dtos.UpdateProfileDTO;
@@ -12,6 +13,7 @@ import com.pn.career.models.User;
 import com.pn.career.repositories.*;
 import com.pn.career.responses.EmployerResponse;
 import com.pn.career.responses.StudentResponse;
+import com.pn.career.responses.TopEmployerResponse;
 import com.pn.career.utils.MessageKeys;
 import com.pn.career.utils.SlugConverter;
 import jakarta.transaction.Transactional;
@@ -202,5 +204,16 @@ public class EmployerService implements IEmployerService {
     public Page<EmployerResponse> getEmployersByIndustry(Integer industryId, PageRequest pageRequest) {
         Page<Employer> employers=employerRepository.findRandomEmployersByIndustry(industryId,pageRequest);
         return employers.map(EmployerResponse::fromUser);
+    }
+
+    @Override
+    public Page<TopEmployerResponse> getTopEmployersByJobCount(PageRequest pageRequest) {
+        Page<Object[]> employers=employerRepository.findTopEmployerByJobCount(pageRequest);
+        return employers.map(employer->{
+            EmployerJobCountDTO employerJobCountDTO=new EmployerJobCountDTO();
+            employerJobCountDTO.setEmployer((Employer) employer[0]);
+            employerJobCountDTO.setCountJob((Long) employer[1]);
+            return TopEmployerResponse.fromEmployerJobCount(employerJobCountDTO);
+        });
     }
 }

@@ -10,6 +10,7 @@ import com.pn.career.repositories.*;
 import com.pn.career.responses.ApplicationResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.StudentResponse;
+import com.pn.career.responses.StudentViewResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -77,5 +78,11 @@ public class StudentService implements IStudentService{
     public Page<ApplicationResponse> getJobApplyByStudentId(Integer studentId, PageRequest pageRequest) {
         return applicationRepository.findAppliedApplicationsByStudentIdOrderedByDate(studentId,pageRequest)
                 .map(ApplicationResponse::fromApplication);
+    }
+
+    @Override
+    public Page<StudentViewResponse> getStudentIsFindingJob(Integer categoryId, PageRequest pageRequest) {
+        Page<Student> students=studentRepository.findAllByIsFindTrueAndJobCategory_JobCategoryId(categoryId,pageRequest);
+        return students.map(StudentViewResponse::fromStudent);
     }
 }

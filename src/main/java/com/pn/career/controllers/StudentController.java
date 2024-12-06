@@ -29,7 +29,23 @@ public class StudentController {
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
     private final ISaveJobService saveJobService;
-
+    @GetMapping("/students-finding-job/{categoryId}")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getStudentIsFindingJob(@PathVariable Integer categoryId, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit) {
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<StudentViewResponse> studentViewResponses=studentService.getStudentIsFindingJob(categoryId, pageRequest);
+        if(studentViewResponses.isEmpty()){
+            return ResponseEntity.ok(ResponseObject.builder()
+                    .status(HttpStatus.NO_CONTENT)
+                    .message("Không có sinh viên nào đang tìm việc")
+                    .build());
+        }
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(studentViewResponses)
+                .message("Lấy danh sách sinh viên đang tìm việc thành công")
+                .build());
+    }
     @GetMapping("/follow/company")
     public ResponseEntity<ResponseObject> checkFollowCompany(@RequestParam Integer companyId, @AuthenticationPrincipal Jwt jwt) {
         if(jwt==null){

@@ -1,5 +1,6 @@
 package com.pn.career.repositories;
 
+import com.pn.career.dtos.EmployerJobCountDTO;
 import com.pn.career.models.Employer;
 import com.pn.career.models.EmployerStatus;
 import com.pn.career.responses.EmployerResponse;
@@ -22,4 +23,7 @@ public interface EmployerRepository extends JpaRepository<Employer, Integer> {
     Page<Employer> searchEmployers(@Param("keyword") String keyword, @Param("industryId") Integer industryId, Pageable pageable, EmployerStatus status);
     @Query("SELECT e FROM Employer e WHERE e.industry.industryId = :industryId AND e.approvalStatus = 'APPROVED' ORDER BY FUNCTION('RAND')")
     Page<Employer> findRandomEmployersByIndustry(@Param("industryId") Integer industryId, Pageable pageable);
+    //get top 10 employer has the most job
+    @Query("select e as employer, count(j) as jobCount from Employer e left join Job j on j.employer=e group by e order by jobCount desc")
+    Page<Object[]> findTopEmployerByJobCount(Pageable pageable);
 }

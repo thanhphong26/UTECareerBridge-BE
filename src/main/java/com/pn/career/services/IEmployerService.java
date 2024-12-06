@@ -9,6 +9,7 @@ import com.pn.career.models.EmployerStatus;
 import com.pn.career.responses.EmployerResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.StudentResponse;
+import com.pn.career.responses.TopEmployerResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,4 +28,5 @@ public interface IEmployerService{
     void rejectEmployer(Integer employerId, String reason);
     List<StudentResponse> getStudentsByApplication(Integer employerId);
     Page<EmployerResponse> getEmployersByIndustry(Integer industryId, PageRequest pageRequest);
+    Page<TopEmployerResponse> getTopEmployersByJobCount(PageRequest pageRequest);
 }
