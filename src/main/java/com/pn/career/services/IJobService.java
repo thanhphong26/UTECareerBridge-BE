@@ -26,4 +26,5 @@ public interface IJobService {
     void deleteJob(Integer employerId, Integer jobId);
     List<JobResponse> getSimilarJobs(Integer jobId);
     Integer countJobByEmployerId(Integer employerId);
+    Page<JobResponse> getJobRecruitmentUrgent(PageRequest pageRequest);
 }

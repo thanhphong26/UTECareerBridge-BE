@@ -30,6 +30,31 @@ import java.util.List;
 public class JobController {
     private final IJobService jobService;
     private final Logger logger= LoggerFactory.getLogger(JobController.class);
+
+    @GetMapping("/recruitment-urgent")
+    public ResponseEntity<ResponseObject> getJobRecruitmentUrgent(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit){
+        int totalPages=0;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<JobResponse> jobs=jobService.getJobRecruitmentUrgent(pageRequest);
+        if(jobs.getTotalPages()>0){
+            totalPages=jobs.getTotalPages();
+        }
+        List<JobResponse> jobResponses=jobs.getContent();
+        if(jobResponses.isEmpty()){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Không có công việc nào")
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy danh sách công việc tuyển dụng gấp thành công")
+                .data(JobListResponse.builder()
+                        .jobResponses(jobResponses)
+                        .totalPages(totalPages)
+                        .build())
+                .build());
+    }
     @PostMapping("/job-posting/new-job")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> createJobPosting(@AuthenticationPrincipal Jwt jwt, @RequestBody JobDTO jobDTO){

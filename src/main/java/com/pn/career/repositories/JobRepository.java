@@ -19,6 +19,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
+    @Query("SELECT j FROM Job j WHERE j.packageId = :packageId AND j.status = 'ACTIVE' ORDER BY j.createdAt DESC")
+    Page<Job> findActiveJobsByPackageIdOrderByCreatedAtDesc(@Param("packageId") Integer packageId, Pageable pageable);
     Integer countByEmployer_UserId(Integer employerId);
     Job findJobByJobIdAndStatus(Integer jobId, JobStatus status);
     Page<Job> findAllByEmployerAndStatusIn(Employer employer, List<JobStatus> jobStatus,Pageable pageable);

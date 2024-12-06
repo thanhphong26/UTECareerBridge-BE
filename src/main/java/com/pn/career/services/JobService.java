@@ -224,4 +224,16 @@ public class JobService implements IJobService {
     public Integer countJobByEmployerId(Integer employerId) {
         return jobRepository.countByEmployer_UserId(employerId);
     }
+
+    @Override
+    public Page<JobResponse> getJobRecruitmentUrgent(PageRequest pageRequest) {
+        Integer packageId=6;
+        Page<Job> jobs=jobRepository.findActiveJobsByPackageIdOrderByCreatedAtDesc(packageId, pageRequest);
+        return jobs.map(job -> {
+            JobResponse jobResponse = JobResponse.fromJob(job);
+            List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
+            jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+            return jobResponse;
+        });
+    }
 }

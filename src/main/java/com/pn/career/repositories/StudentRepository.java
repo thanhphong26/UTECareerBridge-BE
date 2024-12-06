@@ -43,5 +43,6 @@ public interface StudentRepository extends JpaRepository<Student, Integer>, JpaS
         };
         return findAll(spec).stream().map(StudentResponse::fromStudent).collect(Collectors.toList());
     }
+    @Query("select s from Student s where (:categoryId is null or s.jobCategory.jobCategoryId = :categoryId) and s.isFind = true")
     Page<Student> findAllByIsFindTrueAndJobCategory_JobCategoryId(Integer categoryId, Pageable pageable);
 }

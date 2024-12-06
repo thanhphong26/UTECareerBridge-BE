@@ -67,14 +67,12 @@ public class EmployerService implements IEmployerService {
             if (!employerUpdateDTO.getCompanyLogo().isEmpty()) {
                 if(employer.getCompanyLogo()!=null){
                     asyncCloudinaryService.deleteFile(employer.getCompanyLogo());
-                    logger.info("Deleted logo");
                 }
                 logoFuture = asyncCloudinaryService.uploadFileAsync(employerUpdateDTO.getCompanyLogo(), companyNameSlug + "_logo");
             }
             if (!employerUpdateDTO.getBackgroundImage().isEmpty()) {
                 if(employer.getBackgroundImage()!=null){
                     asyncCloudinaryService.deleteFile(employer.getBackgroundImage());
-                    logger.info("Deleted background");
                 }
                 backgroundFuture = asyncCloudinaryService.uploadFileAsync(employerUpdateDTO.getBackgroundImage(), companyNameSlug + "_background");
             }
