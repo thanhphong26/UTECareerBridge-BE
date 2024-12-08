@@ -1,83 +1,128 @@
 package com.pn.career.services;
 
 import com.pn.career.dtos.EventDTO;
-import com.pn.career.exceptions.DataNotFoundException;
-import com.pn.career.exceptions.InvalidMultipartFile;
+import com.pn.career.dtos.EventTimelineDTO;
 import com.pn.career.models.Event;
+import com.pn.career.models.EventTimeline;
+import com.pn.career.models.EventType;
 import com.pn.career.repositories.EventRepository;
-import com.pn.career.utils.SlugConverter;
+import com.pn.career.repositories.EventTimelineRepository;
+import com.pn.career.responses.EventResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class EventService implements IEventService{
     private final EventRepository eventRepository;
+    private final EventTimelineRepository eventTimelineRepository;
     private final CloudinaryService cloudinaryService;
     @Override
-    @Transactional
-    public Event createEvent(EventDTO eventDTO) {
-        try{
-            Event event=Event.builder()
-                    .eventTitle(eventDTO.getEventTitle())
-                    .eventDescription(eventDTO.getEventDescription())
-                    .eventDate(eventDTO.getEventDate())
-                    .eventLocation(eventDTO.getEventLocation())
+    public Page<Event> getAllEvents(EventType eventType, PageRequest pageRequest) {
+        return eventRepository.findAllByEventTypeOrderByCreatedAt(eventType, pageRequest);
+    }
+    @Override
+    public EventResponse createEvent(EventDTO eventDTO) {
+        Event event = Event.builder()
+                .eventTitle(eventDTO.getEventTitle())
+                .eventDescription(eventDTO.getEventDescription())
+                .eventDate(eventDTO.getEventDate())
+                .eventLocation(eventDTO.getEventLocation())
+                .eventImage(eventDTO.getEventImage())
+                .maxParticipants(eventDTO.getMaxParticipants())
+                .currentParticipants(eventDTO.getCurrentParticipants())
+                .eventType(eventDTO.getEventType())
+                .build();
+
+        // Lưu event trước
+        Event savedEvent = eventRepository.save(event);
+
+        // Tạo danh sách timeline với event đã được lưu
+        List<EventTimeline> timelines = new ArrayList<>();
+        for (EventTimelineDTO timelineDTO : eventDTO.getTimeline()) {
+            EventTimeline timeline = EventTimeline.builder()
+                    .event(savedEvent)
+                    .timelineTitle(timelineDTO.getTimelineTitle())
+                    .timelineDescription(timelineDTO.getTimelineDescription())
+                    .timelineStart(timelineDTO.getTimelineStart())
                     .build();
-            if(!eventDTO.getEventImage().isEmpty()){
-                if(!cloudinaryService.isValidImage(eventDTO.getEventImage())){
-                    throw new InvalidMultipartFile("Ảnh tải lên không đúng định dạng. Vui lòng upload ảnh có định dạng jpeg hoặc png");
-                }
-                String eventNameSlug= SlugConverter.toSlug(eventDTO.getEventTitle());
-                String imageUrl=cloudinaryService.uploadImageEventToCloudinary(eventDTO.getEventImage(), eventNameSlug);
-                event.setEventImage(imageUrl);
-            }
-
-            return eventRepository.save(event);
-        }catch (IOException e){
-            throw  new RuntimeException("Đã xảy ra lỗi khi upload hình ảnh. Vui lòng thử lại sau");
+            timelines.add(timeline);
         }
+        // Lưu các timeline
+        eventTimelineRepository.saveAll(timelines);
+
+        // Cập nhật event với danh sách timeline
+        savedEvent.setEventTimelines(timelines);
+        savedEvent = eventRepository.save(savedEvent);
+
+        return EventResponse.from(savedEvent);
     }
 
     @Override
     @Transactional
-    public Event updateEvent(Integer eventId, EventDTO eventDTO) {
-        Event event=getEvent(eventId);
-        try{
-            String imgUrl=!event.getEventImage().isEmpty()?event.getEventImage():"";
-            if(!eventDTO.getEventImage().isEmpty()){
-                String eventNameSlug= SlugConverter.toSlug(eventDTO.getEventTitle());
-                imgUrl=cloudinaryService.uploadImageEventToCloudinary(eventDTO.getEventImage(), eventNameSlug);
+    public EventResponse updateEvent(Integer eventId, EventDTO eventDTO) {
+        Event existingEvent = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Không tìm thấy sự kiện"));
+        List<EventTimeline> existingTimelines = existingEvent.getEventTimelines();
+        existingEvent.setEventTitle(eventDTO.getEventTitle());
+        existingEvent.setEventDescription(eventDTO.getEventDescription());
+        existingEvent.setEventDate(eventDTO.getEventDate());
+        existingEvent.setEventLocation(eventDTO.getEventLocation());
+        existingEvent.setEventImage(eventDTO.getEventImage());
+        existingEvent.setMaxParticipants(eventDTO.getMaxParticipants());
+        existingEvent.setCurrentParticipants(eventDTO.getCurrentParticipants());
+        existingEvent.setEventType(eventDTO.getEventType());
+
+        List<Integer> newTimelineIds = eventDTO.getTimeline().stream()
+                .map(EventTimelineDTO::getTimelineId)
+                .filter(Objects::nonNull) // Chỉ lấy những timeline đã có ID
+                .collect(Collectors.toList());
+
+        // Xóa các timeline không tồn tại trong danh sách mới
+        existingTimelines.removeIf(timeline -> !newTimelineIds.contains(timeline.getTimelineId()));
+
+        for (EventTimelineDTO timelineDTO : eventDTO.getTimeline()) {
+            if (timelineDTO.getTimelineId() != null) {
+                // Cập nhật timeline đã tồn tại
+                existingTimelines.stream()
+                        .filter(timeline -> timeline.getTimelineId().equals(timelineDTO.getTimelineId()))
+                        .findFirst()
+                        .ifPresent(existingTimeline -> {
+                            existingTimeline.setEvent(existingEvent);
+                            existingTimeline.setTimelineTitle(timelineDTO.getTimelineTitle());
+                            existingTimeline.setTimelineDescription(timelineDTO.getTimelineDescription());
+                            existingTimeline.setTimelineStart(timelineDTO.getTimelineStart());
+                        });
+            } else {
+                existingTimelines.add(EventTimeline.builder()
+                        .event(existingEvent)
+                        .timelineTitle(timelineDTO.getTimelineTitle())
+                        .timelineDescription(timelineDTO.getTimelineDescription())
+                        .timelineStart(timelineDTO.getTimelineStart())
+                        .build());
             }
-            event.setEventTitle(eventDTO.getEventTitle());
-            event.setEventDescription(eventDTO.getEventDescription());
-            event.setEventDate(eventDTO.getEventDate());
-            event.setEventLocation(eventDTO.getEventLocation());
-            event.setEventImage(imgUrl);
-            return eventRepository.save(event);
-        }catch (IOException e) {
-            throw new RuntimeException("Đã xảy ra lỗi khi upload hình ảnh. Vui lòng thử lại sau");
         }
+        existingEvent.setEventTimelines(existingTimelines);
+        Event savedEvent = eventRepository.save(existingEvent);
+        return EventResponse.from(savedEvent);
     }
 
     @Override
+    @Transactional
     public void deleteEvent(Integer eventId) {
-        Event event=getEvent(eventId);
-        eventRepository.delete(event);
+        eventRepository.deleteById(eventId);
     }
 
     @Override
-    public Event getEvent(Integer eventId) {
-        return eventRepository.findById(eventId).orElseThrow(()->new DataNotFoundException("Không tìm thấy sự kiện tương ứng"));
-    }
-
-    @Override
-    public Page<Event> getAllEvents(PageRequest pageRequest) {
-        return eventRepository.findAll(pageRequest);
+    public EventResponse getEventById(Integer eventId) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Không tìm thấy sự kiện"));
+        return EventResponse.from(event);
     }
 }

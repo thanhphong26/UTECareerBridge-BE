@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Table(name = "events")
 @Entity
@@ -28,4 +30,13 @@ public class Event extends BaseEntity{
     private String eventLocation;
     @Column(name = "event_image")
     private String eventImage;
+    @Column(name = "max_participants")
+    private int maxParticipants;
+    @Column(name = "current_participants")
+    private int currentParticipants;
+    @Column(name = "event_type")
+    @Enumerated(EnumType.STRING)
+    private EventType eventType;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventTimeline> eventTimelines;
 }

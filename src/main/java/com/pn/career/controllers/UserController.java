@@ -1,10 +1,7 @@
 package com.pn.career.controllers;
 
 import com.pn.career.components.LocalizationUtils;
-import com.pn.career.dtos.LoginDTO;
-import com.pn.career.dtos.StudentRegisterDTO;
-import com.pn.career.dtos.TokenDTO;
-import com.pn.career.dtos.UpdateUserDTO;
+import com.pn.career.dtos.*;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.responses.*;
@@ -37,6 +34,39 @@ public class UserController {
     private final IUserService userService;
     private final ITokenService tokenService;
     private final LocalizationUtils localizationUtils;
+    @PutMapping("/update-password")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT') || hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> updatePassword(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody UpdatePasswordDTO updatePasswordDTO
+    ) {
+        try{
+            Long userId = jwt.getClaim("userId");
+            boolean updated = userService.updatePassword(userId.intValue(), updatePasswordDTO);
+            if(updated){
+                return ResponseEntity.ok().body(
+                        ResponseObject.builder()
+                                .message("Cập nhật mật khẩu thành công")
+                                .status(HttpStatus.OK)
+                                .build()
+                );
+            }else{
+                return ResponseEntity.badRequest().body(
+                        ResponseObject.builder()
+                                .message("Cập nhật mật khẩu không thành công")
+                                .status(HttpStatus.BAD_REQUEST)
+                                .build()
+                );
+            }
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(
+                    ResponseObject.builder()
+                            .message(e.getMessage())
+                            .status(HttpStatus.BAD_REQUEST)
+                            .build()
+            );
+        }
+    }
     @PostMapping("/register")
     public ResponseEntity<ResponseObject> registerStudent(@RequestBody StudentRegisterDTO studentRegistrationDTO) throws Exception {
         if (studentRegistrationDTO.getEmail() == null || studentRegistrationDTO.getEmail().trim().isBlank()) {

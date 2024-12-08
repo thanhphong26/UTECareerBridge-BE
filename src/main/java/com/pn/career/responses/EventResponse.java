@@ -1,13 +1,18 @@
 package com.pn.career.responses;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pn.career.dtos.EventDTO;
+import com.pn.career.dtos.EventTimelineDTO;
 import com.pn.career.models.Event;
+import com.pn.career.models.EventType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,12 +21,14 @@ import java.time.LocalDateTime;
 public class EventResponse {
     private String eventTitle;
     private String eventDescription;
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime eventDate;
     private String eventLocation;
     private String eventImage;
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    private LocalDateTime createdAt;
+    private int maxParticipants;
+    private int currentParticipants;
+    private EventType eventType;
+    private List<EventTimelineDTO> timeline;
     public static EventResponse from(Event event) {
         return EventResponse.builder()
                 .eventTitle(event.getEventTitle())
@@ -29,7 +36,15 @@ public class EventResponse {
                 .eventDate(event.getEventDate())
                 .eventLocation(event.getEventLocation())
                 .eventImage(event.getEventImage())
-                .createdAt(event.getCreatedAt())
+                .maxParticipants(event.getMaxParticipants())
+                .currentParticipants(event.getCurrentParticipants())
+                .eventType(event.getEventType())
+                .timeline(event.getEventTimelines().stream().map(timeline -> EventTimelineDTO.builder()
+                        .timelineId(timeline.getTimelineId())
+                        .timelineTitle(timeline.getTimelineTitle())
+                        .timelineDescription(timeline.getTimelineDescription())
+                        .timelineStart(timeline.getTimelineStart())
+                        .build()).toList())
                 .build();
     }
 }

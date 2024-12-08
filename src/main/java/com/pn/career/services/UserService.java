@@ -214,6 +214,21 @@ public class UserService implements IUserService {
         userRepository.delete(user);
     }
 
+    @Override
+    public boolean updatePassword(Integer userId, UpdatePasswordDTO updatePasswordDTO) {
+        User user=userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin người dùng"));
+        if (!passwordEncoder.matches(updatePasswordDTO.oldPassword(),user.getPassword())){
+            throw new BadCredentialsException("Mật khẩu cũ không chính xác");
+        }
+        if(!updatePasswordDTO.newPassword().equals(updatePasswordDTO.confirmPassword())){
+            throw new DataNotFoundException("Mật khẩu mới không khớp");
+        }
+        user.setPassword(passwordEncoder.encode(updatePasswordDTO.newPassword()));
+        userRepository.save(user);
+        return true;
+    }
+
     private String generateToken(){
         return UUID.randomUUID().toString();
     }
