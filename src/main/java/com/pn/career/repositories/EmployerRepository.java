@@ -26,4 +26,5 @@ public interface EmployerRepository extends JpaRepository<Employer, Integer> {
     //get top 10 employer has the most job
     @Query("select e as employer, count(j) as jobCount from Employer e left join Job j on j.employer=e group by e order by jobCount desc")
     Page<Object[]> findTopEmployerByJobCount(Pageable pageable);
+
 }

@@ -17,4 +17,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
     Page<Application> findAppliedApplicationsByStudentIdOrderedByDate(
             @Param("studentId") int studentId, Pageable pageable
     );
+    @Query("SELECT COUNT(DISTINCT a.resume.student) FROM Application a " +
+            "JOIN a.job j " +
+            "WHERE j.employer.userId = :employerId")
+    Integer countUniqueStudentApplicationsByEmployer(@Param("employerId") int employerId);
 }

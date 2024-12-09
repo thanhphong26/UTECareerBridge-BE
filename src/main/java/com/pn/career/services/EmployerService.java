@@ -44,6 +44,7 @@ public class EmployerService implements IEmployerService {
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final ApplicationRepository applicationRepository;
 
     @Override
     @Transactional
@@ -213,5 +214,10 @@ public class EmployerService implements IEmployerService {
             employerJobCountDTO.setCountJob((Long) employer[1]);
             return TopEmployerResponse.fromEmployerJobCount(employerJobCountDTO);
         });
+    }
+
+    @Override
+    public Integer getTotalJobCount(Integer employerId) {
+        return applicationRepository.countUniqueStudentApplicationsByEmployer(employerId);
     }
 }

@@ -29,4 +29,5 @@ public interface IEmployerService{
     List<StudentResponse> getStudentsByApplication(Integer employerId);
     Page<EmployerResponse> getEmployersByIndustry(Integer industryId, PageRequest pageRequest);
     Page<TopEmployerResponse> getTopEmployersByJobCount(PageRequest pageRequest);
+    Integer getTotalJobCount(Integer employerId);
 }

@@ -51,6 +51,18 @@ public class EmployerController {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final IFollowerService followerService;
     private final JobService jobService;
+    @GetMapping("/get-total-student-application")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getTotalStudentApplication(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        Integer totalStudentApplication = employerService.getTotalJobCount(userId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy tổng số sinh viên đã ứng tuyển thành công")
+                .status(HttpStatus.OK)
+                .data(totalStudentApplication)
+                .build());
+    }
     @GetMapping("/top-company")
     public ResponseEntity<ResponseObject> getTopEmployersByJobCount(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit) {
         int totalPage = 0;

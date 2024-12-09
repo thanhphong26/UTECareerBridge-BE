@@ -19,9 +19,10 @@ import java.util.List;
 @Data
 @Builder
 public class EventResponse {
+    private Integer eventId;
     private String eventTitle;
     private String eventDescription;
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime eventDate;
     private String eventLocation;
     private String eventImage;
@@ -31,6 +32,7 @@ public class EventResponse {
     private List<EventTimelineDTO> timeline;
     public static EventResponse from(Event event) {
         return EventResponse.builder()
+                .eventId(event.getEventId())
                 .eventTitle(event.getEventTitle())
                 .eventDescription(event.getEventDescription())
                 .eventDate(event.getEventDate())
