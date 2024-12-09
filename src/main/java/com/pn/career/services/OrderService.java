@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -51,9 +52,7 @@ public class OrderService implements IOrderService {
         List<OrderDetail> orderDetails=createOrderDetail(order,cart.getItems());
         order.setOrderDetails(orderDetails);
         BigDecimal total = calculateTotal(orderDetails);
-        // Apply coupon if provided
         applyCoupon(order, couponCode, total);
-
         Order savedOrder = orderRepository.save(order);
         orderDetailRepository.saveAll(orderDetails);
 

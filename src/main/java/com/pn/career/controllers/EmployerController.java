@@ -242,9 +242,14 @@ public class EmployerController {
             Long userIdLong = principal.getClaim("userId");
             Integer userId = userIdLong != null ? userIdLong.intValue() : null;
             Employer employer = employerService.getEmployerById(userId);
+            Integer countJob=jobService.countJobByEmployerId(userId);
+            Integer countFollower=followerService.getFollowerCount(userId);
+            EmployerResponse employerResponse=EmployerResponse.fromUser(employer);
+            employerResponse.setCountFollower(countFollower);
+            employerResponse.setCountJob(countJob);
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .message("Lấy thông tin công ty thành công")
-                    .data(EmployerResponse.fromUser(employer))
+                    .data(employerResponse)
                     .status(HttpStatus.OK)
                     .build());
         } catch (DataNotFoundException e) {

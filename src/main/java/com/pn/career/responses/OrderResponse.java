@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 public class OrderResponse {
     private Integer orderId;
     private EmployerResponse employer;
+    //if coupon is null, couponCode is null
     private String couponCode;
     private String accountNumber;
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "dd/MM/yyyy HH:mm:ss")
@@ -29,7 +30,7 @@ public class OrderResponse {
         return OrderResponse.builder()
                 .orderId(order.getOrderId())
                 .employer(EmployerResponse.fromUser(order.getEmployer()))
-                .couponCode(order.getCoupon().getCouponCode())
+                .couponCode(order.getCoupon()!=null?order.getCoupon().getCouponCode():null)
                 .accountNumber(order.getAccountNumber())
                 .orderDate(order.getOrderDate())
                 .paymentStatus(order.getPaymentStatus())
