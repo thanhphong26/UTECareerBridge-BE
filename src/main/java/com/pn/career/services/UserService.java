@@ -101,17 +101,17 @@ public class UserService implements IUserService {
             }
             throw e;
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKeys.WRONG_PHONE_PASSWORD));
+            throw new BadCredentialsException("Mật khẩu không đúng");
         } catch (AuthenticationException e) {
             throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.AUTHENTICATION_FAILED)) {};
         }
     }
     private void validateUserForLogin(User user, String... allowedRoles) throws Exception {
         if (!user.isActive()) {
-            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
+            throw new PermissionDenyException("Tài khoản của bạn đã bị khóa");
         }
         if (allowedRoles.length > 0 && !isUserRoleAllowed(user, allowedRoles)) {
-            throw new PermissionDenyException(localizationUtils.getLocalizedMessage(MessageKeys.NON_PERMISSION_WITH_ROLE));
+            throw new PermissionDenyException("Không được phép đăng nhập với vai trò này");
         }
     }
     private boolean isUserRoleAllowed(User user, String... allowedRoles) {
