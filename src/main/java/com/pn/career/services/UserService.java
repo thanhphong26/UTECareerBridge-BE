@@ -101,7 +101,7 @@ public class UserService implements IUserService {
             }
             throw e;
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Mật khẩu không đúng");
+            throw new BadCredentialsException("Tài khoản không tồn tại trong hệ thống");
         } catch (AuthenticationException e) {
             throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.AUTHENTICATION_FAILED)) {};
         }

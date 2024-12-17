@@ -43,8 +43,8 @@ public class OrderController {
         Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
         Order order = orderService.getOrderById(employerId, orderId);
 
-        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":3000";
-        String returnUrl = baseUrl  + VNPAYConfig.vnp_Returnurl;
+        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        String returnUrl = baseUrl +"/api/v1/orders" + VNPAYConfig.vnp_Returnurl;
 
         String paymentUrl = vnpayService.createPaymentUrl(request, order, returnUrl);
 
