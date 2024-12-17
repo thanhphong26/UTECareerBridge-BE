@@ -29,9 +29,9 @@ public class StudentController {
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
     private final ISaveJobService saveJobService;
-    @GetMapping("/students-finding-job/{categoryId}")
+    @GetMapping("/students-finding-job")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> getStudentIsFindingJob(@PathVariable(required = false) Integer categoryId, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit) {
+    public ResponseEntity<ResponseObject> getStudentIsFindingJob(@RequestParam(required = false) Integer categoryId, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit) {
         PageRequest pageRequest=PageRequest.of(page,limit);
         Page<StudentViewResponse> studentViewResponses=studentService.getStudentIsFindingJob(categoryId, pageRequest);
         if(studentViewResponses.isEmpty()){

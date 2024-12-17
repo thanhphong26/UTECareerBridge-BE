@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,6 +45,12 @@ public interface StudentRepository extends JpaRepository<Student, Integer>, JpaS
         };
         return findAll(spec).stream().map(StudentResponse::fromStudent).collect(Collectors.toList());
     }
-    @Query("select s from Student s where (:categoryId is null or s.jobCategory.jobCategoryId = :categoryId) and s.isFind = true")
-    Page<Student> findAllByIsFindTrueAndJobCategory_JobCategoryId(Integer categoryId, Pageable pageable);
+    @Query("SELECT s FROM Student s " +
+            "LEFT JOIN s.jobCategory jc " +
+            "WHERE (:categoryId IS NULL OR jc.jobCategoryId = :categoryId) " +
+            "AND s.isFind = true")
+    Page<Student> findAllByIsFindTrueAndJobCategory_JobCategoryId(
+            @Param("categoryId") Integer categoryId,
+            Pageable pageable
+    );
 }

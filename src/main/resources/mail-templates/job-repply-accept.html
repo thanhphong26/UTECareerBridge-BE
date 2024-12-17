@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Mời phỏng vấn</title>
+  <title>Thư mời phỏng vấn</title>
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -23,19 +23,8 @@
       background: linear-gradient(90deg, #001743, #004CD6);
       color: white;
       text-align: center;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      padding: 10px;
+      padding: 20px;
       border-radius: 5px 5px 0 0;
-    }
-    .logo-container {
-      margin-bottom: 15px;
-    }
-    .img-logo {
-      max-width: 150px;
-      display: block;
-      margin: 0 auto;
     }
     .header h1 {
       margin: 0;
@@ -44,13 +33,6 @@
     .content {
       padding: 30px;
     }
-    .footer {
-      background-color: #f4f4f4;
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9em;
-      color: #777;
-    }
     .interview-details {
       background-color: #f0f7ff;
       border: 1px solid #b3d7ff;
@@ -58,33 +40,51 @@
       padding: 15px;
       margin-top: 20px;
     }
+    .footer {
+      background-color: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9em;
+      color: #777;
+    }
   </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div class="logo-container">
-      <img class="img-logo" src="https://res.cloudinary.com/utejobhub/image/upload/v1723888103/rg2do6iommv6wp840ixr.png" alt="Company Logo" />
-    </div>
-    <h1>Mời phỏng vấn</h1>
+    <h1>Thư mời phỏng vấn</h1>
   </div>
   <div class="content">
-    <p>Xin chào <span th:text="${name}"></span>,</p>
-    <p>Chúng tôi vui mừng thông báo rằng hồ sơ ứng tuyển của bạn cho vị trí <strong th:text="${position}"></strong> tại <strong th:text="${company}"></strong> đã được chấp nhận để tiến hành phỏng vấn.</p>
+    <p>Kính chào <span th:text="${candidateName}">Ứng viên</span>,</p>
+
+    <p>Chúng tôi rất vui mừng thông báo rằng hồ sơ ứng tuyển của bạn cho vị trí <strong th:text="${jobPosition}">Vị trí</strong> tại <strong th:text="${companyName}">Công ty</strong> đã được chấp nhận để tiến hành phỏng vấn.</p>
+
     <div class="interview-details">
-      <h2>Thông tin phỏng vấn:</h2>
-      <p><strong>Ngày:</strong> <span th:text="${interviewDate}"></span></p>
-      <p><strong>Thời gian:</strong> <span th:text="${interviewTime}"></span></p>
-      <p><strong>Địa điểm/Hình thức:</strong> <span th:text="${interviewLocation}"></span></p>
-      <p><strong>Người phỏng vấn:</strong> <span th:text="${interviewer}"></span></p>
+      <h2>Chi tiết buổi phỏng vấn:</h2>
+      <p><strong>Ngày:</strong> <span th:text="${interviewDate}">Ngày phỏng vấn</span></p>
+      <p><strong>Giờ:</strong> <span th:text="${interviewTime}">Giờ phỏng vấn</span></p>
+      <p><strong>Hình thức:</strong> <span th:text="${interviewMethod}">Phương thức phỏng vấn</span></p>
+      <p><strong>Địa điểm:</strong> <span th:text="${interviewLocation}">Địa điểm</span></p>
+      <p><strong>Người phỏng vấn:</strong> <span th:text="${interviewer}">Người phỏng vấn</span></p>
     </div>
-    <p>Vui lòng xác nhận sự tham gia của bạn bằng cách trả lời email này. Nếu bạn cần thay đổi lịch phỏng vấn, hãy liên hệ với chúng tôi càng sớm càng tốt.</p>
-    <p>Chúc bạn chuẩn bị tốt và chúng tôi rất mong được gặp bạn!</p>
+
+    <p>Để chuẩn bị tốt nhất cho buổi phỏng vấn, chúng tôi khuyến nghị bạn:</p>
+    <ul>
+      <li>Nghiên cứu kỹ về vị trí và công ty</li>
+      <li>Chuẩn bị những câu hỏi về công việc và môi trường làm việc</li>
+      <li>Mang theo bản CV và các giấy tờ liên quan</li>
+      <li>Đảm bảo kết nối internet ổn định (nếu phỏng vấn trực tuyến)</li>
+    </ul>
+
+    <p>Vui lòng xác nhận sự tham dự bằng cách phản hồi email này. Nếu bạn không thể tham dự hoặc cần điều chỉnh lịch, hãy liên hệ với chúng tôi càng sớm càng tốt.</p>
+
+    <p>Chúng tôi rất mong được gặp bạn và tìm hiểu thêm về năng lực của bạn!</p>
   </div>
   <div class="footer">
     <p>Trân trọng,</p>
-    <p>Đội ngũ tuyển dụng <span th:text="${companyName}"></span></p>
-    <p>Email: <span th:text="${supportEmail}"></span> | Điện thoại: <span th:text="${supportPhone}"></span></p>
+    <p>Phòng Tuyển dụng</p>
+    <p th:text="${companyName}">Tên Công ty</p>
+    <p>Liên hệ: <span th:text="${contactEmail}">Email liên hệ</span> | <span th:text="${contactPhone}">Số điện thoại</span></p>
   </div>
 </div>
 </body>

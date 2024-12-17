@@ -66,8 +66,17 @@
             height: auto;
             border-radius: 4px;
         }
-        .job-details {
+        .job-details a {
             flex: 1;
+            text-decoration: none;
+            color: inherit;
+        }
+        .job-details a:hover h3 {
+            color: #004CD6;
+            text-decoration: underline;
+        }
+        .job-details a:hover {
+            opacity: 0.8;
         }
         .job-details h3 {
             font-size: 18px;
@@ -117,13 +126,17 @@
 
             <div class="job-listing" th:each="job : ${jobs}">
                 <div class="job-logo">
-                    <img th:src="${job.employerResponse.companyLogo}" alt="Company Logo" />
+                    <a th:href="${'http://localhost:3000/job/' + job.getJobId()}">
+                        <img th:src="${job.employerResponse.companyLogo}" alt="Company Logo" />
+                    </a>
                 </div>
                 <div class="job-details">
-                    <h3 th:text="${job.jobTitle}"></h3>
-                    <p th:text="${job.employerResponse.companyName}"></p>
-                    <p>Thương lượng | <span th:text="${job.jobLocation}"></span></p>
-                    <p>Cập nhật: <span th:text="${job.jobDeadline}"></span></p>
+                    <a th:href="${'http://localhost:3000/job/' + job.getJobId()}">
+                        <h3 th:text="${job.jobTitle}"></h3>
+                        <p th:text="${job.employerResponse.companyName}"></p>
+                        <p>Thương lượng | <span th:text="${job.jobLocation}"></span></p>
+                        <p>Cập nhật: <span th:text="${job.jobDeadline}"></span></p>
+                    </a>
                 </div>
             </div>
         </div>

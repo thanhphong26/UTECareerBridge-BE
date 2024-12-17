@@ -33,6 +33,7 @@ public class EmailService {
     public void sendForgotPasswordEmail(String recipientEmail, String name, String resetUrl) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
+        helper.setFrom("UTE-Career-Bridge <" + username + ">");
 
         helper.setTo(recipientEmail);
         helper.setSubject("Tạo mật khẩu đăng nhập mới trên UTE-Career-Bridge");
@@ -50,7 +51,7 @@ public class EmailService {
     public void sendJobApplicationEmail(String recipientEmail, ResumeResponse resume, JobResponse job, ApplicationResponse applicationResponse) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
-
+        helper.setFrom("UTE-Career-Bridge <" + username + ">");
         helper.setTo(recipientEmail);
         helper.setSubject("Thông báo ứng tuyển");
 
@@ -68,7 +69,7 @@ public class EmailService {
     public void sendSuitableJobEmail(String recipientEmail, Student student, List<JobResponse> jobs) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
-
+        helper.setFrom("UTE-Career-Bridge <" + username + ">");
         helper.setTo(recipientEmail);
         helper.setSubject("Thông báo việc làm phù hợp");
 
