@@ -12,6 +12,7 @@ import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IOrderService;
 import com.pn.career.services.VNPAYService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,21 +57,19 @@ public class OrderController {
                 .build());
     }
     @GetMapping("/vnpay-payment-return")
-    public ResponseEntity<ResponseObject> vnpayReturn(HttpServletRequest request) {
-        int paymentStatus =vnpayService.orderReturn(request);
-        if (paymentStatus==1) {
+    public void vnpayReturn(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        int paymentStatus = vnpayService.orderReturn(request);
+
+        if (paymentStatus == 1) {
+            // Cập nhật trạng thái thanh toán
             String orderId = request.getParameter("vnp_OrderInfo").split(": ")[1];
             orderService.updatePaymentStatus(Integer.parseInt(orderId), PaymentStatus.PAID);
 
-            return ResponseEntity.ok().body(ResponseObject.builder()
-                    .message("Thanh toán thành công")
-                    .status(HttpStatus.OK)
-                    .build());
+            // Chuyển hướng đến trang thanh toán thành công trên Frontend
+            response.sendRedirect("http://localhost:3000/payment-success");
         } else {
-            return ResponseEntity.badRequest().body(ResponseObject.builder()
-                    .message("Thanh toán thất bại")
-                    .status(HttpStatus.BAD_REQUEST)
-                    .build());
+            // Chuyển hướng đến trang thanh toán thất bại trên Frontend
+            response.sendRedirect("http://localhost:3000/payment-fail");
         }
     }
     @PostMapping("/create-order")
