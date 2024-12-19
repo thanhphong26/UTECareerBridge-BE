@@ -6,6 +6,8 @@ import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.UnUpdatedLicense;
 import com.pn.career.models.*;
 import com.pn.career.repositories.EmployerPackageRepository;
+import com.pn.career.repositories.JobRepository;
+import com.pn.career.repositories.StudentRepository;
 import com.pn.career.responses.*;
 import com.pn.career.services.*;
 import com.pn.career.utils.MessageKeys;
@@ -51,6 +53,10 @@ public class EmployerController {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final IFollowerService followerService;
     private final JobService jobService;
+    private final EmailService emailService;
+    private final StudentRepository studentRepository;
+    private final JobRepository jobRepository;
+
     @GetMapping("/get-total-student-application")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getTotalStudentApplication(@AuthenticationPrincipal Jwt jwt) {
@@ -495,5 +501,25 @@ public class EmployerController {
                         .build())
                 .status(HttpStatus.OK)
                 .build());
+    }
+    @PostMapping("/send-mail-reply-accept-interview")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> sendMailReplyAcceptInterview(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody InterviewDTO interviewDTO) {
+        try {
+            Long userIdLong = jwt.getClaim("userId");
+            Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+            JobResponse job=jobRepository.findById(interviewDTO.getJobId()).map(JobResponse::fromJob).orElseThrow(()->new DataNotFoundException("Không tìm thấy công việc tương ứng"));
+            Student student=studentRepository.findById(interviewDTO.getStudentId()).orElseThrow(()->new DataNotFoundException("Không tìm thấy sinh viên tương ứng"));
+            emailService.sendMailReplyAcceptInterview(student.getEmail(), student.getFirstName(), job, interviewDTO);
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Gửi mail thông báo phỏng vấn thành công")
+                    .status(HttpStatus.OK)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .message("Gửi mail thông báo phỏng vấn thất bại")
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build());
+        }
     }
 }

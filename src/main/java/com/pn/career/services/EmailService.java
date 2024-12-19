@@ -1,5 +1,6 @@
 package com.pn.career.services;
 
+import com.pn.career.dtos.InterviewDTO;
 import com.pn.career.models.Job;
 import com.pn.career.models.Resume;
 import com.pn.career.models.Student;
@@ -77,6 +78,23 @@ public class EmailService {
         context.setVariable("student", student);
         context.setVariable("jobs", jobs);
         String emailContent = thymeleafTemplateEngine.process("job-recommendations", context);
+
+        helper.setText(emailContent, true); // true indicates HTML
+
+        mailSender.send(mimeMessage);
+    }
+    public void sendMailReplyAcceptInterview(String recipientEmail, String studentName, JobResponse job,InterviewDTO interviewDTO) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
+        helper.setFrom("UTE-Career-Bridge <" + username + ">");
+        helper.setTo(recipientEmail);
+        helper.setSubject("Thông báo phỏng vấn");
+
+        Context context = new Context();
+        context.setVariable("studentName", studentName);
+        context.setVariable("job", job);
+        context.setVariable("interview", interviewDTO);
+        String emailContent = thymeleafTemplateEngine.process("job-reply-accept", context);
 
         helper.setText(emailContent, true); // true indicates HTML
 
