@@ -98,6 +98,13 @@ public class ApplicationService implements IApplicationService{
             throw new PermissionDenyException("Bạn không có quyền cập nhật trạng thái hồ sơ ứng viên");
         }
         application.setApplicationStatus(status);
+       try{
+           if(status ==ApplicationStatus.REJECTED){
+               emailService.sendMailReject(application.getResume().getStudent().getEmail(),application.getResume().getStudent().getFirstName(), JobResponse.fromJob(application.getJob()));
+           }
+       }catch (Exception e) {
+           throw new RuntimeException("Lỗi xảy ra khi gửi mail tới sinh viên");
+       }
         return applicationRepository.save(application);
     }
 }

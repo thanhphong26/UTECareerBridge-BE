@@ -100,4 +100,18 @@ public class EmailService {
 
         mailSender.send(mimeMessage);
     }
+    public void sendMailReject(String recipientEmail, String studentName, JobResponse job) throws MessagingException{
+        MimeMessage mimeMessage=mailSender.createMimeMessage();
+        MimeMessageHelper helper=new MimeMessageHelper(mimeMessage,"UTF-8");
+        helper.setFrom("UTE-Career-Bridge <"+username+">");
+        helper.setTo(recipientEmail);
+        helper.setSubject("Thông báo kết quả ứng tuyển");
+
+        Context context=new Context();
+        context.setVariable("studentName",studentName);
+        context.setVariable("job",job);
+        String emailContent=thymeleafTemplateEngine.process("job-reply-reject",context);
+        helper.setText(emailContent,true);
+        mailSender.send(mimeMessage);
+    }
 }
