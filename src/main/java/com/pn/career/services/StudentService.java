@@ -83,6 +83,7 @@ public class StudentService implements IStudentService{
     @Override
     public Page<StudentViewResponse> getStudentIsFindingJob(Integer categoryId, PageRequest pageRequest) {
         Page<Student> students=studentRepository.findAllByIsFindTrueAndJobCategory_JobCategoryId(categoryId,pageRequest);
+        System.out.println("hellp" +students.getContent());
         return students.map(StudentViewResponse::fromStudent);
     }
 }

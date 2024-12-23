@@ -50,10 +50,12 @@ public class StudentViewResponse {
                 .profileImage(student.getProfileImage())
                 .universityEmail(student.getUniversityEmail())
                 .year(student.getYear())
-                .resumeFile(student.getResumes().stream().filter(Resume::isActive).findFirst().get().getResumeFile())
+                .resumeFile(student.getResumes() != null && !student.getResumes().isEmpty() ?
+                        student.getResumes().stream().filter(Resume::isActive).findFirst().map(Resume::getResumeFile).orElse(null) : null)
+                .levelName(student.getResumes() != null && !student.getResumes().isEmpty() ?
+                        student.getResumes().stream().filter(Resume::isActive).findFirst().map(r -> r.getJobLevel().getNameLevel()).orElse(null) : null)
                 .studentSkills(student.getStudentSkills().stream().map(StudentSkillResponse::fromStudentSkill).toList())
-                .categoryName(student.getJobCategory().getJobCategoryName())
-                .levelName(student.getResumes().stream().filter(Resume::isActive).findFirst().get().getJobLevel().getNameLevel())
+                .categoryName(student.getJobCategory() != null ? student.getJobCategory().getJobCategoryName() : null)
                 .build();
     }
 }
