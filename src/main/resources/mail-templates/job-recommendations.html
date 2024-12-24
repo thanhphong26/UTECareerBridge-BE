@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Recommendations</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F6F8FC;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+        .email-background {
+            background-color: #F4F4F9; /* Light gray background for the whole email */
+            padding: 40px 0; /* Spacing around the email */
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff; /* White background for the email content */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(90deg, #001743, #004CD6);
+            padding: 20px;
+            text-align: left;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        .img-profile {
+            float: right;
+            max-width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h1 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .content p {
+            font-size: 14px;
+            color: #555;
+        }
+        .job-listing {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #ddd;
+            padding: 15px 0;
+        }
+        .job-logo {
+            flex: 0 0 80px;
+            margin-right: 20px;
+            width: 140px;
+            height: 140px;
+        }
+        .job-logo img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .job-details a {
+            flex: 1;
+            text-decoration: none;
+            color: inherit;
+        }
+        .job-details a:hover h3 {
+            color: #004CD6;
+            text-decoration: underline;
+        }
+        .job-details a:hover {
+            opacity: 0.8;
+        }
+        .job-details h3 {
+            font-size: 18px;
+            color: #333;
+            margin: 0;
+        }
+        .job-details p {
+            font-size: 14px;
+            line-height: 17px;
+            color: #888;
+            margin: 0;
+        }
+        .job-details span {
+            color: #ff4500;
+            font-weight: bold;
+        }
+        .footer {
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
+            background-color: #f4f4f9;
+        }
+        /* Responsive design for mobile */
+        @media (max-width: 600px) {
+            .email-container {
+                width: 90%;
+                padding: 20px;
+            }
+            .header img {
+                max-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-background">
+    <div class="email-container">
+        <div class="header">
+            <img src="https://res.cloudinary.com/utejobhub/image/upload/v1723888103/rg2do6iommv6wp840ixr.png" alt="Company Logo" />
+            <img class="img-profile" th:src="${student.getProfileImage()}" alt="Profile Image" />
+        </div>
+        <div class="content">
+            <h1>Việc Làm Gợi Ý Cho Bạn</h1>
+            <p>Xin chào <span th:text="${student.getFirstName()}"></span>,</p>
+            <p>UTE Career Bridge mong muốn sẽ giúp bạn tìm được công việc mơ ước của mình. Dựa trên thông tin của bạn, chúng tôi đã tìm được những công việc mới nhất phù hợp bạn:</p>
+
+            <div class="job-listing" th:each="job : ${jobs}">
+                <div class="job-logo">
+                    <a th:href="${'http://localhost:3000/job/' + job.getJobId()}">
+                        <img th:src="${job.employerResponse.companyLogo}" alt="Company Logo" />
+                    </a>
+                </div>
+                <div class="job-details">
+                    <a th:href="${'http://localhost:3000/job/' + job.getJobId()}">
+                        <h3 th:text="${job.jobTitle}"></h3>
+                        <p th:text="${job.employerResponse.companyName}"></p>
+                        <p>Thương lượng | <span th:text="${job.jobLocation}"></span></p>
+                        <p>Cập nhật: <span th:text="${job.jobDeadline}"></span></p>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Chúc bạn tìm được công việc phù hợp!</p>
+            <p>Trân trọng,<br>Đội ngũ UTE Career Bridge</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
