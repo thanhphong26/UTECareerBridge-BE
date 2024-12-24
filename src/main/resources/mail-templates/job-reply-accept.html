@@ -66,11 +66,12 @@
       <p><strong>Địa điểm phỏng vấn:</strong> <span th:text="${interview.getInterviewLocation()}"></span></p>
       <p><strong>Người phỏng vấn:</strong> <span th:text="${interview.getInterviewer()}"></span></p>
     </div>
-    <p>Để xác nhận tham gia phỏng vấn vui lòng phản hồi lại với chúng tôi qua email <strong><span th:text="${interview.getContactEmail()}"></span></strong> trong 24h kể từ khi nhận được.
-      Mọi thắc mắc khác, bạn vui lòng liên hệ với chúng tôi qua: <span th:text="${interview.getContactEmail()}"></span> | <span th:text="${interview.getContactPhone()}"></span></p>
     <div th:utext="${interview.getDescription()}">
 
     </div>
+    <p>Để xác nhận tham gia phỏng vấn vui lòng phản hồi lại với chúng tôi qua email <strong><span th:text="${interview.getContactEmail()}"></span></strong> trong 24h kể từ khi nhận được.
+      Mọi thắc mắc khác, bạn vui lòng liên hệ với chúng tôi qua: <span th:text="${interview.getContactEmail()}"></span> | <span th:text="${interview.getContactPhone()}"></span></p>
+
   </div>
   <div class="footer">
     <p>Trân trọng,</p>
