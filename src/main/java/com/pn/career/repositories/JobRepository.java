@@ -45,9 +45,9 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
 
             featurePrioritySubquery.select(cb.coalesce(
                     cb.selectCase()
-                            .when(cb.equal(featureJoin.get("featureId"), 1), 3)
-                            .when(cb.equal(featureJoin.get("featureId"), 2), 2)
-                            .when(cb.equal(featureJoin.get("featureId"), 3), 1)
+                            .when(cb.equal(featureJoin.get("featureId"), 6), 3)
+                            .when(cb.equal(featureJoin.get("featureId"), 3), 2)
+                            .when(cb.equal(featureJoin.get("featureId"), 4), 1)
                             .otherwise(0),
                     0
             )).where(cb.equal(packageRoot.get("packageId"), root.get("packageId")));
