@@ -19,7 +19,7 @@ public class ScheduledService {
     private final StudentSkillService studentSkillService;
     private final EmailService emailService;
     private final Logger logger= LoggerFactory.getLogger(ScheduledService.class);
-    @Scheduled(cron = "0 07 07 * * *")
+    @Scheduled(cron = "0 52 23 * * *")
     @Transactional
     public void sendSuitableJobEmail() {
         List<Student> students = studentRepository.findAllByRole_RoleName("student");

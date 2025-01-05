@@ -16,7 +16,7 @@ import java.util.List;
 @Component("customCorsFilter")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter extends OncePerRequestFilter {
-    private final List<String> allowedOrigins = Arrays.asList("http://localhost:3000", "http://localhost:8080");
+    private final List<String> allowedOrigins = Arrays.asList("http://localhost:3000", "http://utecareerbridge-be-production.up.railway.app");
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String origin = request.getHeader("Origin");
