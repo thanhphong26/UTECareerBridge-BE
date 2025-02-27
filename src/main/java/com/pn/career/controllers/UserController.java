@@ -5,6 +5,7 @@ import com.pn.career.dtos.*;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.responses.*;
+import com.pn.career.services.IAuthService;
 import com.pn.career.services.ITokenService;
 import com.pn.career.services.IUserService;
 import com.pn.career.services.UserService;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -23,17 +25,112 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Objects;
+
 @RestController
 @AllArgsConstructor
+@Slf4j
 @RequestMapping("${api.prefix}/users")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final IUserService userService;
+    private final IAuthService authService;
     private final ITokenService tokenService;
     private final LocalizationUtils localizationUtils;
+    @GetMapping("/auth/social-login")
+    public ResponseEntity<String> socialAuth(@RequestParam("login_type") String loginType) {
+        loginType = loginType.toLowerCase();
+        String url = authService.generateAuthUrl(loginType);
+        return ResponseEntity.ok(url);
+    }
+    //@PostMapping("/login/social")
+    private ResponseEntity<ResponseObject> loginSocial(
+            @Valid @RequestBody LoginDTO userLoginDTO, @RequestParam("role") String roleName,
+            HttpServletRequest request
+    ) throws Exception {
+        // Gọi hàm loginSocial từ UserService cho đăng nhập mạng xã hội
+        TokenDTO token = userService.loginSocial(userLoginDTO, roleName);
+
+        // Xử lý token và thông tin người dùng
+        String userAgent = request.getHeader("User-Agent");
+//        User userDetail = userService.getUserDetailsFromToken(token);
+//        Token jwtToken = tokenService.addToken(userDetail, token, isMobileDevice(userAgent));
+        User userDetail = userService.getUserDetailsFromToken(token.getAccessToken());
+        Token jwtToken = tokenService.addToken(userDetail, token);
+        // Tạo đối tượng LoginResponse
+        LoginResponse loginResponse = LoginResponse.builder()
+                .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
+                .token(jwtToken.getToken())
+                .tokenType(jwtToken.getTokenType())
+                .refreshToken(jwtToken.getRefreshToken())
+                .username(userDetail.getEmail())
+                .roles(userDetail.getRole())
+                .id(userDetail.getUserId())
+                .build();
+
+        // Trả về phản hồi
+        return ResponseEntity.ok().body(
+                ResponseObject.builder()
+                        .message("Login successfully")
+                        .data(loginResponse)
+                        .status(HttpStatus.OK)
+                        .build()
+        );
+    }
+    @GetMapping("/auth/social/callback")
+    public ResponseEntity<ResponseObject> callback(
+            @RequestParam("code") String code,
+            @RequestParam("login_type") String loginType,
+            @RequestParam("role") String roleName,
+            HttpServletRequest request
+    ) throws Exception {
+        // Call the AuthService to get user info
+        Map<String, Object> userInfo = authService.authenticateAndFetchProfile(code, loginType);
+
+        if (userInfo == null || !userInfo.containsKey("email")) {
+            log.error("Google OAuth failed: userInfo is null or missing email");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseObject(
+                    "Invalid social account information", HttpStatus.UNAUTHORIZED, null
+            ));
+        }
+
+
+        // Extract user information from userInfo map
+        String accountId = "";
+        String name = "";
+        String picture = "";
+        String email = "";
+
+        if (loginType.trim().equals("google")) {
+            accountId = (String) Objects.requireNonNullElse(userInfo.get("sub"), "");
+            name = (String) Objects.requireNonNullElse(userInfo.get("name"), "");
+            picture = (String) Objects.requireNonNullElse(userInfo.get("picture"), "");
+            email = (String) Objects.requireNonNullElse(userInfo.get("email"), "");
+        }
+        // Tạo đối tượng UserLoginDTO
+        LoginDTO userLoginDTO = LoginDTO.builder()
+                .email(email)
+                .fullname(name)
+                .password("")
+                .phoneNumber("")
+                .profileImage(picture)
+                .build();
+
+        if (loginType.trim().equals("google")) {
+            userLoginDTO.setGoogleAccountId(accountId);
+            log.info("User info: {}", userLoginDTO.getGoogleAccountId());
+            //userLoginDTO.setFacebookAccountId("");
+        }
+
+        return this.loginSocial(userLoginDTO, roleName, request);
+    }
+
     @PutMapping("/update-password")
     @PreAuthorize("hasAuthority('ROLE_STUDENT') || hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> updatePassword(

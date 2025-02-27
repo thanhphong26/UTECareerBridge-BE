@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -22,17 +23,5 @@ public class MessageDTO {
     private LocalDateTime sentAt;
     private boolean read;
     private LocalDateTime readAt;
-    public static MessageDTO from(Message message) {
-        return MessageDTO.builder()
-                .id(message.getId())
-                .senderId((long) message.getSender().getUserId())
-                .senderName(message.getSender().getFirstName())
-                .recipientId((long) message.getRecipient().getUserId())
-                .recipientName(message.getRecipient().getFirstName())
-                .content(message.getContent())
-                .sentAt(message.getSentAt())
-                .read(message.isRead())
-                .readAt(message.getReadAt())
-                .build();
-    }
+    private LocalDate createdAt;
 }

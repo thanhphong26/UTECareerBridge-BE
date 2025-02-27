@@ -1,14 +1,15 @@
 package com.pn.career.services;
 
-import com.pn.career.dtos.ConservationDTO;
-import com.pn.career.dtos.MessageDTO;
-import org.springframework.data.domain.Page;
+import com.pn.career.models.Message;
+import com.pn.career.models.User;
+import com.pn.career.responses.MessageResponse;
 
 import java.util.List;
 
 public interface IMessageService {
-   MessageDTO savMessageAndSend(MessageDTO messageDTO, Integer userId);
-   List<ConservationDTO> getConservations(Integer userId);
-   Page<MessageDTO> getMessagesForConservation(Integer partnerId, Integer userId, Integer page, Integer size);
-   void markAsRead(Long messageId, Integer userId);
+    MessageResponse sendMessage(Integer senderId, Integer recipientId, String content);
+    List<MessageResponse> getConservation(Integer user1Id, Integer user2Id);
+    List<User> getContacts(Integer userId);
+    void markAsRead(Long messageId);
+    List<MessageResponse> getUnreadMessages(Integer userId);
 }

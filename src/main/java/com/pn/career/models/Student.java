@@ -12,7 +12,10 @@ import lombok.experimental.SuperBuilder;
 import java.util.List;
 import java.util.Set;
 
-@Table(name = "students")
+@Table(name = "students", indexes = {
+        @Index(name = "idx_student_category", columnList = "category_id"),
+        @Index(name = "idx_student_uni_email", columnList = "university_email")
+})
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor

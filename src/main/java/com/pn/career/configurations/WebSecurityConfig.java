@@ -49,7 +49,10 @@ public class WebSecurityConfig {
                                     String.format("%s/users/login", apiPrefix),
                                     String.format("%s/employers/register", apiPrefix),
                                     String.format("%s/employers/login", apiPrefix),
-                                    String.format("%s/auth/**", apiPrefix)
+                                    String.format("%s/auth/**", apiPrefix),
+                                    //Google login
+                                    String.format("%s/users/auth/social-login", apiPrefix),
+                                    String.format("%s/users/auth/social/callback", apiPrefix)
                             ).permitAll()
                             .requestMatchers("/ws/**").permitAll()
                             .requestMatchers(GET,
@@ -80,6 +83,8 @@ public class WebSecurityConfig {
                                     String.format("%s/employers/get-employers-by-industry", apiPrefix)).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/employers/top-company", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
+                                    String.format("%s/messages/**", apiPrefix)).permitAll()
                             .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)

@@ -10,13 +10,19 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginDTO {
+public class LoginDTO extends SocialAccountDTO{
     @JsonProperty("phone_number")
     private String phoneNumber;
     @JsonProperty("email")
     private String email;
     @JsonProperty("password")
     private String password;
+    @JsonProperty("google_account_id")
+    private String googleAccountId;
+    @JsonProperty("fullname")
+    private String fullname;
+    @JsonProperty("profile_image")
+    private String profileImage;
     public boolean isPasswordBlank() {
         return password == null || password.trim().isEmpty();
     }

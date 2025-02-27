@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
+    Optional<User> findByGoogleAccountId(String googleAccountId);
     User findUserByRole_RoleName(String roleName);
     Optional<User> findUserByEmail(String email);
     Optional<User> findUserByPhoneNumber(String phoneNumber);

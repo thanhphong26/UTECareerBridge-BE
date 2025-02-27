@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -74,6 +75,7 @@ public class UserService implements IUserService {
             logger.info("Attempting login with email: {} or phone number: {}", loginDTO.getEmail(), loginDTO.getPhoneNumber());
 
             // Sử dụng AuthenticationManager để xác thực người dùng dựa trên email hoặc phone
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginDTO.getEmail() != null ? loginDTO.getEmail() : loginDTO.getPhoneNumber(),
@@ -227,6 +229,66 @@ public class UserService implements IUserService {
         user.setPassword(passwordEncoder.encode(updatePasswordDTO.newPassword()));
         userRepository.save(user);
         return true;
+    }
+
+    @Override
+    public TokenDTO loginSocial(LoginDTO userLoginDTO, String roleName) throws Exception {
+        Optional<User> optionalUser = Optional.empty();
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.ROLE_DOES_NOT_EXISTS)));
+        logger.info("Role: {}", role);
+        logger.info("Rolename: {}", roleName);
+        Optional<User> existingUserByEmail = userRepository.findUserByEmail(userLoginDTO.getEmail());
+
+        if (existingUserByEmail.isPresent()) {
+            User existingUser = existingUserByEmail.get();
+            // If user exists but doesn't have Google ID, update it
+            if (userLoginDTO.getGoogleAccountId() != null &&
+                    (existingUser.getGoogleAccountId() == null || existingUser.getGoogleAccountId().isEmpty())) {
+                throw new DataIntegrityViolationException("Email đã được sử dụng bởi cách đăng nhập khác");
+            }
+        }
+        // Kiểm tra Google Account ID
+        if ( userLoginDTO.getGoogleAccountId() != null && !userLoginDTO.getGoogleAccountId().isEmpty()) {
+            optionalUser = userRepository.findByGoogleAccountId(userLoginDTO.getGoogleAccountId());
+            logger.info("Optional user: {}", optionalUser);
+            // Tạo người dùng mới nếu không tìm thấy
+            if (optionalUser.isEmpty()) {
+                User newUser = User.builder()
+                        .firstName(Optional.ofNullable(userLoginDTO.getFullname()).orElse(""))
+                        .email(Optional.ofNullable(userLoginDTO.getEmail()).orElse(""))
+                        .googleAccountId(userLoginDTO.getGoogleAccountId())
+                        .password("") // Mật khẩu trống cho đăng nhập mạng xã hội
+                        .role(role)
+                        .active(true)
+                        .build();
+                // Lưu người dùng mới
+                newUser = userRepository.save(newUser);
+                optionalUser = Optional.of(newUser);
+            }
+        }
+        else {
+            throw new IllegalArgumentException("Invalid social account information.");
+        }
+
+        User user = optionalUser.get();
+        logger.info("User: {}", user);
+        // Kiểm tra nếu tài khoản bị khóa
+        if (!user.isActive()) {
+            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKeys.USER_IS_LOCKED));
+        }
+
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
+        // Tạo Authentication object
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null, // Credentials null vì là social login
+                userDetails.getAuthorities()
+        );
+
+        // Tạo cặp token (access token và refresh token)
+        return jwtTokenUtil.generateTokenPair(authentication);
     }
 
     private String generateToken(){

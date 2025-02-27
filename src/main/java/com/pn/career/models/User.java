@@ -7,7 +7,13 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDate;
 import java.util.List;
 
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_phone", columnList = "phone_number"),
+        @Index(name = "idx_user_active", columnList = "is_active"),
+        @Index(name = "idx_user_role", columnList = "role_id"),
+        @Index(name = "idx_user_google_id", columnList = "google_account_id")
+})
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,6 +44,8 @@ public class User extends BaseEntity {
     private int wardId;
     @Column(name="address")
     private String address;
+    @Column(name = "google_account_id")
+    private String googleAccountId;
     @Column(name = "is_active")
     private boolean active=true;
     @Column(name = "reason_blocked")

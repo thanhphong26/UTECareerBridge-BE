@@ -16,11 +16,15 @@ import java.util.List;
 @Component("customCorsFilter")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter extends OncePerRequestFilter {
-    private final List<String> allowedOrigins = Arrays.asList("http://localhost:3000", "http://localhost:8080");
+    private final List<String> allowedOrigins = Arrays.asList("http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:5500");
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String origin = request.getHeader("Origin");
-
+        String requestURI = request.getRequestURI();
+        if (requestURI.startsWith("/ws")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         if (origin != null && allowedOrigins.contains(origin)) {
             response.setHeader("Access-Control-Allow-Origin", origin);
             response.setHeader("Access-Control-Allow-Credentials", "true");
