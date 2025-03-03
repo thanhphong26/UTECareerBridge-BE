@@ -62,28 +62,8 @@ public class EmployerService implements IEmployerService {
             employer.setVideoIntroduction(employerUpdateDTO.getVideoIntroduction());
             employer.setIndustry(industryRepository.findById(employerUpdateDTO.getIndustryId()).orElseThrow(() -> new DataNotFoundException(
                     localizationUtils.getLocalizedMessage(MessageKeys.INDUSTRY_DOES_NOT_EXISTS))));
-            String companyNameSlug = SlugConverter.toSlug(employerUpdateDTO.getCompanyName());
-            CompletableFuture<String> logoFuture = CompletableFuture.completedFuture(null);
-            CompletableFuture<String> backgroundFuture = CompletableFuture.completedFuture(null);
-            if (!employerUpdateDTO.getCompanyLogo().isEmpty()) {
-                if(employer.getCompanyLogo()!=null){
-                    asyncCloudinaryService.deleteFile(employer.getCompanyLogo());
-                }
-                logoFuture = asyncCloudinaryService.uploadFileAsync(employerUpdateDTO.getCompanyLogo(), companyNameSlug + "_logo");
-            }
-            if (!employerUpdateDTO.getBackgroundImage().isEmpty()) {
-                if(employer.getBackgroundImage()!=null){
-                    asyncCloudinaryService.deleteFile(employer.getBackgroundImage());
-                }
-                backgroundFuture = asyncCloudinaryService.uploadFileAsync(employerUpdateDTO.getBackgroundImage(), companyNameSlug + "_background");
-            }
-            CompletableFuture.allOf(logoFuture, backgroundFuture).join();
-            logoFuture.thenAccept(url -> {
-                if (url != null) employer.setCompanyLogo(url);
-            });
-            backgroundFuture.thenAccept(url -> {
-                if (url != null) employer.setBackgroundImage(url);
-            });
+            employer.setBackgroundImage(employerUpdateDTO.getBackgroundImage());
+            employer.setCompanyLogo(employerUpdateDTO.getCompanyLogo());
             benefitDetailService.updateBenefitDetail(employer, employerUpdateDTO.getBenefitDetails());
             return employerRepository.save(employer);
         } catch (DataNotFoundException e) {
@@ -146,28 +126,13 @@ public class EmployerService implements IEmployerService {
     }
     @Override
     @Transactional
-    public Employer addBusinessCertificate(Integer employerId, MultipartFile businessCertificate) {
+    public Employer addBusinessCertificate(Integer employerId, String businessCertificate) {
        try {
            Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
-           logger.info("Uploading business certificate");
-           if(!businessCertificate.isEmpty()){
-               String companySlug=SlugConverter.toSlug(employer.getCompanyName());
-               if(employer.getBusinessCertificate()!=null){
-                   asyncCloudinaryService.deleteFile(employer.getBusinessCertificate());
-                   logger.info("Deleted business certificate");
-               }
-               String certificateUrl=cloudinaryService.uploadFile(businessCertificate,companySlug+"_business_certificate");
-                if(certificateUrl!=null){
-                    employer.setBusinessCertificate(certificateUrl);
-                    employer.setApprovalStatus(EmployerStatus.PENDING);
-                    return employerRepository.save(employer);
-                }else {
-                    throw new RuntimeException("Đã xảy ra lỗi khi tải lên giấy phép kinh doanh. Vui lòng thử lại sau");
-                }
-           }else {
-               throw new RuntimeException("Vui lòng chọn một tệp tin. Giấy phép kinh doanh không được để trống");
-           }
-       }catch(IOException e){
+           employer.setBusinessCertificate(businessCertificate);
+           employer.setApprovalStatus(EmployerStatus.PENDING);
+           return employerRepository.save(employer);
+       }catch(Exception e){
               throw new RuntimeException("Đã xảy ra lỗi khi tải lên giấy phép kinh doanh. Vui lòng thử lại sau",e);
        }
     }

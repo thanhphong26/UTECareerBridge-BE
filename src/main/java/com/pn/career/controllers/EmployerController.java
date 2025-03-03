@@ -219,11 +219,10 @@ public class EmployerController {
     @PostMapping("/update-company-profile")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> updateCompanyProfile( @AuthenticationPrincipal Jwt principal,
-                                                                 @Valid @ModelAttribute EmployerUpdateDTO employerUpdateDTO) throws DataNotFoundException {
+                                                                 @Valid @RequestBody EmployerUpdateDTO employerUpdateDTO) throws DataNotFoundException {
         Long userIdLong = principal.getClaim("userId");
         Integer userId = userIdLong != null ? userIdLong.intValue() : null;
         Employer employer = employerService.updateEmployer(userId, employerUpdateDTO);
-        logger.debug("Employer updated successfully: {}", employer);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Cập nhật thông tin công ty thành công")
                 .data(EmployerResponse.fromUser(employer))
@@ -353,7 +352,7 @@ public class EmployerController {
     }
     @PostMapping("/legal-info")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> addBusinessCertificate(@AuthenticationPrincipal Jwt jwt, @RequestBody MultipartFile businessCertificate) throws DataNotFoundException {
+    public ResponseEntity<ResponseObject> addBusinessCertificate(@AuthenticationPrincipal Jwt jwt, @RequestBody String businessCertificate) throws DataNotFoundException {
         try{
             Long userIdLong = jwt.getClaim("userId");
             Integer userId = userIdLong != null ? userIdLong.intValue() : null;

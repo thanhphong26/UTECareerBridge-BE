@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Map;
 @Service
 @RequiredArgsConstructor
@@ -33,18 +34,24 @@ public class AuthService implements IAuthService{
     @Value("${spring.security.oauth2.client.provider.google.user-info-uri}")
     private String googleUserInfoUri;
 
-    public String generateAuthUrl(String loginType) {
+    public String generateAuthUrl(String loginType, String role) {
         String url = "";
         loginType = loginType.trim().toLowerCase(); // Normalize the login type
-        log.info("Login type: {}", googleClientId, googleClientSecret, googleRedirectUri, googleUserInfoUri);
+
+        String state = Base64.getEncoder().encodeToString(role.getBytes());
+
+        log.info("Login type: {}, Role: {}", loginType, role);
         if ("google".equals(loginType)) {
             GoogleAuthorizationCodeRequestUrl urlBuilder = new GoogleAuthorizationCodeRequestUrl(
                     googleClientId,
                     googleRedirectUri,
                     Arrays.asList("email", "profile", "openid"));
+
+            // Thêm state parameter vào URL
+            urlBuilder.setState(state);
+
             url = urlBuilder.build();
         }
-
         return url;
     }
     public Map<String, Object> authenticateAndFetchProfile(String code, String loginType) throws IOException {

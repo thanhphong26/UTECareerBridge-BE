@@ -45,6 +45,8 @@ public class UserService implements IUserService {
     private final TokenRepository tokenRepository;
     private final EmailService emailService;
     private final JwtDecoder jwtDecoder;
+    private final StudentRepository studentRepository;
+    private final EmployerRepository employerRepository;
     @Value("${app.frontend.url}")
     private String frontendUrl;
     @Value("${app.password-reset.expirations}")
@@ -251,20 +253,38 @@ public class UserService implements IUserService {
         // Kiểm tra Google Account ID
         if ( userLoginDTO.getGoogleAccountId() != null && !userLoginDTO.getGoogleAccountId().isEmpty()) {
             optionalUser = userRepository.findByGoogleAccountId(userLoginDTO.getGoogleAccountId());
-            logger.info("Optional user: {}", optionalUser);
             // Tạo người dùng mới nếu không tìm thấy
-            if (optionalUser.isEmpty()) {
-                User newUser = User.builder()
-                        .firstName(Optional.ofNullable(userLoginDTO.getFullname()).orElse(""))
-                        .email(Optional.ofNullable(userLoginDTO.getEmail()).orElse(""))
-                        .googleAccountId(userLoginDTO.getGoogleAccountId())
-                        .password("") // Mật khẩu trống cho đăng nhập mạng xã hội
-                        .role(role)
-                        .active(true)
-                        .build();
-                // Lưu người dùng mới
-                newUser = userRepository.save(newUser);
-                optionalUser = Optional.of(newUser);
+            if(optionalUser.isEmpty()){
+                switch (roleName) {
+                    case "student":
+                        Student student = Student.builder()
+                                .firstName(Optional.ofNullable(userLoginDTO.getFullname()).orElse(""))
+                                .email(Optional.ofNullable(userLoginDTO.getEmail()).orElse(""))
+                                .googleAccountId(userLoginDTO.getGoogleAccountId())
+                                .universityEmail(userLoginDTO.getEmail())
+                                .profileImage(userLoginDTO.getProfileImage())
+                                .password("") // Mật khẩu trống cho đăng nhập mạng xã hội
+                                .role(role)
+                                .active(true)
+                                .build();
+                        student = studentRepository.save(student);
+                        optionalUser = Optional.of(student);
+                        break;
+                    case "employer":
+                        Employer employer = Employer.builder()
+                                .firstName(Optional.ofNullable(userLoginDTO.getFullname()).orElse(""))
+                                .email(Optional.ofNullable(userLoginDTO.getEmail()).orElse(""))
+                                .googleAccountId(userLoginDTO.getGoogleAccountId())
+                                .password("") // Mật khẩu trống cho đăng nhập mạng xã hội
+                                .role(role)
+                                .active(true)
+                                .build();
+                        employer = employerRepository.save(employer);
+                        optionalUser = Optional.of(employer);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         else {

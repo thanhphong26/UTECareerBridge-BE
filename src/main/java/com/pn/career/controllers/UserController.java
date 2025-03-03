@@ -30,6 +30,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
 
@@ -44,15 +45,15 @@ public class UserController {
     private final ITokenService tokenService;
     private final LocalizationUtils localizationUtils;
     @GetMapping("/auth/social-login")
-    public ResponseEntity<String> socialAuth(@RequestParam("login_type") String loginType) {
+    public ResponseEntity<String> socialAuth(@RequestParam("login_type") String loginType, @RequestParam("role") String role) {
         loginType = loginType.toLowerCase();
-        String url = authService.generateAuthUrl(loginType);
+        String url = authService.generateAuthUrl(loginType, role);
         return ResponseEntity.ok(url);
     }
     //@PostMapping("/login/social")
     private ResponseEntity<ResponseObject> loginSocial(
             @Valid @RequestBody LoginDTO userLoginDTO, @RequestParam("role") String roleName,
-            HttpServletRequest request
+            HttpServletRequest request, HttpServletResponse response
     ) throws Exception {
         // Gọi hàm loginSocial từ UserService cho đăng nhập mạng xã hội
         TokenDTO token = userService.loginSocial(userLoginDTO, roleName);
@@ -63,6 +64,11 @@ public class UserController {
 //        Token jwtToken = tokenService.addToken(userDetail, token, isMobileDevice(userAgent));
         User userDetail = userService.getUserDetailsFromToken(token.getAccessToken());
         Token jwtToken = tokenService.addToken(userDetail, token);
+        Cookie refreshToken=new Cookie("refreshToken",token.getRefreshToken());
+        refreshToken.setHttpOnly(true);
+        refreshToken.setMaxAge(7*24*60*60);
+        refreshToken.setPath("/");
+        response.addCookie(refreshToken);
         // Tạo đối tượng LoginResponse
         LoginResponse loginResponse = LoginResponse.builder()
                 .message(localizationUtils.getLocalizedMessage(MessageKeys.LOGIN_SUCCESSFULLY))
@@ -87,9 +93,17 @@ public class UserController {
     public ResponseEntity<ResponseObject> callback(
             @RequestParam("code") String code,
             @RequestParam("login_type") String loginType,
-            @RequestParam("role") String roleName,
-            HttpServletRequest request
+            @RequestParam(value = "state", required = false) String state,
+            HttpServletRequest request, HttpServletResponse response
     ) throws Exception {
+        String role = "student";
+        if (state != null && !state.isEmpty()) {
+            try {
+                role = new String(Base64.getDecoder().decode(state));
+            } catch (IllegalArgumentException e) {
+                log.warn("Failed to decode state parameter: {}", state);
+            }
+        }
         // Call the AuthService to get user info
         Map<String, Object> userInfo = authService.authenticateAndFetchProfile(code, loginType);
 
@@ -128,7 +142,7 @@ public class UserController {
             //userLoginDTO.setFacebookAccountId("");
         }
 
-        return this.loginSocial(userLoginDTO, roleName, request);
+        return this.loginSocial(userLoginDTO, role, request, response);
     }
 
     @PutMapping("/update-password")

@@ -23,7 +23,7 @@ public interface IEmployerService{
     Employer updatePassword(Integer employerId, UpdatePasswordDTO updatePasswordDTO);
     void revokedTokens(Integer employerId);
     Page<EmployerResponse>getAllEmployers(String keyword, Integer industryId, PageRequest pageRequest, EmployerStatus status);
-    Employer addBusinessCertificate(Integer employerId, MultipartFile businessCertificate);
+    Employer addBusinessCertificate(Integer employerId, String businessCertificate);
     void approveEmployer(Integer employerId);
     void rejectEmployer(Integer employerId, String reason);
     List<StudentResponse> getStudentsByApplication(Integer employerId);

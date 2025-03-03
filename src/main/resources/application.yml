@@ -63,6 +63,9 @@ app:
     expirations: 15
   frontend:
     url: http://localhost:3000
+  message:
+    encryption:
+      key: ${ENCRYPTION_KEY}
 api:
   prefix: /api/v1
 logging:
@@ -75,4 +78,6 @@ logging:
 
 firebase:
   configuration: firebase-adminsdk.json
+open-api-key: ${OPENAI_API_KEY}
+
 
