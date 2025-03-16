@@ -1,0 +1,50 @@
+package com.pn.career.controllers;
+
+import com.pn.career.dtos.InterviewRequestDTO;
+import com.pn.career.responses.MeetingResponse;
+import com.pn.career.services.GoogleCalendarService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+
+@RestController
+@RequestMapping("${api.prefix}/interviews")
+@RequiredArgsConstructor
+public class InterviewController {
+    private final ZoomController zoomController;
+    private final GoogleCalendarService googleCalendarService;
+
+    @PostMapping("/schedule")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<?> scheduleInterview(@RequestBody InterviewRequestDTO request) {
+        try {
+            // 1. Tạo cuộc họp Zoom
+            ResponseEntity<MeetingResponse> zoomResponse = zoomController.createMeeting();
+
+            if (!zoomResponse.getStatusCode().equals(HttpStatus.OK) || zoomResponse.getBody() == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Không thể tạo cuộc họp Zoom: " +
+                                (zoomResponse.getBody() != null ? zoomResponse.getBody().getMessage() : "Lỗi không xác định"));
+            }
+
+            MeetingResponse meetingInfo = zoomResponse.getBody();
+
+            // 2. Tạo sự kiện trên Google Calendar
+            String calendarEventId = googleCalendarService.createCalendarEvent(request, meetingInfo);
+
+            // 3. Cập nhật thông tin vào đối tượng MeetingResponse
+            meetingInfo.setCalendarEventId(calendarEventId);
+
+            // 4. Có thể lưu thông tin lịch phỏng vấn vào database tại đây
+
+            return ResponseEntity.ok(meetingInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi khi lên lịch phỏng vấn: " + e.getMessage());
+        }
+    }
+}

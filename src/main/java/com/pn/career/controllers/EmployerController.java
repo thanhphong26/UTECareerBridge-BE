@@ -352,11 +352,11 @@ public class EmployerController {
     }
     @PostMapping("/legal-info")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> addBusinessCertificate(@AuthenticationPrincipal Jwt jwt, @RequestBody String businessCertificate) throws DataNotFoundException {
+    public ResponseEntity<ResponseObject> addBusinessCertificate(@AuthenticationPrincipal Jwt jwt, @RequestBody LegalDTO legalDTO) throws DataNotFoundException {
         try{
             Long userIdLong = jwt.getClaim("userId");
             Integer userId = userIdLong != null ? userIdLong.intValue() : null;
-            Employer employer=employerService.addBusinessCertificate(userId,businessCertificate);
+            Employer employer=employerService.addBusinessCertificate(userId,legalDTO.businessCertificate());
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .message("Tải lên giấy phép kinh doanh thành công. Vui lòng chờ duyệt từ phía quản trị viên")
                     .status(HttpStatus.OK)

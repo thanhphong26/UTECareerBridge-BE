@@ -17,6 +17,7 @@ target/
 .env
 /access-refresh-token-keys/
 /src/main/resources/firebase-adminsdk.json
+/src/main/resources/calendar.json
 .idea
 *.iws
 *.iml

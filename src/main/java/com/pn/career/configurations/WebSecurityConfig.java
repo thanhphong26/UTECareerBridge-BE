@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,6 +40,17 @@ public class WebSecurityConfig {
     @Value("${api.prefix}")
     private String apiPrefix;
     @Bean
+    @Order(1) // Ưu tiên cao hơn filter chain chính
+    public SecurityFilterChain chatbotFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .securityMatcher("/ws-chatbot/**", "/chatbot/**", "/app/chatbot.send")
+                .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .build();
+    }
+    @Bean
+    @Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPointJwt))
@@ -85,6 +97,8 @@ public class WebSecurityConfig {
                                     String.format("%s/employers/top-company", apiPrefix)).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/messages/**", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
+                                    String.format("%s/cv-templates/**", apiPrefix)).permitAll()
                             .anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)

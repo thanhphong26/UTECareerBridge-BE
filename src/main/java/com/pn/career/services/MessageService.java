@@ -1,14 +1,24 @@
 package com.pn.career.services;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pn.career.dtos.ConservationDTO;
+import com.pn.career.dtos.ConversationDTO;
+import com.pn.career.models.Employer;
 import com.pn.career.models.Message;
+import com.pn.career.models.Student;
 import com.pn.career.models.User;
 import com.pn.career.repositories.MessageRepository;
 import com.pn.career.repositories.UserRepository;
 import com.pn.career.responses.MessageResponse;
 import com.pn.career.utils.EncryptionUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +53,7 @@ public class MessageService implements IMessageService{
                 .sentAt(message.getSentAt())
                 .isRead(message.isRead())
                 .readAt(message.getReadAt())
+                .createdAt(message.getCreatedAt())
                 .build();
 
         return MessageResponse.fromMessage(messageRes);
@@ -67,7 +78,7 @@ public class MessageService implements IMessageService{
                     decryptedMessage.setSentAt(message.getSentAt());
                     decryptedMessage.setRead(message.isRead());
                     decryptedMessage.setReadAt(message.getReadAt());
-
+                    decryptedMessage.setCreatedAt(message.getCreatedAt());
                     return MessageResponse.fromMessage(decryptedMessage);
                 })
                 .collect(Collectors.toList());
@@ -111,5 +122,65 @@ public class MessageService implements IMessageService{
                     return MessageResponse.fromMessage(decryptedMessage);
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<ConversationDTO> getConversations(Integer userId, PageRequest pageable) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<User> contacts = messageRepository.findContactsByUser(user);
+
+        List<ConversationDTO> conversationDTOs = contacts.stream()
+                .map(contact -> {
+                    // Get the conversation
+                    List<Message> messages = messageRepository.findConversation(user, contact);
+
+                    // Sort messages by sentAt in descending order to get latest first
+                    List<Message> sortedMessages = messages.stream()
+                            .sorted(Comparator.comparing(Message::getSentAt).reversed())
+                            .collect(Collectors.toList());
+
+                    // Get the latest message (first in sorted list)
+                    Message latestMessage = sortedMessages.isEmpty() ? null : sortedMessages.get(0);
+
+                    // Determine avatar based on contact type (Student or Employer)
+                    String avatar = null;
+                    if (contact instanceof Student) {
+                        avatar = ((Student) contact).getProfileImage();
+                    } else if (contact instanceof Employer) {
+                        avatar = ((Employer) contact).getCompanyLogo();
+                    }
+
+                    // Check if latest message was sent by current user
+                    boolean isLastSenderCurrentUser = latestMessage != null && latestMessage.getSender().equals(user);
+
+                    // Decrypt the latest message
+                    String lastMessageContent = null;
+                    if (latestMessage != null) {
+                        lastMessageContent = encryptionUtils.decrypt(latestMessage.getContent());
+                    }
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                    String formattedCreatedAt = latestMessage != null ? latestMessage.getCreatedAt().format(formatter) : null;
+
+                    return ConversationDTO.builder()
+                            .recipientId(contact.getUserId())
+                            .name(contact.getFirstName())
+                            .avatar(avatar)
+                            .address(contact.getAddress())
+                            .lastMessage(lastMessageContent)
+                            .lastMessageAt(latestMessage != null ? latestMessage.getSentAt() : null)
+                            .read(latestMessage != null ? latestMessage.isRead() : true)
+                            .lastSenderId(isLastSenderCurrentUser)
+                            .createdAt(formattedCreatedAt)
+                            .build();
+                })
+                .sorted(Comparator.comparing(ConversationDTO::getLastMessageAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), conversationDTOs.size());
+        List<ConversationDTO> pagedConversationDTOs = conversationDTOs.subList(start, end);
+
+        return new PageImpl<>(pagedConversationDTOs, pageable, conversationDTOs.size());
     }
 }

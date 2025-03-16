@@ -78,6 +78,14 @@ logging:
 
 firebase:
   configuration: firebase-adminsdk.json
-open-api-key: ${OPENAI_API_KEY}
-
+open-api-key: ${GERMINI_API_KEY}
+zoom:
+  sdk:
+    account-id: ${ZOOM_SDK_ACCOUNT_ID}
+    client-id: ${ZOOM_SDK_KEY}
+    client-secret: ${ZOOM_SDK_SECRET}
+google:
+  calendar:
+    file: classpath:calendar.json
+    timezone: Asia/Ho_Chi_Minh
 

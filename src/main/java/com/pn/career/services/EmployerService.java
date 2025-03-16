@@ -130,6 +130,7 @@ public class EmployerService implements IEmployerService {
        try {
            Employer employer=employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy nhà tuyển dụng tương ứng"));
            employer.setBusinessCertificate(businessCertificate);
+           logger.info("Business certificate: "+businessCertificate);
            employer.setApprovalStatus(EmployerStatus.PENDING);
            return employerRepository.save(employer);
        }catch(Exception e){

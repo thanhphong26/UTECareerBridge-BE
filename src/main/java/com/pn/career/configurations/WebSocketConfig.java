@@ -30,12 +30,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5500") // Thay bằng origin của client
                 .withSockJS();
+        //end point for chatbot
+        registry.addEndpoint("/ws-chatbot")
+                .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5000")
+                .withSockJS();
 
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic","/queue", "/user");
+        registry.enableSimpleBroker("/topic","/queue", "/chatbot");
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user");
     }

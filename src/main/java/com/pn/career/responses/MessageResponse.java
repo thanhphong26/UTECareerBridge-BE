@@ -1,5 +1,6 @@
 package com.pn.career.responses;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pn.career.models.Message;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class MessageResponse {
     private LocalDateTime sentAt;
     private boolean read;
     private LocalDateTime readAt;
+    @JsonFormat(pattern = "HH:mm")
     private LocalDateTime createdAt;
     public static MessageResponse fromMessage(Message message){
         return MessageResponse.builder()
