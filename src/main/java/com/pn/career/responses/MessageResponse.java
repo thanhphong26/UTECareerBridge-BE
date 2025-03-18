@@ -22,6 +22,7 @@ public class MessageResponse {
     private LocalDateTime readAt;
     @JsonFormat(pattern = "HH:mm")
     private LocalDateTime createdAt;
+    private boolean fromSelf;
     public static MessageResponse fromMessage(Message message){
         return MessageResponse.builder()
                 .id(message.getId())
@@ -34,6 +35,7 @@ public class MessageResponse {
                 .read(message.isRead())
                 .readAt(message.getReadAt())
                 .createdAt(message.getCreatedAt())
+                .fromSelf(false)
                 .build();
     }
 

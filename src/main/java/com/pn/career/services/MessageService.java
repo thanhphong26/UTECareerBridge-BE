@@ -30,7 +30,7 @@ public class MessageService implements IMessageService{
     private final EncryptionUtils encryptionUtils;
 
     @Override
-    public MessageResponse sendMessage(Integer senderId, Integer recipientId, String content) {
+    public ConversationDTO sendMessage(Integer senderId, Integer recipientId, String content) {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
         User recipient = userRepository.findById(recipientId)
@@ -45,18 +45,20 @@ public class MessageService implements IMessageService{
                 .build();
 
         messageRepository.save(message);
-        Message messageRes= Message.builder()
-                .id(message.getId())
-                .sender(message.getSender())
-                .recipient(message.getRecipient())
-                .content(content) // Dùng nội dung gốc thay vì phải giải mã
-                .sentAt(message.getSentAt())
-                .isRead(message.isRead())
-                .readAt(message.getReadAt())
-                .createdAt(message.getCreatedAt())
-                .build();
-
-        return MessageResponse.fromMessage(messageRes);
+        ConversationDTO conversationDTO = new ConversationDTO();
+        conversationDTO.setMessageId(Math.toIntExact(message.getId()));
+        conversationDTO.setRecipientId(senderId);
+        conversationDTO.setName(recipient instanceof Student ? ((Student) recipient).getFirstName() + ((Student) recipient).getFirstName() : ((Employer) recipient).getCompanyName());
+        conversationDTO.setAvatar(recipient instanceof Student ? ((Student) recipient).getProfileImage() : ((Employer) recipient).getCompanyLogo());
+        conversationDTO.setAddress(recipient.getAddress());
+        conversationDTO.setLastMessage(content);
+        conversationDTO.setMessageId(Math.toIntExact(message.getId()));
+        conversationDTO.setLastMessageAt(message.getSentAt());
+        conversationDTO.setRead(false);
+        conversationDTO.setLastSenderId(false);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        conversationDTO.setCreatedAt(message.getCreatedAt().format(formatter));
+        return conversationDTO;
     }
 
     @Override
@@ -145,10 +147,14 @@ public class MessageService implements IMessageService{
 
                     // Determine avatar based on contact type (Student or Employer)
                     String avatar = null;
+                    String name =null;
+                    Integer messageId = Math.toIntExact(latestMessage != null ? latestMessage.getId() : null);
                     if (contact instanceof Student) {
                         avatar = ((Student) contact).getProfileImage();
+                        name = ((Student) contact).getFirstName();
                     } else if (contact instanceof Employer) {
                         avatar = ((Employer) contact).getCompanyLogo();
+                        name = ((Employer) contact).getCompanyName();
                     }
 
                     // Check if latest message was sent by current user
@@ -164,10 +170,11 @@ public class MessageService implements IMessageService{
 
                     return ConversationDTO.builder()
                             .recipientId(contact.getUserId())
-                            .name(contact.getFirstName())
+                            .name(name)
                             .avatar(avatar)
                             .address(contact.getAddress())
                             .lastMessage(lastMessageContent)
+                            .messageId(messageId)
                             .lastMessageAt(latestMessage != null ? latestMessage.getSentAt() : null)
                             .read(latestMessage != null ? latestMessage.isRead() : true)
                             .lastSenderId(isLastSenderCurrentUser)

@@ -26,12 +26,12 @@ public class MessageController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
-    public ResponseEntity<MessageResponse> sendMessage(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<ConversationDTO> sendMessage(@RequestBody Map<String, Object> payload) {
         Integer senderId = Integer.parseInt(payload.get("senderId").toString());
         Integer recipientId = Integer.parseInt(payload.get("recipientId").toString());
         String content = payload.get("content").toString();
 
-        MessageResponse message = messageService.sendMessage(senderId, recipientId, content);
+        ConversationDTO message = messageService.sendMessage(senderId, recipientId, content);
         return ResponseEntity.ok(message);
     }
 

@@ -11,11 +11,17 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.model.*;
+import com.google.api.services.calendar.*;
+import com.google.api.services.calendar.model.ConferenceData;
+import com.google.api.services.calendar.model.EntryPoint;
+import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventAttendee;
+import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.EventReminder;
 import com.pn.career.dtos.InterviewRequestDTO;
 import com.pn.career.responses.MeetingResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -30,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GoogleCalendarService {
@@ -38,7 +45,7 @@ public class GoogleCalendarService {
     private static final List<String> SCOPES = Collections.singletonList("https://www.googleapis.com/auth/calendar");
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-    @Value("${classpath:google.calendar.file}")
+    @Value("classpath:calendar.json")
     private Resource credentialsFile;
 
     @Value("${google.calendar.timezone}")
@@ -76,11 +83,25 @@ public class GoogleCalendarService {
      * @throws GeneralSecurityException
      */
     private Calendar getCalendarService() throws IOException, GeneralSecurityException {
-        final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        Credential credential = getCredentials(httpTransport);
-        return new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+        log.info("Khởi tạo Google Calendar service");
+        try {
+            final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            log.info("HTTP Transport: {}", httpTransport);
+
+            Credential credential = getCredentials(httpTransport);
+            log.info("Credential: {}", credential);
+
+            // Cập nhật cách tạo Calendar service với API mới
+            Calendar service = new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+
+            log.info("Calendar Service successfully created");
+            return service;
+        } catch (Exception e) {
+            log.error("Error creating Calendar service", e);
+            throw e;
+        }
     }
 
     /**
@@ -96,6 +117,7 @@ public class GoogleCalendarService {
 
         // Xây dựng service
         Calendar service = getCalendarService();
+        log.info("Service: {}", service);
 
         // Chuyển đổi thời gian
         DateTime startDateTime = new DateTime(
@@ -151,7 +173,7 @@ public class GoogleCalendarService {
                                 new EventReminder().setMethod("popup").setMinutes(30)        // 30 phút trước
                         )));
 
-        // Chèn sự kiện
+        // Chèn sự kiện với API mới
         event = service.events().insert("primary", event)
                 .setConferenceDataVersion(1) // Hỗ trợ thông tin hội nghị (Zoom link)
                 .setSendNotifications(true) // Gửi thông báo tới người tham gia

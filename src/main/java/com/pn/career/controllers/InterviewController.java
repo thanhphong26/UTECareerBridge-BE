@@ -4,12 +4,14 @@ import com.pn.career.dtos.InterviewRequestDTO;
 import com.pn.career.responses.MeetingResponse;
 import com.pn.career.services.GoogleCalendarService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @RestController
 @RequestMapping("${api.prefix}/interviews")
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class InterviewController {
         try {
             // 1. Tạo cuộc họp Zoom
             ResponseEntity<MeetingResponse> zoomResponse = zoomController.createMeeting();
-
+            log.info("Zoom response: {}", zoomResponse);
             if (!zoomResponse.getStatusCode().equals(HttpStatus.OK) || zoomResponse.getBody() == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Không thể tạo cuộc họp Zoom: " +
@@ -31,10 +33,10 @@ public class InterviewController {
             }
 
             MeetingResponse meetingInfo = zoomResponse.getBody();
-
+            log.info("Meeting response: {}", meetingInfo);
             // 2. Tạo sự kiện trên Google Calendar
             String calendarEventId = googleCalendarService.createCalendarEvent(request, meetingInfo);
-
+            log.info("Calendar event ID: {}", calendarEventId);
             // 3. Cập nhật thông tin vào đối tượng MeetingResponse
             meetingInfo.setCalendarEventId(calendarEventId);
 

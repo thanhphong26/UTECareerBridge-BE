@@ -11,7 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import java.util.List;
 
 public interface IMessageService {
-    MessageResponse sendMessage(Integer senderId, Integer recipientId, String content);
+    ConversationDTO sendMessage(Integer senderId, Integer recipientId, String content);
     List<MessageResponse> getConservation(Integer user1Id, Integer user2Id);
     List<User> getContacts(Integer userId);
     void markAsRead(Long messageId);
