@@ -1,12 +1,9 @@
 package com.pn.career.repositories;
 
-import com.pn.career.dtos.ConservationDTO;
 import com.pn.career.dtos.ConversationDTO;
 import com.pn.career.models.Message;
 
 import com.pn.career.models.User;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

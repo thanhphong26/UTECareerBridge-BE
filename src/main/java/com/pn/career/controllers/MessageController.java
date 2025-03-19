@@ -1,6 +1,7 @@
 package com.pn.career.controllers;
 
 import com.pn.career.dtos.ConversationDTO;
+import com.pn.career.dtos.ConversationDTOCus;
 import com.pn.career.models.User;
 import com.pn.career.responses.MessageResponse;
 import com.pn.career.responses.ResponseObject;
@@ -8,6 +9,7 @@ import com.pn.career.services.IMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,21 +28,26 @@ public class MessageController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
-    public ResponseEntity<ConversationDTO> sendMessage(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<ConversationDTOCus> sendMessage(@RequestBody Map<String, Object> payload) {
         Integer senderId = Integer.parseInt(payload.get("senderId").toString());
         Integer recipientId = Integer.parseInt(payload.get("recipientId").toString());
         String content = payload.get("content").toString();
 
-        ConversationDTO message = messageService.sendMessage(senderId, recipientId, content);
+        ConversationDTOCus message = messageService.sendMessage(senderId, recipientId, content);
         return ResponseEntity.ok(message);
     }
 
     @GetMapping("/conversation")
-    public ResponseEntity<List<MessageResponse>> getConversation(
-            @RequestParam Integer user1Id,
-            @RequestParam Integer user2Id) {
-        List<MessageResponse> conversation = messageService.getConservation(user1Id, user2Id);
-        return ResponseEntity.ok(conversation);
+    @PreAuthorize("hasRole('ROLE_STUDENT') or hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getConversation(
+            @RequestParam Integer user1Id, @RequestParam Integer user2Id, @RequestParam(defaultValue = "10") Integer size, @RequestParam(defaultValue = "0") Integer page) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<MessageResponse> conversation = messageService.getConservation(user1Id, user2Id, pageRequest);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(conversation)
+                .message("Get conversation successfully")
+                .build());
     }
 
     @GetMapping("/contacts/{userId}")

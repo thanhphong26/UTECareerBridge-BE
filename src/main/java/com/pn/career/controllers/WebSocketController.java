@@ -2,6 +2,7 @@ package com.pn.career.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pn.career.dtos.ConversationDTO;
+import com.pn.career.dtos.ConversationDTOCus;
 import com.pn.career.responses.MessageResponse;
 import com.pn.career.services.IMessageService;
 import lombok.RequiredArgsConstructor;
@@ -33,15 +34,13 @@ public class WebSocketController {
         Integer senderId = Integer.parseInt(payload.get("senderId").toString());
         Integer recipientId = Integer.parseInt(payload.get("recipientId").toString());
         String content = payload.get("content").toString();
-        log.info("Received message: sender={}, recipient={}, content={}",
-                senderId, recipientId, content);
         String conversationId;
         if (senderId < recipientId) {
             conversationId = senderId + "-" + recipientId;
         } else {
             conversationId = recipientId + "-" + senderId;
         }
-        ConversationDTO savedMessage = messageService.sendMessage(senderId, recipientId, content);
+        ConversationDTOCus savedMessage = messageService.sendMessage(senderId, recipientId, content);
         MessageResponse messageResponse = convertToMessageResponse(savedMessage, true);
         MessageResponse messageForRecipient = convertToMessageResponse(savedMessage, false);
         MessageResponse messageForSender = convertToMessageResponse(savedMessage, true);
@@ -51,29 +50,24 @@ public class WebSocketController {
                 messageResponse
         );
 
-        messagingTemplate.convertAndSendToUser(
-                recipientId.toString(),
-                "/queue/messages",
+
+        messagingTemplate.convertAndSend(
+                "/topic/chat-list/" + senderId,
                 savedMessage
         );
 
         messagingTemplate.convertAndSend(
-                "/topic/chat-list/" + senderId,
-                messageForSender
-        );
-        
-        messagingTemplate.convertAndSend(
                 "/topic/chat-list/" + recipientId,
-                messageForRecipient
+                savedMessage
         );
     }
-    private MessageResponse convertToMessageResponse(ConversationDTO dto, boolean isSender) {
+    private MessageResponse convertToMessageResponse(ConversationDTOCus dto, boolean isSender) {
         MessageResponse response = new MessageResponse();
             response.setId(Long.valueOf(dto.getMessageId()));
             response.setSenderId(dto.getRecipientId());
-            response.setSenderName(dto.getName());
+            response.setSenderName(dto.getSenderName());
             response.setRecipientId(dto.getRecipientId());
-            response.setRecipientName(dto.getName());
+            response.setRecipientName(dto.getRecipientName());
             response.setContent(dto.getLastMessage());
             response.setSentAt(dto.getLastMessageAt());
             response.setRead(dto.isRead());

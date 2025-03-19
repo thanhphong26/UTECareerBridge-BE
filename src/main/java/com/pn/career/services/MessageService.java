@@ -1,7 +1,6 @@
 package com.pn.career.services;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.pn.career.dtos.ConservationDTO;
 import com.pn.career.dtos.ConversationDTO;
+import com.pn.career.dtos.ConversationDTOCus;
 import com.pn.career.models.Employer;
 import com.pn.career.models.Message;
 import com.pn.career.models.Student;
@@ -30,7 +29,7 @@ public class MessageService implements IMessageService{
     private final EncryptionUtils encryptionUtils;
 
     @Override
-    public ConversationDTO sendMessage(Integer senderId, Integer recipientId, String content) {
+    public ConversationDTOCus sendMessage(Integer senderId, Integer recipientId, String content) {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
         User recipient = userRepository.findById(recipientId)
@@ -45,12 +44,15 @@ public class MessageService implements IMessageService{
                 .build();
 
         messageRepository.save(message);
-        ConversationDTO conversationDTO = new ConversationDTO();
+        ConversationDTOCus conversationDTO = new ConversationDTOCus();
         conversationDTO.setMessageId(Math.toIntExact(message.getId()));
         conversationDTO.setRecipientId(senderId);
-        conversationDTO.setName(recipient instanceof Student ? ((Student) recipient).getFirstName() + ((Student) recipient).getFirstName() : ((Employer) recipient).getCompanyName());
-        conversationDTO.setAvatar(recipient instanceof Student ? ((Student) recipient).getProfileImage() : ((Employer) recipient).getCompanyLogo());
-        conversationDTO.setAddress(recipient.getAddress());
+        conversationDTO.setSenderName(sender instanceof Student ? ((Student) sender).getLastName() + ((Student) sender).getFirstName() : ((Employer) sender).getCompanyName());
+        conversationDTO.setSenderAvatar(sender instanceof Student ? ((Student) sender).getProfileImage() : ((Employer) sender).getCompanyLogo());
+        conversationDTO.setSenderAddress(sender.getAddress());
+        conversationDTO.setRecipientName(recipient instanceof Student ? ((Student) recipient).getLastName() + ((Student) recipient).getFirstName() : ((Employer) recipient).getCompanyName());
+        conversationDTO.setRecipientAvatar(recipient instanceof Student ? ((Student) recipient).getProfileImage() : ((Employer) recipient).getCompanyLogo());
+        conversationDTO.setRecipientAddress(recipient.getAddress());
         conversationDTO.setLastMessage(content);
         conversationDTO.setMessageId(Math.toIntExact(message.getId()));
         conversationDTO.setLastMessageAt(message.getSentAt());
@@ -62,15 +64,14 @@ public class MessageService implements IMessageService{
     }
 
     @Override
-    public List<MessageResponse> getConservation(Integer user1Id, Integer user2Id) {
+    public Page<MessageResponse> getConservation(Integer user1Id, Integer user2Id, PageRequest pageRequest) {
         User user1 = userRepository.findById(user1Id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         User user2 = userRepository.findById(user2Id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         List<Message> messages = messageRepository.findConversation(user1, user2);
-        return messages.stream()
+        List<MessageResponse> messageResponses = messages.stream()
                 .map(message -> {
-                    // Giải mã nội dung tin nhắn
                     String decryptedContent = encryptionUtils.decrypt(message.getContent());
                     Message decryptedMessage = new Message();
                     decryptedMessage.setId(message.getId());
@@ -80,10 +81,11 @@ public class MessageService implements IMessageService{
                     decryptedMessage.setSentAt(message.getSentAt());
                     decryptedMessage.setRead(message.isRead());
                     decryptedMessage.setReadAt(message.getReadAt());
-                    decryptedMessage.setCreatedAt(message.getCreatedAt());
+
                     return MessageResponse.fromMessage(decryptedMessage);
                 })
                 .collect(Collectors.toList());
+        return new PageImpl<>(messageResponses, pageRequest, messageResponses.size());
     }
 
     @Override
@@ -93,7 +95,6 @@ public class MessageService implements IMessageService{
 
         return messageRepository.findContactsByUser(user);
     }
-
     @Override
     public void markAsRead(Long messageId) {
         Message message = messageRepository.findById(messageId)
@@ -103,7 +104,6 @@ public class MessageService implements IMessageService{
         message.setReadAt(LocalDateTime.now());
         messageRepository.save(message);
     }
-
     @Override
     public List<MessageResponse> getUnreadMessages(Integer userId) {
         User user = userRepository.findById(userId)
@@ -134,18 +134,14 @@ public class MessageService implements IMessageService{
 
         List<ConversationDTO> conversationDTOs = contacts.stream()
                 .map(contact -> {
-                    // Get the conversation
                     List<Message> messages = messageRepository.findConversation(user, contact);
 
-                    // Sort messages by sentAt in descending order to get latest first
                     List<Message> sortedMessages = messages.stream()
                             .sorted(Comparator.comparing(Message::getSentAt).reversed())
                             .collect(Collectors.toList());
 
-                    // Get the latest message (first in sorted list)
                     Message latestMessage = sortedMessages.isEmpty() ? null : sortedMessages.get(0);
 
-                    // Determine avatar based on contact type (Student or Employer)
                     String avatar = null;
                     String name =null;
                     Integer messageId = Math.toIntExact(latestMessage != null ? latestMessage.getId() : null);
@@ -156,11 +152,8 @@ public class MessageService implements IMessageService{
                         avatar = ((Employer) contact).getCompanyLogo();
                         name = ((Employer) contact).getCompanyName();
                     }
-
-                    // Check if latest message was sent by current user
                     boolean isLastSenderCurrentUser = latestMessage != null && latestMessage.getSender().equals(user);
 
-                    // Decrypt the latest message
                     String lastMessageContent = null;
                     if (latestMessage != null) {
                         lastMessageContent = encryptionUtils.decrypt(latestMessage.getContent());
