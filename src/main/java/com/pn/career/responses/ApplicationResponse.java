@@ -20,6 +20,7 @@ public class ApplicationResponse {
     private Integer jobId;
     private String jobTitle;
     private String profileImage;
+    private String companyLogo;
     private String lastName;
     private String firstName;
     private int year;
@@ -35,6 +36,7 @@ public class ApplicationResponse {
                 .companyId(application.getJob().getEmployer().getUserId())
                 .jobId(application.getJob().getJobId())
                 .profileImage(application.getResume().getStudent().getProfileImage())
+                .companyLogo(application.getJob().getEmployer().getCompanyLogo())
                 .lastName(application.getResume().getStudent().getLastName())
                 .firstName(application.getResume().getStudent().getFirstName())
                 .year(application.getResume().getStudent().getYear())

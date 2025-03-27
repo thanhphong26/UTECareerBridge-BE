@@ -17,10 +17,10 @@ public class EmployerUpdateDTO {
     private String companyName;
     private String companyAddress;
     private String companyEmail;
-    private MultipartFile companyLogo;
+    private String companyLogo;
     private String companyWebsite;
     private String companyDescription;
-    private MultipartFile backgroundImage;
+    private String backgroundImage;
     private String videoIntroduction;
     private String companySize;
     private Integer industryId;

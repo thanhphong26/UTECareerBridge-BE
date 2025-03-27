@@ -33,7 +33,7 @@ public class StudentResponse {
     private String universityEmail;
     private Integer categoryId;
     private boolean findingJob;
-    private int year;
+    private Integer year;
     private Role role;
     public static StudentResponse fromUser(User user) {
         return StudentResponse.builder()
@@ -51,6 +51,8 @@ public class StudentResponse {
                 .build();
     }
     public static StudentResponse fromStudent(Student student) {
+        Integer categoryId = student.getJobCategory() == null ? null : student.getJobCategory().getJobCategoryId();
+        Integer year = student.getYear();
         return StudentResponse.builder()
                 .id(student.getUserId())
                 .email(student.getEmail())
@@ -64,9 +66,9 @@ public class StudentResponse {
                 .districtId(student.getDistrictId())
                 .wardId(student.getWardId())
                 .address(student.getAddress())
-                .categoryId(student.getJobCategory().getJobCategoryId())
+                .categoryId(categoryId)
                 .profileImage(student.getProfileImage())
-                .year(student.getYear())
+                .year(year)
                 .findingJob(student.isFind())
                 .role(student.getRole())
                 .build();

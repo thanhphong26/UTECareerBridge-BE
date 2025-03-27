@@ -12,7 +12,10 @@ import lombok.experimental.SuperBuilder;
 import java.util.List;
 import java.util.Set;
 
-@Table(name = "students")
+@Table(name = "students", indexes = {
+        @Index(name = "idx_student_category", columnList = "category_id"),
+        @Index(name = "idx_student_uni_email", columnList = "university_email")
+})
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,7 +27,7 @@ public class Student extends User{
     @Column(name = "university_email")
     private String universityEmail;
     @Column(name="year")
-    private int year;
+    private Integer year;
     @Column(name="profile_image")
     private String profileImage;
     @Column(name = "is_find")
@@ -35,7 +38,7 @@ public class Student extends User{
     private List<StudentSkill> studentSkills;
     @JsonManagedReference
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", referencedColumnName = "category_id")
+    @JoinColumn(name = "category_id", referencedColumnName = "category_id", nullable = true)
     private JobCategory jobCategory;
 
 }

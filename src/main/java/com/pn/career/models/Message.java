@@ -5,16 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "messages")
+@Table(name = "messages", indexes = {
+        @Index(name = "idx_sender_id", columnList = "sender_id"),
+        @Index(name = "idx_recipient_id", columnList = "recipient_id")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Message {
+@SuperBuilder
+public class Message extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

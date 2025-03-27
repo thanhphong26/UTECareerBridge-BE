@@ -8,6 +8,7 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ public class ScheduledService {
     private final StudentRepository studentRepository;
     private final StudentSkillService studentSkillService;
     private final EmailService emailService;
+    private final JdbcTemplate jdbcTemplate;
     private final Logger logger= LoggerFactory.getLogger(ScheduledService.class);
     @Scheduled(cron = "0 07 07 * * *")
     @Transactional
@@ -29,9 +31,15 @@ public class ScheduledService {
             try {
                 emailService.sendSuitableJobEmail(student.getEmail(), student, jobResponses);
             } catch (MessagingException e) {
-                // Handle email sending errors here (e.g., logging)
                 logger.info("Error sending email to student with email: " + student.getEmail());
             }
+        }
+    }
+    @Scheduled(cron = "0 37 23 * * ?")
+    public void cleanupExpiredTokens() {
+        try {
+            jdbcTemplate.update("CALL delete_expired_tokens()");
+        } catch (Exception e) {
         }
     }
 }

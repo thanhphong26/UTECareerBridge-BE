@@ -28,39 +28,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:3000") // Adjust this to match your client's origin
-                .withSockJS();    }
-
+                .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5500") // Thay bằng origin của client
+                .withSockJS();
+        //end point for chatbot
+        registry.addEndpoint("/ws-chatbot")
+                .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5000")
+                .withSockJS();
+    }
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/queue", "/user");
+        registry.enableSimpleBroker("/topic","/queue", "/chatbot");
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user");
-    }
-
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(new ChannelInterceptor() {
-            @Override
-            public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    try {
-                        String authToken = accessor.getFirstNativeHeader("Authorization");
-                        if (authToken != null && authToken.startsWith("Bearer ")) {
-                            authToken = authToken.substring(7);
-                            Jwt jwt = jwtDecoder.decode(authToken);
-                            accessor.setUser(new JwtAuthenticationToken(jwt));
-                        } else {
-                            logger.warn("Invalid or missing Authorization header");
-                        }
-                    } catch (Exception e) {
-                        logger.error("Error processing WebSocket connection", e);
-                        throw new MessageDeliveryException(message, "Error processing WebSocket connection", e);
-                    }
-                }
-                return message;
-            }
-        });
     }
 }

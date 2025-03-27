@@ -7,7 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-@Table(name = "skills")
+@Table(name = "skills", indexes = {
+        @Index(name = "idx_skill_name", columnList = "skill_name"),
+        @Index(name = "idx_skill_level", columnList = "skill_level"),
+        @Index(name = "idx_skill_active", columnList = "is_active")
+})
 @Entity
 @Data
 @AllArgsConstructor

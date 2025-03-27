@@ -19,5 +19,6 @@ public interface IUserService {
     UserResponse updateUser(Integer userId, UpdateUserDTO user);
     void deleteUser(Integer userId);
     boolean updatePassword(Integer userId, UpdatePasswordDTO updatePasswordDTO);
+    TokenDTO loginSocial(LoginDTO userLoginDTO, String roleName) throws Exception;
 
 }

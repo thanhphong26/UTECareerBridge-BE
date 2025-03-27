@@ -9,7 +9,10 @@ import lombok.experimental.SuperBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-@Table(name = "employers")
+@Table(name = "employers", indexes = {
+        @Index(name = "industry_index", columnList = "industry_id"),
+        @Index(name = "company_name_index", columnList = "company_name")
+})
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor

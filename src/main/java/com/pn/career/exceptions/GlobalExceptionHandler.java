@@ -4,6 +4,7 @@ package com.pn.career.exceptions;
 import com.pn.career.responses.ResponseObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.LockedException;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +52,6 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(OAuth2AuthenticationException.class)
     public ResponseEntity<Object> handleOAuth2AuthenticationException(OAuth2AuthenticationException ex, WebRequest request) {
-        logger.error("Unauthorized error: {}", ex.getMessage());
         Map<String, Object> body = new HashMap<>();
         body.put("status", HttpStatus.UNAUTHORIZED.value());
         body.put("error", "Unauthorized");
@@ -61,7 +62,6 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<Object> handleLockedException(LockedException ex, WebRequest request) {
-        logger.error("Locked error: {}", ex.getMessage());
         Map<String, Object> body = new HashMap<>();
         body.put("status", HttpStatus.LOCKED.value());
         body.put("error", "Locked");
@@ -78,5 +78,18 @@ public class GlobalExceptionHandler {
         body.put("message", exception.getMessage());
         return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
 
+    }
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(DataConflictException.class)
+    public ResponseEntity<?> handleDataIntegrityViolation(DataIntegrityViolationException exception, WebRequest request) {
+        logger.error("Data integrity violation: {}", exception.getMessage());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Conflict");
+        body.put("message", "Dữ liệu bị trùng lặp hoặc vi phạm ràng buộc");  // Message rõ ràng hơn
+        body.put("timestamp", new Date());  // Thêm timestamp
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 }

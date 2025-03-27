@@ -11,7 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Table(name = "jobs")
+@Table(name = "jobs", indexes = {
+        @Index(name = "job_category_index", columnList = "category_id"),
+        @Index(name = "job_level_index", columnList = "level_id"),
+        @Index(name = "employer_index", columnList = "employer_id"),
+        @Index(name = "job_title_index", columnList = "job_title")
+})
 @Getter
 @Setter
 @Entity
