@@ -26,13 +26,14 @@ public class JWTTokenUtil {
     @Qualifier("jwtRefreshTokenEncoder")
     private JwtEncoder refreshTokenEncoder;
     private JwtDecoder jwtDecoder;
-    private final Logger logger= LoggerFactory.getLogger(JWTTokenUtil.class);
+    private final Logger logger = LoggerFactory.getLogger(JWTTokenUtil.class);
+
     private String createAccessToken(Authentication authentication) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("ute-career-bridge")
                 .issuedAt(now)
-                .expiresAt(now.plus(60, ChronoUnit.MINUTES))
+                .expiresAt(now.plus(1, ChronoUnit.DAYS))
                 .subject(authentication.getName())
                 .claim("roles", createScope(authentication))
                 .claim("userId", ((UserDetailsImpl) authentication.getPrincipal()).getUser().getUserId())
@@ -58,42 +59,45 @@ public class JWTTokenUtil {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
     }
+
     public TokenDTO generateTokenPair(Authentication authentication) {
         if (!(authentication.getPrincipal() instanceof UserDetailsImpl user)) {
             throw new BadCredentialsException(MessageFormat.format(
-                    "Principal {0} is not of User type", authentication.getPrincipal().getClass()
-            ));
+                    "Principal {0} is not of User type", authentication.getPrincipal().getClass()));
         }
-        TokenDTO tokenDTO=new TokenDTO();
+        TokenDTO tokenDTO = new TokenDTO();
         tokenDTO.setUserId(user.getUser().getUserId());
         tokenDTO.setAccessToken(createAccessToken(authentication));
         logger.info("TAccess token created for user: {}", tokenDTO.getAccessToken());
         String refreshToken;
-        if(authentication.getCredentials() instanceof Jwt jwt){
-            Instant now=Instant.now();
-            Instant expiresAt=jwt.getExpiresAt();
-            Duration duration=Duration.between(now,expiresAt);
-            long daysUntilExpired=duration.toDays();
-            if(daysUntilExpired<7){
-                refreshToken=createRefreshToken(authentication);
-            }else{
-                refreshToken=jwt.getTokenValue();
+        if (authentication.getCredentials() instanceof Jwt jwt) {
+            Instant now = Instant.now();
+            Instant expiresAt = jwt.getExpiresAt();
+            Duration duration = Duration.between(now, expiresAt);
+            long daysUntilExpired = duration.toDays();
+            if (daysUntilExpired < 7) {
+                refreshToken = createRefreshToken(authentication);
+            } else {
+                refreshToken = jwt.getTokenValue();
             }
-        }else{
-            refreshToken=createRefreshToken(authentication);
+        } else {
+            refreshToken = createRefreshToken(authentication);
         }
         tokenDTO.setRefreshToken(refreshToken);
         logger.info("TRefresh token created for user: {}", tokenDTO.getRefreshToken());
         return tokenDTO;
     }
+
     public Boolean isTokenExpired(String token) {
         var jwt = jwtDecoder.decode(token);
         return jwt.getExpiresAt().isBefore(Instant.now());
     }
+
     public String getSubjectFromToken(String token) {
         Jwt decodedJwt = jwtDecoder.decode(token);
         return decodedJwt.getSubject();
     }
+
     public String extractTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {

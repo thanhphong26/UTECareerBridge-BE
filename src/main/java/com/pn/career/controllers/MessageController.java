@@ -40,7 +40,8 @@ public class MessageController {
     @GetMapping("/conversation")
     @PreAuthorize("hasRole('ROLE_STUDENT') or hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getConversation(
-            @RequestParam Integer user1Id, @RequestParam Integer user2Id, @RequestParam(defaultValue = "10") Integer size, @RequestParam(defaultValue = "0") Integer page) {
+            @RequestParam Integer user1Id, @RequestParam Integer user2Id,
+            @RequestParam(defaultValue = "10") Integer size, @RequestParam(defaultValue = "0") Integer page) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<MessageResponse> conversation = messageService.getConservation(user1Id, user2Id, pageRequest);
         return ResponseEntity.ok(ResponseObject.builder()
@@ -57,6 +58,7 @@ public class MessageController {
     }
 
     @PutMapping("/{messageId}/read")
+    @PreAuthorize("hasRole('ROLE_STUDENT') or hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<Void> markAsRead(@PathVariable Long messageId) {
         messageService.markAsRead(messageId);
         return ResponseEntity.ok().build();
@@ -67,9 +69,11 @@ public class MessageController {
         List<MessageResponse> unreadMessages = messageService.getUnreadMessages(userId);
         return ResponseEntity.ok(unreadMessages);
     }
+
     @GetMapping("/contacts")
     @PreAuthorize("hasRole('ROLE_STUDENT') or hasRole('ROLE_EMPLOYER')")
-    public ResponseEntity<ResponseObject> getConversations(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer size, @RequestParam Integer page) {
+    public ResponseEntity<ResponseObject> getConversations(@AuthenticationPrincipal Jwt jwt, @RequestParam Integer size,
+            @RequestParam Integer page) {
         Long userIdLong = jwt.getClaim("userId");
         Integer userId = userIdLong != null ? userIdLong.intValue() : null;
         PageRequest pageRequest = PageRequest.of(page, size);
