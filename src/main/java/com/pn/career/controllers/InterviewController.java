@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -21,10 +23,12 @@ public class InterviewController {
 
     @PostMapping("/schedule")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
-    public ResponseEntity<?> scheduleInterview(@RequestBody InterviewRequestDTO request) {
+    public ResponseEntity<?> scheduleInterview(@RequestBody InterviewRequestDTO request, @AuthenticationPrincipal Jwt jwt) {
         try {
+            Long userIdLong = jwt.getClaim("userId");
+            Integer userId = userIdLong != null ? userIdLong.intValue() : null;
             // 1. Tạo cuộc họp Zoom
-            ResponseEntity<MeetingResponse> zoomResponse = zoomController.createMeeting();
+            ResponseEntity<MeetingResponse> zoomResponse = zoomController.createMeeting(jwt);
             log.info("Zoom response: {}", zoomResponse);
             if (!zoomResponse.getStatusCode().equals(HttpStatus.OK) || zoomResponse.getBody() == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -35,7 +39,8 @@ public class InterviewController {
             MeetingResponse meetingInfo = zoomResponse.getBody();
             log.info("Meeting response: {}", meetingInfo);
             // 2. Tạo sự kiện trên Google Calendar
-            String calendarEventId = googleCalendarService.createCalendarEvent(request, meetingInfo);
+            String calendarEventId = googleCalendarService.createCalendarEventAsEmployer(
+                    request, meetingInfo, userId);
             log.info("Calendar event ID: {}", calendarEventId);
             // 3. Cập nhật thông tin vào đối tượng MeetingResponse
             meetingInfo.setCalendarEventId(calendarEventId);

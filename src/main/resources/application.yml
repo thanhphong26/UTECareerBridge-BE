@@ -84,7 +84,12 @@ zoom:
     account-id: ${ZOOM_SDK_ACCOUNT_ID}
     client-id: ${ZOOM_SDK_KEY}
     client-secret: ${ZOOM_SDK_SECRET}
+    redirect-uri: ${ZOOM_SDK_REDIRECT_URI}
 google:
+  client:
+    id: ${GOOGLE_CLIENT_ID}
+    secret: ${GOOGLE_CLIENT_SECRET}
+    callback: ${GOOGLE_REDIRECT_URI}
   calendar:
     file: classpath:calendar.json
     timezone: Asia/Ho_Chi_Minh

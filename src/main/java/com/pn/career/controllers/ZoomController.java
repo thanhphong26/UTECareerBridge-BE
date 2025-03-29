@@ -1,7 +1,9 @@
 package com.pn.career.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pn.career.models.EmployerCredential;
 import com.pn.career.responses.MeetingResponse;
+import com.pn.career.services.CredentialService;
 import lombok.RequiredArgsConstructor;
 import okhttp3.*;
 import okhttp3.RequestBody;
@@ -10,10 +12,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("${api.prefix}/zoom")
@@ -21,6 +26,7 @@ import java.util.Base64;
 public class ZoomController {
     private static final String ZOOM_MEETINGS_URL = "https://api.zoom.us/v2/users/me/meetings";
     private static final String ZOOM_TOKEN_URL = "https://zoom.us/oauth/token";
+    private final CredentialService credentialService;
     @Value("${zoom.sdk.client-id}")
     private String clientId;
 
@@ -33,13 +39,28 @@ public class ZoomController {
     // Phương thức tạo cuộc họp sử dụng Server-to-Server OAuth
     @PostMapping("/create-meeting")
     @PreAuthorize("hasRole('ROLE_STUDENT') or hasRole('ROLE_EMPLOYER')")
-    public ResponseEntity<MeetingResponse> createMeeting() throws IOException {
+    public ResponseEntity<MeetingResponse> createMeeting(@AuthenticationPrincipal Jwt jwt) throws IOException {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
         OkHttpClient client = new OkHttpClient();
 
         try {
-            // Lấy access token qua Server-to-Server OAuth
-            String accessToken = getZoomAccessToken();
-            System.out.println("Generated Access Token: " + accessToken);
+            Optional<EmployerCredential> credentialOpt = credentialService.findByEmployerId(employerId);
+
+            String accessToken;
+            if (credentialOpt.isPresent() && credentialOpt.get().getZoomAccessToken() != null) {
+                // Sử dụng token đã lưu
+                accessToken = credentialOpt.get().getZoomAccessToken();
+
+                // Kiểm tra xem token có hợp lệ không bằng cách gọi API
+                if (!isValidToken(accessToken)) {
+                    // Nếu token không hợp lệ, làm mới token
+                    accessToken = refreshZoomToken(employerId, credentialOpt.get().getZoomRefreshToken());
+                }
+            } else {
+                // Nếu nhà tuyển dụng chưa có token, sử dụng token của hệ thống
+                accessToken = getZoomAccessToken();
+            }
 
             String jsonBody = "{"
                     + "\"topic\": \"Interview\","
@@ -105,7 +126,6 @@ public class ZoomController {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String errorBody = response.body().string();
-                System.out.println("OAuth error: " + errorBody);
                 throw new IOException("Failed to get access token: " + response.code() + " - " + errorBody);
             }
 
@@ -123,6 +143,57 @@ public class ZoomController {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+    private boolean isValidToken(String accessToken) {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://api.zoom.us/v2/users/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            return response.isSuccessful();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // Làm mới token Zoom
+    private String refreshZoomToken(Integer employerId, String refreshToken) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+
+        // Tạo chuỗi xác thực Basic Authentication
+        String credentials = clientId + ":" + clientSecret;
+        String base64Credentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+
+        // Tạo body yêu cầu
+        RequestBody body = new FormBody.Builder()
+                .add("grant_type", "refresh_token")
+                .add("refresh_token", refreshToken)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(ZOOM_TOKEN_URL)
+                .header("Authorization", "Basic " + base64Credentials)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .post(body)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed to refresh token: " + response.code());
+            }
+
+            String responseBody = response.body().string();
+            JSONObject jsonResponse = new JSONObject(responseBody);
+            String newAccessToken = jsonResponse.getString("access_token");
+            String newRefreshToken = jsonResponse.getString("refresh_token");
+
+            // Lưu token mới vào cơ sở dữ liệu
+            credentialService.saveZoomCredentials(employerId, newAccessToken, newRefreshToken);
+
+            return newAccessToken;
         }
     }
 }
