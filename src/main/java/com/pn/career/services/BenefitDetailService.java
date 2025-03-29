@@ -33,11 +33,23 @@ public class BenefitDetailService implements IBenefitDetailService{
     @Override
     @Transactional
     public void updateBenefitDetail(Employer employer,  List<BenefitDetailDTO> benefitDetailDTOs) {
+        if (benefitDetailDTOs == null || benefitDetailDTOs.isEmpty()) {
+            // Nếu không có phúc lợi nào, xóa tất cả phúc lợi hiện có
+            List<BenefitDetail> existingBenefits = findAllByEmployerId(employer);
+            if (!existingBenefits.isEmpty()) {
+                existingBenefits.forEach(benefitDetailRepository::delete);
+            }
+            return;
+        }
+        
         Set<BenefitDetailId> updatedIds = new HashSet<>();
         Map<Integer, BenefitDetail> existingBenefits = findAllByEmployerId(employer).stream()
                 .collect(Collectors.toMap(bd -> bd.getId().getBenefitId(), bd -> bd));
 
         for (BenefitDetailDTO dto : benefitDetailDTOs) {
+            if (dto.getBenefitId() == null) {
+                continue;
+            }
             BenefitDetailId id = new BenefitDetailId(employer.getUserId(), dto.getBenefitId());
             BenefitDetail benefitDetail = existingBenefits.getOrDefault(dto.getBenefitId(), new BenefitDetail());
 
