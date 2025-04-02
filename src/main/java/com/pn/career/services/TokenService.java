@@ -29,7 +29,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class TokenService implements ITokenService{
-    private static final int MAX_TOKENS = 2;
+//    private static final int MAX_TOKENS = 2;
     private final TokenRepository tokenRepository;
     private final JWTTokenUtil jwtTokenUtil;
     private JwtDecoder jwtDecoder;
@@ -38,12 +38,6 @@ public class TokenService implements ITokenService{
     private final UserRepository userRepository;
     @Override
     public Token addToken(User user, TokenDTO token) {
-        List<Token> tokenList=tokenRepository.findByUser(user);
-        int tokenCount=tokenList.size();
-        if(tokenCount> MAX_TOKENS){
-            Token oldestToken = tokenList.get(0);
-            tokenRepository.delete(oldestToken);
-        }
         LocalDateTime expirationDateAccessToken = convertToLocalDateTime(jwtDecoder.decode(token.getAccessToken()).getExpiresAt());
         LocalDateTime expirationDateRefreshToken = convertToLocalDateTime(jwtDecoder.decode(token.getRefreshToken()).getExpiresAt());
         Token newToken = Token.builder()

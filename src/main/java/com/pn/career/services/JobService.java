@@ -28,7 +28,6 @@ public class JobService implements IJobService {
     private final JobSkillService jobSkillService;
     private final JobSkillRepository jobSkillRepository;
     private final IEmployerPackageService employerPackageService;
-    private final FCMService fcmService;
     private final Logger logger= LoggerFactory.getLogger(JobService.class);
     @Value("${app.frontend.url}")
     private String frontendUrl;
@@ -70,7 +69,7 @@ public class JobService implements IJobService {
         List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
         jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
         String jobUrl=frontendUrl+"/employer/view/"+job.getJobId();
-        fcmService.sendNotificationToAdmin("Có công việc mới cần duyệt", "Công ty "+employer.getCompanyName()+" vừa đăng một công việc mới, vui lòng kiểm tra và duyệt công việc", jobUrl);
+       // fcmService.sendNotificationToAdmin("Có công việc mới cần duyệt", "Công ty "+employer.getCompanyName()+" vừa đăng một công việc mới, vui lòng kiểm tra và duyệt công việc", jobUrl);
         return jobResponse;
     }
     @Override

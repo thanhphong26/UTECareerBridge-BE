@@ -36,12 +36,53 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-chatbot")
                 .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5000")
                 .withSockJS();
+        //notification
+        registry.addEndpoint("/ws-notifications")
+                .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5500", "http://localhost:8080")
+                .withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic", "/queue", "/chatbot");
+        registry.enableSimpleBroker("/topic", "/queue", "/chatbot", "/notifications");
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user");
+    }
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(new ChannelInterceptor() {
+            @Override
+            public Message<?> preSend(Message<?> message, MessageChannel channel) {
+                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                logger.info("Message received: {}", accessor.getCommand());
+                if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+                    String authorizationHeader = accessor.getFirstNativeHeader("Authorization");
+
+                    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                        String token = authorizationHeader.substring(7);
+                        logger.info("Token: {}", token);
+                        try {
+                            Jwt jwt = jwtDecoder.decode(token);
+                            JwtAuthenticationToken authentication = new JwtAuthenticationToken(jwt);
+                            accessor.setUser(authentication);
+
+                            // Log successful connection with role
+                            String userRole = jwt.getClaimAsString("roles");
+                            String userId = jwt.getSubject();
+                            logger.info("User connected: ID={}, Role={}", userId, userRole);
+
+                        } catch (Exception e) {
+                            logger.error("Invalid JWT token in WebSocket connection", e);
+                            throw new MessageDeliveryException("Invalid authentication token");
+                        }
+                    } else {
+                        logger.warn("No authentication token provided for WebSocket connection");
+                        throw new MessageDeliveryException("No authentication token provided");
+                    }
+                }
+
+                return message;
+            }
+        });
     }
 }

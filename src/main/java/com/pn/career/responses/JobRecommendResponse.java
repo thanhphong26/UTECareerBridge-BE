@@ -19,6 +19,8 @@ public class JobRecommendResponse {
     private String logo;
     @JsonProperty("company_name")
     private String companyName;
+    @JsonProperty("job_location")
+    private String jobLocation;
     @JsonProperty("job_min_salary")
     private BigDecimal jobMinSalary;
     @JsonProperty("job_max_salary")

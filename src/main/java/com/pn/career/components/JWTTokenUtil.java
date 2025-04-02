@@ -68,7 +68,6 @@ public class JWTTokenUtil {
         TokenDTO tokenDTO = new TokenDTO();
         tokenDTO.setUserId(user.getUser().getUserId());
         tokenDTO.setAccessToken(createAccessToken(authentication));
-        logger.info("TAccess token created for user: {}", tokenDTO.getAccessToken());
         String refreshToken;
         if (authentication.getCredentials() instanceof Jwt jwt) {
             Instant now = Instant.now();
@@ -84,7 +83,6 @@ public class JWTTokenUtil {
             refreshToken = createRefreshToken(authentication);
         }
         tokenDTO.setRefreshToken(refreshToken);
-        logger.info("TRefresh token created for user: {}", tokenDTO.getRefreshToken());
         return tokenDTO;
     }
 

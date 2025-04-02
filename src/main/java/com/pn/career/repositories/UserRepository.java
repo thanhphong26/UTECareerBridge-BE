@@ -1,6 +1,7 @@
 package com.pn.career.repositories;
 
 import com.pn.career.dtos.UserStatisticDTO;
+import com.pn.career.models.Role;
 import com.pn.career.models.User;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
+    @Query("SELECT u FROM User u WHERE u.active = true AND u.role.roleName <> 'admin'")
+    List<User> findAllByActiveExceptAdmin();
+    List<User> findByRole(Role role);
     Optional<User> findByGoogleAccountId(String googleAccountId);
     User findUserByRole_RoleName(String roleName);
     Optional<User> findUserByEmail(String email);
