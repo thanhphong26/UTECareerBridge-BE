@@ -55,9 +55,9 @@ public class NotificationController {
         Long userIdLong = jwt.getClaim("userId");
         Integer id = userIdLong != null ? userIdLong.intValue() : null;
         PageRequest pageRequest = PageRequest.of(page != null ? page : 0, size != null ? size : 10);
-        Page<Notification> notifications = notificationService.getBroadcastNotifications(pageRequest);
+        Page<Notification> notifications = notificationService.getBroadcastNotifications(id, pageRequest);
         Page<NotificationResponse> notificationResponses = notifications.map(NotificationResponse::fromNotification);
-        return ResponseEntity.ok(ResponseObject.builder().data(notificationResponses).status(HttpStatus.OK).build());
+        return ResponseEntity.ok(ResponseObject.builder().message("Lấy danh sách thông báo hệ thống").data(notificationResponses).status(HttpStatus.OK).build());
     }
     @PostMapping("/role/{role}")
     @PreAuthorize("hasRole('ADMIN')")

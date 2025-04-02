@@ -18,7 +18,7 @@ public interface INotificationService {
     void sendNotificationToUser(Integer userId, String title, String message);
     Page<Notification> getUserNotifications(Integer userID, PageRequest pageable);
     Page<Notification> getUnreadNotifications(Integer userId, PageRequest pageable);
-    Page<Notification> getBroadcastNotifications(PageRequest pageable);
+    Page<Notification> getBroadcastNotifications(Integer userId, PageRequest pageable);
     void makeNotificationAsRead(Integer notificationId);
     void makeAllNotificationsAsRead(Integer userId);
     Long getUnreadNotificationCount(Integer userId);
@@ -26,4 +26,5 @@ public interface INotificationService {
     void deleteAllNotifications(Integer userId);
     void sendEventNotification( String eventTitle, String eventDescription, NotificationType notificationType, LocalDateTime eventDate, String eventLocation, String url);
     void sendNotificationApprovedJob(String title, String content, String url);
+    void sendNotificationRejectedApplication(Integer studentId, String title, String content);
 }

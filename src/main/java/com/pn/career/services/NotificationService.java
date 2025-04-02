@@ -163,8 +163,8 @@ public class NotificationService implements INotificationService{
     }
 
     @Override
-    public Page<Notification> getBroadcastNotifications(PageRequest pageable) {
-        return notificationRepository.findByTypeOrderByNotificationDateDesc(NotificationType.BROADCAST, pageable);
+    public Page<Notification> getBroadcastNotifications(Integer userId,PageRequest pageable) {
+        return notificationRepository.findDistinctByTypeAndUserIdOrderByNotificationDateDesc(NotificationType.BROADCAST, userId, pageable);
     }
 
     @Override
@@ -241,5 +241,18 @@ public class NotificationService implements INotificationService{
                 .build();
         notificationRepository.save(notification);
         messagingTemplate.convertAndSendToUser(String.valueOf(admin.getUserId()), "/notifications/role", notification);
+    }
+
+    @Override
+    public void sendNotificationRejectedApplication(Integer studentId, String title, String content) {
+        Notification notification = Notification.builder()
+                .userId(studentId)
+                .title(title)
+                .content(content)
+                .notificationDate(LocalDateTime.now())
+                .type(NotificationType.PERSONAL)
+                .build();
+        notificationRepository.save(notification);
+        messagingTemplate.convertAndSendToUser(String.valueOf(studentId), "/notifications/personal", notification);
     }
 }

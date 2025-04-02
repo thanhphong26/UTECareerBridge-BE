@@ -56,6 +56,7 @@ public class EmployerController {
     private final EmailService emailService;
     private final StudentRepository studentRepository;
     private final JobRepository jobRepository;
+    private final INotificationService notificationService;
 
     @GetMapping("/get-total-student-application")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
@@ -96,6 +97,9 @@ public class EmployerController {
         Long userIdLong = jwt.getClaim("userId");
         Integer userId = userIdLong != null ? userIdLong.intValue() : null;
         Application application = applicationService.updateStatus(userId, applicationId, status.status());
+        String title = "Đã có thông báo về trạng thái ứng tuyển của bạn";
+        String content = "Trạng thái ứng tuyển của bạn đã được cập nhật thành " + status.status() + ".Vui lòng check mail để cập nhật thông tin chi tiết!";
+        notificationService.sendNotificationRejectedApplication(application.getResume().getStudent().getUserId(), title, content);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Cập nhật trạng thái ứng tuyển thành công")
                 .status(HttpStatus.OK)

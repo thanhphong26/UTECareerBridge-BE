@@ -41,6 +41,7 @@ public class JobController {
     private final IUserActivityLog userActivityLogService;
     private final JobEventListener jobEventListener;
     private final ApplicationEventPublisher applicationEventPublisher;
+
     private final Logger logger= LoggerFactory.getLogger(JobController.class);
 
     @GetMapping("/recruitment-urgent")
@@ -241,6 +242,7 @@ public class JobController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> approveJob(@PathVariable Integer jobId){
         JobResponse jobResponse=jobService.approveJob(jobId);
+
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .message("Duyệt công việc thành công")
