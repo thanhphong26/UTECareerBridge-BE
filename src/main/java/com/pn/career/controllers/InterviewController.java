@@ -1,8 +1,11 @@
 package com.pn.career.controllers;
 
 import com.pn.career.dtos.InterviewRequestDTO;
+import com.pn.career.models.Interview;
 import com.pn.career.responses.MeetingResponse;
+import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.GoogleCalendarService;
+import com.pn.career.services.IInterviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,6 +15,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+
 
 @Slf4j
 @RestController
@@ -20,38 +25,53 @@ import org.springframework.web.bind.annotation.*;
 public class InterviewController {
     private final ZoomController zoomController;
     private final GoogleCalendarService googleCalendarService;
-
+    private final IInterviewService interviewService;
+    private final GoogleOauthController googleOauthController;
     @PostMapping("/schedule")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
-    public ResponseEntity<?> scheduleInterview(@RequestBody InterviewRequestDTO request, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseObject> scheduleInterview(@RequestBody InterviewRequestDTO request, @AuthenticationPrincipal Jwt jwt) {
         try {
             Long userIdLong = jwt.getClaim("userId");
             Integer userId = userIdLong != null ? userIdLong.intValue() : null;
-            // 1. Tạo cuộc họp Zoom
-            ResponseEntity<MeetingResponse> zoomResponse = zoomController.createMeeting(jwt);
-            log.info("Zoom response: {}", zoomResponse);
-            if (!zoomResponse.getStatusCode().equals(HttpStatus.OK) || zoomResponse.getBody() == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Không thể tạo cuộc họp Zoom: " +
-                                (zoomResponse.getBody() != null ? zoomResponse.getBody().getMessage() : "Lỗi không xác định"));
+            boolean isGoogleAuthenticated = googleCalendarService.isEmployerGoogleAuthenticated(userId);
+            if (!isGoogleAuthenticated) {
+                // Lấy URL xác thực từ GoogleOauthController
+                ResponseEntity<ResponseObject> authUrl = googleOauthController.getAuthorizationUrl(jwt);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.UNAUTHORIZED)
+                                .message("Bạn cần xác thực với Google Calendar trước khi lên lịch phỏng vấn")
+                                .data(authUrl.getBody().getData())
+                                .build());
             }
 
-            MeetingResponse meetingInfo = zoomResponse.getBody();
-            log.info("Meeting response: {}", meetingInfo);
-            // 2. Tạo sự kiện trên Google Calendar
+            if (request.getLink() == null || request.getLink().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ResponseObject.builder()
+                                .status(HttpStatus.BAD_REQUEST)
+                                .message("Link không được để trống")
+                                .data(null)
+                                .build());
+            }
+            MeetingResponse meetingInfo = new MeetingResponse();
+            meetingInfo.setJoinUrl(request.getLink());
             String calendarEventId = googleCalendarService.createCalendarEventAsEmployer(
                     request, meetingInfo, userId);
-            log.info("Calendar event ID: {}", calendarEventId);
-            // 3. Cập nhật thông tin vào đối tượng MeetingResponse
             meetingInfo.setCalendarEventId(calendarEventId);
-
-            // 4. Có thể lưu thông tin lịch phỏng vấn vào database tại đây
-
-            return ResponseEntity.ok(meetingInfo);
+            Interview interview = interviewService.saveInterview(request, meetingInfo, userId);
+            return ResponseEntity.ok()
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.OK)
+                            .message("Lên lịch phỏng vấn thành công")
+                            .data(interview)
+                            .build());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi lên lịch phỏng vấn: " + e.getMessage());
+                    .body(ResponseObject.builder()
+                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .message("Lỗi khi lên lịch phỏng vấn")
+                            .data(null)
+                            .build());
         }
     }
 }

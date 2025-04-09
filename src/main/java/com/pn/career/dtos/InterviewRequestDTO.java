@@ -10,10 +10,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InterviewRequestDTO {
-    private String resumeId;
+    private Integer resumeId;
     private String candidateEmail;
     private String title;
     private String description;
+    private String link;
     private LocalDateTime startTime;
     private Integer durationMinutes;
     private List<String> attendeeEmails;

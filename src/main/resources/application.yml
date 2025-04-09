@@ -87,9 +87,10 @@ zoom:
     redirect-uri: ${ZOOM_SDK_REDIRECT_URI}
 google:
   client:
-    id: ${GOOGLE_CLIENT_ID}
-    secret: ${GOOGLE_CLIENT_SECRET}
-    callback: ${GOOGLE_REDIRECT_URI}
+    id: ${GG_OAUTH_CLIENT_ID}
+    secret: ${GG_OAUTH_CLIENT_SECRET}
+    callback: ${GG_OAUTH_REDIRECT_URI}
+    scopes: https://www.googleapis.com/auth/calendar,https://www.googleapis.com/auth/calendar.events
   calendar:
     file: classpath:calendar.json
     timezone: Asia/Ho_Chi_Minh

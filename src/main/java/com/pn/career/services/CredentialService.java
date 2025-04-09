@@ -39,11 +39,19 @@ public class CredentialService {
 
         return employerCredentialRepository.save(credential);
     }
+    public void markCredentialsInvalid(Integer employerId) {
+        Optional<EmployerCredential> credentialOpt = findByEmployerId(employerId);
+        if (credentialOpt.isPresent()) {
+            EmployerCredential credential = credentialOpt.get();
+            credential.setGoogleAuthValid(false);
+            employerCredentialRepository.save(credential);
+        }
+    }
 
     @Transactional
     public EmployerCredential saveGoogleCredentials(Integer employerId,
                                                     String accessToken,
-                                                    String refreshToken) {
+                                                    String refreshToken, boolean isValid) {
         Optional<EmployerCredential> existingCredential = employerCredentialRepository.findByEmployerId(employerId);
 
         EmployerCredential credential;
@@ -56,6 +64,7 @@ public class CredentialService {
                     .employerId(employerId)
                     .googleAccessToken(accessToken)
                     .googleRefreshToken(refreshToken)
+                    .googleAuthValid(isValid)
                     .build();
         }
 

@@ -18,11 +18,11 @@ import com.google.api.services.calendar.model.EntryPoint;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.EventReminder;
-import com.google.auth.oauth2.AccessToken;
-import com.google.auth.oauth2.GoogleCredentials;
+import com.google.api.services.calendar.model.EventReminder;;
 import com.pn.career.dtos.InterviewRequestDTO;
+import com.pn.career.exceptions.AuthenticationException;
 import com.pn.career.models.EmployerCredential;
+import com.pn.career.repositories.EmployerCredentialRepository;
 import com.pn.career.responses.MeetingResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +50,7 @@ public class GoogleCalendarService {
     private static final List<String> SCOPES = Collections.singletonList("https://www.googleapis.com/auth/calendar");
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
     private final CredentialService credentialService;
+    private  final EmployerCredentialRepository credentialRepository;
     @Value("classpath:calendar.json")
     private Resource credentialsFile;
 
@@ -61,6 +62,13 @@ public class GoogleCalendarService {
     @Value("${google.client.secret}")
     private String googleClientSecret;
 
+    public boolean isEmployerGoogleAuthenticated(Integer employerId) {
+        Optional<EmployerCredential> credentialOpt = credentialService.findByEmployerId(employerId);
+        return credentialOpt.isPresent() &&
+                credentialOpt.get().isGoogleAuthValid() &&
+                credentialOpt.get().getGoogleAccessToken() != null &&
+                credentialOpt.get().getGoogleRefreshToken() != null;
+    }
     private Credential createCredentialFromTokens(String accessToken, String refreshToken) {
         return new GoogleCredential.Builder()
                 .setTransport(new NetHttpTransport())
@@ -78,29 +86,33 @@ public class GoogleCalendarService {
         try {
             Credential credential = createCredentialFromTokens(null, refreshToken);
 
-            // Thực hiện làm mới token
+            // Try to refresh token
             boolean refreshed = credential.refreshToken();
             if (refreshed) {
                 String newAccessToken = credential.getAccessToken();
 
-                // Lưu token mới vào cơ sở dữ liệu
+                // Save new token to database
                 credentialService.updateGoogleToken(employerId, newAccessToken);
-
                 return newAccessToken;
             } else {
-                log.error("Không thể làm mới token Google");
-                return null;
+                log.error("Failed to refresh Google token");
+                credentialService.markCredentialsInvalid(employerId);
+
+                throw new AuthenticationException("Google Calendar authorization expired. Please reauthorize.");
             }
         } catch (IOException e) {
-            log.error("Lỗi khi làm mới token Google", e);
-            return null;
+            // Mark credentials as invalid in database to prompt re-authorization
+            credentialService.markCredentialsInvalid(employerId);
+
+            throw new AuthenticationException("Google Calendar authorization error. Please reauthorize.", e);
         }
     }
+
     private Calendar getCalendarServiceForEmployer(Integer employerId)
             throws IOException, GeneralSecurityException {
         Optional<EmployerCredential> credentialOpt = credentialService.findByEmployerId(employerId);
-
         if (credentialOpt.isPresent() &&
+                credentialOpt.get().isGoogleAuthValid() &&
                 credentialOpt.get().getGoogleAccessToken() != null &&
                 credentialOpt.get().getGoogleRefreshToken() != null) {
 
@@ -108,20 +120,20 @@ public class GoogleCalendarService {
             String accessToken = empCredential.getGoogleAccessToken();
             String refreshToken = empCredential.getGoogleRefreshToken();
 
-            // Tạo credential từ token đã lưu
+            // Create credential from saved tokens
             Credential credential = createCredentialFromTokens(accessToken, refreshToken);
 
-            // Kiểm tra xem token có hết hạn không
+            // Check if token is about to expire
             if (credential.getExpiresInSeconds() != null && credential.getExpiresInSeconds() <= 60) {
-                // Token sắp hết hạn, làm mới
+                // Token about to expire, refresh it
                 accessToken = refreshGoogleToken(employerId, refreshToken);
                 if (accessToken == null) {
-                    throw new IOException("Không thể làm mới token Google");
+                    throw new AuthenticationException("Unable to refresh Google token");
                 }
                 credential.setAccessToken(accessToken);
             }
 
-            // Tạo service với credential của nhà tuyển dụng
+            // Create service with employer's credential
             return new Calendar.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
                     JSON_FACTORY,
@@ -129,8 +141,12 @@ public class GoogleCalendarService {
                     .setApplicationName(APPLICATION_NAME)
                     .build();
         } else {
-            // Nếu không có token nhà tuyển dụng, sử dụng phương thức cũ
-            return getDefaultCalendarService();
+            // Check if credentials exist but are invalid
+            if (credentialOpt.isPresent() && !credentialOpt.get().isGoogleAuthValid()) {
+                throw new AuthenticationException("Google Calendar authorization expired. Please reauthorize.");
+            }
+            // If no valid credentials, throw exception
+            throw new AuthenticationException("Google Calendar authorization not found. Please authorize.");
         }
     }
     private Calendar getDefaultCalendarService() throws IOException, GeneralSecurityException {
@@ -191,7 +207,6 @@ public class GoogleCalendarService {
             InterviewRequestDTO interviewRequestDTO,
             MeetingResponse meetingResponse,
             Integer employerId) throws IOException, GeneralSecurityException {
-
         // Lấy Calendar service cho nhà tuyển dụng
         Calendar service = getCalendarServiceForEmployer(employerId);
 
@@ -220,11 +235,10 @@ public class GoogleCalendarService {
             attendeesArray[i + 1] = new EventAttendee()
                     .setEmail(interviewRequestDTO.getAttendeeEmails().get(i));
         }
-
         // Tạo nội dung sự kiện
         Event event = new Event()
                 .setSummary(interviewRequestDTO.getTitle())
-                .setLocation("Phỏng vấn trực tuyến qua Zoom")
+                .setLocation("Phỏng vấn trực tuyến")
                 .setDescription(String.format("%s\n\nLink phỏng vấn: %s",
                         interviewRequestDTO.getDescription(),
                         meetingResponse.getJoinUrl()))
@@ -240,7 +254,7 @@ public class GoogleCalendarService {
                                 new EntryPoint()
                                         .setEntryPointType("video")
                                         .setUri(meetingResponse.getJoinUrl())
-                                        .setLabel("Tham gia phỏng vấn Zoom")
+                                        .setLabel("Tham gia phỏng vấn")
                         )))
                 .setReminders(new Event.Reminders()
                         .setUseDefault(false)
@@ -259,13 +273,11 @@ public class GoogleCalendarService {
                     .setDisplayName("Nhà tuyển dụng")
                     .setSelf(true));
         }
-
         // Chèn sự kiện
         event = service.events().insert("primary", event)
                 .setConferenceDataVersion(1)
                 .setSendNotifications(true)
                 .execute();
-
         return event.getId();
     }
     /**

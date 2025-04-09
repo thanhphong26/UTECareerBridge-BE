@@ -143,9 +143,9 @@ public class AuthController {
             GoogleTokenResponse tokenResponse = exchangeGoogleCodeForToken(code);
 
             // Lưu token vào database
-            credentialService.saveGoogleCredentials(employerId,
-                    tokenResponse.getAccessToken(),
-                    tokenResponse.getRefreshToken());
+//            credentialService.saveGoogleCredentials(employerId,
+//                    tokenResponse.getAccessToken(),
+//                    tokenResponse.getRefreshToken());
 
             // Redirect về trang thành công
             return new RedirectView("/employer/settings?auth=google-success");

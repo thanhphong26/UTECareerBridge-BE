@@ -26,4 +26,6 @@ public class EmployerCredential extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "employer_id", referencedColumnName = "employer_id", insertable = false, updatable = false)
     private Employer employer;
+    @Column(name = "google_auth_valid")
+    private boolean googleAuthValid = true;
 }

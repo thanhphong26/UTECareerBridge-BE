@@ -21,4 +21,5 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
             "JOIN a.job j " +
             "WHERE j.employer.userId = :employerId")
     Integer countUniqueStudentApplicationsByEmployer(@Param("employerId") int employerId);
+    Application findByResume_ResumeId(Integer resumeId);
 }
