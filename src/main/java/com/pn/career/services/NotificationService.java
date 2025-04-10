@@ -255,4 +255,23 @@ public class NotificationService implements INotificationService{
         notificationRepository.save(notification);
         messagingTemplate.convertAndSendToUser(String.valueOf(studentId), "/notifications/personal", notification);
     }
+
+    @Override
+    public void sendNotificationInterview(String title, String content, String url, Integer studentId, String jobTitle, String companyName) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("jobTitle", jobTitle);
+        data.put("companyName", companyName);
+        data.put("url", url);
+
+        Notification notification = Notification.builder()
+                .userId(studentId)
+                .title(title)
+                .content(content)
+                .notificationDate(LocalDateTime.now())
+                .type(NotificationType.PERSONAL)
+                .data(data)
+                .build();
+        notificationRepository.save(notification);
+        messagingTemplate.convertAndSendToUser(String.valueOf(studentId), "/notifications/personal", notification);
+    }
 }

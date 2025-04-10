@@ -27,4 +27,5 @@ public interface INotificationService {
     void sendEventNotification( String eventTitle, String eventDescription, NotificationType notificationType, LocalDateTime eventDate, String eventLocation, String url);
     void sendNotificationApprovedJob(String title, String content, String url);
     void sendNotificationRejectedApplication(Integer studentId, String title, String content);
+    void sendNotificationInterview(String title, String content, String url, Integer studentId, String jobTitle, String companyName);
 }

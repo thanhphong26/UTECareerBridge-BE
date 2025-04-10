@@ -8,4 +8,5 @@ import com.pn.career.responses.MeetingResponse;
 public interface IInterviewService {
     void scheduleInterview(InterviewDTO interviewDTO);
     Interview saveInterview(InterviewRequestDTO interviewRequestDTO, MeetingResponse meetingResponse, Integer userId);
+    Interview getInterviewById(Integer interviewId);
 }

@@ -6,6 +6,7 @@ import com.pn.career.responses.MeetingResponse;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.GoogleCalendarService;
 import com.pn.career.services.IInterviewService;
+import com.pn.career.services.INotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class InterviewController {
     private final GoogleCalendarService googleCalendarService;
     private final IInterviewService interviewService;
     private final GoogleOauthController googleOauthController;
+    private final INotificationService notificationService;
     @PostMapping("/schedule")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> scheduleInterview(@RequestBody InterviewRequestDTO request, @AuthenticationPrincipal Jwt jwt) {
@@ -59,6 +61,12 @@ public class InterviewController {
                     request, meetingInfo, userId);
             meetingInfo.setCalendarEventId(calendarEventId);
             Interview interview = interviewService.saveInterview(request, meetingInfo, userId);
+            log.info("Interview ID: {}", interview.getInterviewId());
+            Integer studentID = interview.getApplication().getResume().getStudent().getUserId();
+            String title = "Lịch phỏng vấn mới từ " + interview.getApplication().getJob().getEmployer().getCompanyName();
+            String message = "Bạn đã được lên lịch phỏng vấn cho vị trí " + interview.getApplication().getJob().getJobTitle() +
+                    " vào lúc " + interview.getScheduleDate() + ". Thời gian phỏng vấn là " + interview.getDuration() + " phút. Vui lòng kiểm tra email để xác nhận lịch phỏng vấn.";
+            notificationService.sendNotificationInterview(title, message, meetingInfo.getJoinUrl(), studentID, interview.getApplication().getJob().getJobTitle(), interview.getApplication().getJob().getEmployer().getCompanyName());
             return ResponseEntity.ok()
                     .body(ResponseObject.builder()
                             .status(HttpStatus.OK)

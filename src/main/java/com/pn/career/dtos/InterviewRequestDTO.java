@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class InterviewRequestDTO {
     private Integer resumeId;
+    private Integer jobId;
     private String candidateEmail;
     private String title;
     private String description;
