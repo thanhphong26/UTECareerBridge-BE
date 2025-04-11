@@ -13,6 +13,5 @@ public class UteCareerBridgeBeApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(UteCareerBridgeBeApplication.class, args);
 	}
-
 }
 	

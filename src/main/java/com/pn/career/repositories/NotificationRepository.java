@@ -16,5 +16,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     Page<Notification> findByUserIdAndReadOrderByNotificationDateDesc(Integer userId, Boolean read, Pageable pageable);
     Page<Notification> findDistinctByTypeAndUserIdOrderByNotificationDateDesc(NotificationType notificationType, Integer userId, Pageable pageable);
     Long countByUserIdAndRead(Integer userId, Boolean read);
-
+    Notification findByUserIdAndNotificationId(Integer userId, Integer notificationId);
 }
