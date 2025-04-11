@@ -31,6 +31,12 @@ public class NotificationService implements INotificationService{
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
     private final RoleRepository  roleRepository;
+
+    @Override
+    public Notification getById(Integer notificationId, Integer userId) {
+        return notificationRepository.findByUserIdAndNotificationId(userId, notificationId);
+    }
+
     @Override
     public void sendRoleNotification(String role, String title, String message) {
         Notification notification = Notification.builder()
