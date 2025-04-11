@@ -21,6 +21,20 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
     private final NotificationService notificationService;
 
+    @GetMapping("/{notificationId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    public ResponseEntity<ResponseObject> getNotificationById(@PathVariable Integer notificationId, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer id = userIdLong != null ? userIdLong.intValue() : null;
+        System.out.println("id: " + id);
+        if(id == null) {
+            return ResponseEntity.badRequest().body(ResponseObject.builder().message("Ban khong co quyen truy cap").status(HttpStatus.BAD_REQUEST).build());
+        }
+        Notification notification = notificationService.getById(notificationId, id);
+        return ResponseEntity.ok(ResponseObject.builder().data(NotificationResponse.fromNotification(notification)).status(HttpStatus.OK).build());
+    }
+
+
     @PostMapping("/broadcast")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResponseObject> sendBroadcastNotification(@RequestBody NotificationRequest request) {

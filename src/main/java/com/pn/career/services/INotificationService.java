@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 public interface INotificationService {
+    Notification getById(Integer notificationId, Integer userId);
     void sendRoleNotification(String role, String title, String message);
     void sendBroadcastNotification(String title, String message);
     void sendPersonalNotification(Integer userId, String title, String message, Map<String, Object> data);
