@@ -1,0 +1,5 @@
+package com.pn.career.models;
+
+public enum NotificationType {
+    ROLE, BROADCAST, PERSONAL, JOB_APPLICATION_STUDENT, JOB_APPLICATION_EMPLOYER, APPLICATION_STATUS, USER, ADMIN
+}

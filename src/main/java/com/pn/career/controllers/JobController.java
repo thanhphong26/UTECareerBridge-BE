@@ -2,16 +2,24 @@ package com.pn.career.controllers;
 
 import com.pn.career.dtos.JobDTO;
 import com.pn.career.dtos.RejectDTO;
+import com.pn.career.dtos.UserActivityDTO;
+import com.pn.career.event.JobEventListener;
+import com.pn.career.event.JobViewedEvent;
 import com.pn.career.models.JobStatus;
 import com.pn.career.responses.JobListResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IJobService;
+import com.pn.career.services.IUserActivityLog;
+import com.pn.career.services.UserActivityLogService;
+import com.pn.career.utils.JWTCheck;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,8 +35,13 @@ import java.util.List;
 @RestController
 @RequestMapping("${api.prefix}/jobs")
 @AllArgsConstructor
+@Slf4j
 public class JobController {
     private final IJobService jobService;
+    private final IUserActivityLog userActivityLogService;
+    private final JobEventListener jobEventListener;
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     private final Logger logger= LoggerFactory.getLogger(JobController.class);
 
     @GetMapping("/recruitment-urgent")
@@ -74,13 +87,19 @@ public class JobController {
         }
     }
     @GetMapping("/{jobId}")
-    public ResponseEntity<ResponseObject> getJobById(@PathVariable Integer jobId, @RequestParam(defaultValue = "ACTIVE") JobStatus status){
+    public ResponseEntity<ResponseObject> getJobById(@PathVariable Integer jobId, @RequestParam(defaultValue = "ACTIVE") JobStatus status, @AuthenticationPrincipal Jwt jwt){
         JobResponse jobResponse = jobService.getJobById(jobId, status).orElseThrow(() -> new RuntimeException("Không tìm thấy công việc"));
-        return ResponseEntity.ok().body(ResponseObject.builder()
+        Integer userId=JWTCheck.getUserIdFromJWT(jwt);
+        ResponseEntity<ResponseObject> response = ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Lấy thông tin công việc thành công")
                 .status(HttpStatus.OK)
                 .data(jobResponse)
                 .build());
+        if(userId!=null){
+            logger.info("Publishing job viewed event");
+            applicationEventPublisher.publishEvent(new JobViewedEvent(userId,jobId));
+        }
+        return response;
     }
     @PutMapping("/employer/job-posting/{jobId}")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
@@ -223,6 +242,7 @@ public class JobController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> approveJob(@PathVariable Integer jobId){
         JobResponse jobResponse=jobService.approveJob(jobId);
+
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .message("Duyệt công việc thành công")

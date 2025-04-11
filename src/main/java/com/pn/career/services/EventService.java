@@ -5,6 +5,7 @@ import com.pn.career.dtos.EventTimelineDTO;
 import com.pn.career.models.Event;
 import com.pn.career.models.EventTimeline;
 import com.pn.career.models.EventType;
+import com.pn.career.models.NotificationType;
 import com.pn.career.repositories.EventRepository;
 import com.pn.career.repositories.EventTimelineRepository;
 import com.pn.career.responses.EventResponse;
@@ -25,6 +26,7 @@ public class EventService implements IEventService{
     private final EventRepository eventRepository;
     private final EventTimelineRepository eventTimelineRepository;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
     @Override
     public Page<Event> getAllEvents(EventType eventType, PageRequest pageRequest) {
         return eventRepository.findAllByEventTypeOrderByCreatedAt(eventType, pageRequest);
@@ -62,7 +64,8 @@ public class EventService implements IEventService{
         // Cập nhật event với danh sách timeline
         savedEvent.setEventTimelines(timelines);
         savedEvent = eventRepository.save(savedEvent);
-
+        String title = "Sự kiện mới sắp diễn ra! Đừng bỏ lỡ! \n " + savedEvent.getEventTitle();
+        notificationService.sendEventNotification(savedEvent.getEventTitle(), savedEvent.getEventDescription(), NotificationType.BROADCAST, savedEvent.getEventDate(), savedEvent.getEventLocation(), "/event-detail/" + savedEvent.getEventId());
         return EventResponse.from(savedEvent);
     }
 

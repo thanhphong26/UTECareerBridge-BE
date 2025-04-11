@@ -5,6 +5,7 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -17,8 +18,11 @@ import com.google.api.services.calendar.model.EntryPoint;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.EventReminder;
+import com.google.api.services.calendar.model.EventReminder;;
 import com.pn.career.dtos.InterviewRequestDTO;
+import com.pn.career.exceptions.AuthenticationException;
+import com.pn.career.models.EmployerCredential;
+import com.pn.career.repositories.EmployerCredentialRepository;
 import com.pn.career.responses.MeetingResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -44,19 +49,114 @@ public class GoogleCalendarService {
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final List<String> SCOPES = Collections.singletonList("https://www.googleapis.com/auth/calendar");
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
-
+    private final CredentialService credentialService;
+    private  final EmployerCredentialRepository credentialRepository;
     @Value("classpath:calendar.json")
     private Resource credentialsFile;
 
     @Value("${google.calendar.timezone}")
     private String calendarTimezone;
+    @Value("${google.client.id}")
+    private String googleClientId;
+
+    @Value("${google.client.secret}")
+    private String googleClientSecret;
+
+    public boolean isEmployerGoogleAuthenticated(Integer employerId) {
+        Optional<EmployerCredential> credentialOpt = credentialService.findByEmployerId(employerId);
+        return credentialOpt.isPresent() &&
+                credentialOpt.get().isGoogleAuthValid() &&
+                credentialOpt.get().getGoogleAccessToken() != null &&
+                credentialOpt.get().getGoogleRefreshToken() != null;
+    }
+    private Credential createCredentialFromTokens(String accessToken, String refreshToken) {
+        return new GoogleCredential.Builder()
+                .setTransport(new NetHttpTransport())
+                .setJsonFactory(JSON_FACTORY)
+                .setClientSecrets(googleClientId, googleClientSecret)
+                .build()
+                .setAccessToken(accessToken)
+                .setRefreshToken(refreshToken);
+    }
 
     /**
-     * Tạo một Credential object cho việc ủy quyền.
-     * @param httpTransport The network HTTP Transport.
-     * @return An authorized Credential object.
-     * @throws IOException If the credentials.json file cannot be found.
+     * Làm mới token khi hết hạn
      */
+    private String refreshGoogleToken(Integer employerId, String refreshToken) {
+        try {
+            Credential credential = createCredentialFromTokens(null, refreshToken);
+
+            // Try to refresh token
+            boolean refreshed = credential.refreshToken();
+            if (refreshed) {
+                String newAccessToken = credential.getAccessToken();
+
+                // Save new token to database
+                credentialService.updateGoogleToken(employerId, newAccessToken);
+                return newAccessToken;
+            } else {
+                log.error("Failed to refresh Google token");
+                credentialService.markCredentialsInvalid(employerId);
+
+                throw new AuthenticationException("Google Calendar authorization expired. Please reauthorize.");
+            }
+        } catch (IOException e) {
+            // Mark credentials as invalid in database to prompt re-authorization
+            credentialService.markCredentialsInvalid(employerId);
+
+            throw new AuthenticationException("Google Calendar authorization error. Please reauthorize.", e);
+        }
+    }
+
+    private Calendar getCalendarServiceForEmployer(Integer employerId)
+            throws IOException, GeneralSecurityException {
+        Optional<EmployerCredential> credentialOpt = credentialService.findByEmployerId(employerId);
+        if (credentialOpt.isPresent() &&
+                credentialOpt.get().isGoogleAuthValid() &&
+                credentialOpt.get().getGoogleAccessToken() != null &&
+                credentialOpt.get().getGoogleRefreshToken() != null) {
+
+            EmployerCredential empCredential = credentialOpt.get();
+            String accessToken = empCredential.getGoogleAccessToken();
+            String refreshToken = empCredential.getGoogleRefreshToken();
+
+            // Create credential from saved tokens
+            Credential credential = createCredentialFromTokens(accessToken, refreshToken);
+
+            // Check if token is about to expire
+            if (credential.getExpiresInSeconds() != null && credential.getExpiresInSeconds() <= 60) {
+                // Token about to expire, refresh it
+                accessToken = refreshGoogleToken(employerId, refreshToken);
+                if (accessToken == null) {
+                    throw new AuthenticationException("Unable to refresh Google token");
+                }
+                credential.setAccessToken(accessToken);
+            }
+
+            // Create service with employer's credential
+            return new Calendar.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    JSON_FACTORY,
+                    credential)
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+        } else {
+            // Check if credentials exist but are invalid
+            if (credentialOpt.isPresent() && !credentialOpt.get().isGoogleAuthValid()) {
+                throw new AuthenticationException("Google Calendar authorization expired. Please reauthorize.");
+            }
+            // If no valid credentials, throw exception
+            throw new AuthenticationException("Google Calendar authorization not found. Please authorize.");
+        }
+    }
+    private Calendar getDefaultCalendarService() throws IOException, GeneralSecurityException {
+        // Triển khai logic lấy credential mặc định của bạn ở đây
+        final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        Credential credential = getCredentials(httpTransport); // Phương thức getCredentials hiện tại của bạn
+        return new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+    }
     private Credential getCredentials(final NetHttpTransport httpTransport) throws IOException {
         // Tải thông tin client secret
         Resource resource = new ClassPathResource("calendar.json");
@@ -103,7 +203,83 @@ public class GoogleCalendarService {
             throw e;
         }
     }
+    public String createCalendarEventAsEmployer(
+            InterviewRequestDTO interviewRequestDTO,
+            MeetingResponse meetingResponse,
+            Integer employerId) throws IOException, GeneralSecurityException {
+        // Lấy Calendar service cho nhà tuyển dụng
+        Calendar service = getCalendarServiceForEmployer(employerId);
 
+        // Tạo sự kiện như bình thường
+        DateTime startDateTime = new DateTime(
+                interviewRequestDTO.getStartTime()
+                        .atZone(ZoneId.of(calendarTimezone))
+                        .toInstant().toEpochMilli());
+
+        DateTime endDateTime = new DateTime(
+                interviewRequestDTO.getStartTime()
+                        .plusMinutes(interviewRequestDTO.getDurationMinutes())
+                        .atZone(ZoneId.of(calendarTimezone))
+                        .toInstant().toEpochMilli());
+
+        // Tạo danh sách người tham gia
+        EventAttendee[] attendeesArray = new EventAttendee[interviewRequestDTO.getAttendeeEmails().size() + 1];
+
+        // Thêm ứng viên
+        attendeesArray[0] = new EventAttendee()
+                .setEmail(interviewRequestDTO.getCandidateEmail())
+                .setDisplayName("Ứng viên");
+
+        // Thêm các người tham gia khác
+        for (int i = 0; i < interviewRequestDTO.getAttendeeEmails().size(); i++) {
+            attendeesArray[i + 1] = new EventAttendee()
+                    .setEmail(interviewRequestDTO.getAttendeeEmails().get(i));
+        }
+        // Tạo nội dung sự kiện
+        Event event = new Event()
+                .setSummary(interviewRequestDTO.getTitle())
+                .setLocation("Phỏng vấn trực tuyến")
+                .setDescription(String.format("%s\n\nLink phỏng vấn: %s",
+                        interviewRequestDTO.getDescription(),
+                        meetingResponse.getJoinUrl()))
+                .setStart(new EventDateTime()
+                        .setDateTime(startDateTime)
+                        .setTimeZone(calendarTimezone))
+                .setEnd(new EventDateTime()
+                        .setDateTime(endDateTime)
+                        .setTimeZone(calendarTimezone))
+                .setAttendees(Arrays.asList(attendeesArray))
+                .setConferenceData(new ConferenceData()
+                        .setEntryPoints(Collections.singletonList(
+                                new EntryPoint()
+                                        .setEntryPointType("video")
+                                        .setUri(meetingResponse.getJoinUrl())
+                                        .setLabel("Tham gia phỏng vấn")
+                        )))
+                .setReminders(new Event.Reminders()
+                        .setUseDefault(false)
+                        .setOverrides(Arrays.asList(
+                                new EventReminder().setMethod("email").setMinutes(24 * 60),  // 1 ngày trước
+                                new EventReminder().setMethod("popup").setMinutes(30)        // 30 phút trước
+                        )));
+
+        // Lấy email nhà tuyển dụng (tùy chọn)
+        Optional<EmployerCredential> credentialOpt = credentialService.findByEmployerId(employerId);
+        if (credentialOpt.isPresent() && credentialOpt.get().getEmployer() != null) {
+            String organizerEmail = credentialOpt.get().getEmployer().getEmail();
+            // Đặt người tổ chức là nhà tuyển dụng
+            event.setOrganizer(new Event.Organizer()
+                    .setEmail(organizerEmail)
+                    .setDisplayName("Nhà tuyển dụng")
+                    .setSelf(true));
+        }
+        // Chèn sự kiện
+        event = service.events().insert("primary", event)
+                .setConferenceDataVersion(1)
+                .setSendNotifications(true)
+                .execute();
+        return event.getId();
+    }
     /**
      * Tạo sự kiện trên Google Calendar cho cuộc phỏng vấn
      * @param interviewRequestDTO thông tin yêu cầu phỏng vấn

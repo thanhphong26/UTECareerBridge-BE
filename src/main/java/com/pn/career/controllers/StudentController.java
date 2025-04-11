@@ -2,12 +2,17 @@ package com.pn.career.controllers;
 
 import com.pn.career.dtos.ResumeDTO;
 import com.pn.career.dtos.StudentDTO;
+import com.pn.career.event.JobAppliedEvent;
+import com.pn.career.event.JobSavedEvent;
+import com.pn.career.event.JobUnsavedEvent;
 import com.pn.career.models.Application;
 import com.pn.career.models.Resume;
 import com.pn.career.models.StudentSkill;
 import com.pn.career.responses.*;
 import com.pn.career.services.*;
+import com.pn.career.utils.JWTCheck;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -29,6 +34,7 @@ public class StudentController {
     private final IStudentSkillService studentSkillService;
     private final IFollowerService followerService;
     private final ISaveJobService saveJobService;
+    private final ApplicationEventPublisher applicationEventPublisher;
     @GetMapping("/students-finding-job")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getStudentIsFindingJob(@RequestParam(required = false) Integer categoryId, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit) {
@@ -88,6 +94,7 @@ public class StudentController {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
         saveJobService.saveJob(studentId, jobId);
+        applicationEventPublisher.publishEvent(new JobSavedEvent(studentId, jobId));
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .message("Lưu công việc thành công")
@@ -99,6 +106,7 @@ public class StudentController {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
         saveJobService.unsaveJob(studentId, jobId);
+        applicationEventPublisher.publishEvent(new JobUnsavedEvent(studentId, jobId));
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .message("Hủy lưu công việc thành công")
@@ -246,9 +254,12 @@ public class StudentController {
     }
     @PostMapping("/jobs/apply")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> applyJob(@RequestParam Integer jobId, @RequestParam Integer resumeId) {
+    public ResponseEntity<ResponseObject> applyJob(@RequestParam Integer jobId, @RequestParam Integer resumeId, @AuthenticationPrincipal Jwt jwt) {
         try{
             Application application=applicationService.createApplication(jobId, resumeId);
+            if(JWTCheck.getUserIdFromJWT(jwt)!=null){
+                applicationEventPublisher.publishEvent(new JobAppliedEvent(JWTCheck.getUserIdFromJWT(jwt), jobId));
+            }
             return ResponseEntity.ok(ResponseObject.builder()
                     .status(HttpStatus.OK)
                     .data(ApplicationResponse.fromApplication(application))

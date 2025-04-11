@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface ApplicationRepository extends JpaRepository<Application, Integer> {
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Application a " +
             "WHERE a.job.jobId = :jobId AND a.resume.student.userId = :studentId")
@@ -21,4 +23,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
             "JOIN a.job j " +
             "WHERE j.employer.userId = :employerId")
     Integer countUniqueStudentApplicationsByEmployer(@Param("employerId") int employerId);
+    @Query("SELECT a FROM Application a WHERE a.resume.resumeId = :resumeId and a.job.jobId = :jobId")
+    Optional<Application> findApplicationByResumeIdAndAndJob_JobId(@Param("resumeId") Integer resumeId, @Param("jobId") Integer jobId);
 }
