@@ -7,7 +7,10 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
-@Table(name = "interviews")
+@Table(name = "interviews", indexes = {
+        @Index(name = "idx_interview_application_id", columnList = "application_id"),
+        @Index(name = "idx_interview_employer_id", columnList = "employer_id")
+})
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -36,4 +39,5 @@ public class Interview extends BaseEntity{
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private InterviewStatus status = InterviewStatus.SCHEDULED;
+    private Integer employerId;
 }
