@@ -10,4 +10,6 @@ public interface ITokenService {
     Token refreshToken(String refreshToken,  UserDetailsImpl userDetails) throws Exception;
     void invalidateUserTokens(Integer userId) throws DataNotFoundException;
     boolean isTokenRevoked(String token);
+    void invalidateUserTokens(Integer userId, String token) throws DataNotFoundException;
+
 }

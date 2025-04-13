@@ -26,15 +26,12 @@ public class NotificationController {
     public ResponseEntity<ResponseObject> getNotificationById(@PathVariable Integer notificationId, @AuthenticationPrincipal Jwt jwt) {
         Long userIdLong = jwt.getClaim("userId");
         Integer id = userIdLong != null ? userIdLong.intValue() : null;
-        System.out.println("id: " + id);
         if(id == null) {
             return ResponseEntity.badRequest().body(ResponseObject.builder().message("Ban khong co quyen truy cap").status(HttpStatus.BAD_REQUEST).build());
         }
         Notification notification = notificationService.getById(notificationId, id);
         return ResponseEntity.ok(ResponseObject.builder().data(NotificationResponse.fromNotification(notification)).status(HttpStatus.OK).build());
     }
-
-
     @PostMapping("/broadcast")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResponseObject> sendBroadcastNotification(@RequestBody NotificationRequest request) {
@@ -49,7 +46,6 @@ public class NotificationController {
         notificationService.sendNotificationToUser(userId, request.getTitle(), request.getMessage());
         return ResponseEntity.ok().build();
     }
-
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
     public ResponseEntity<ResponseObject> getUserNotifications(@PathVariable Integer userId, @AuthenticationPrincipal Jwt jwt, @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
@@ -60,6 +56,19 @@ public class NotificationController {
         }
         PageRequest pageRequest = PageRequest.of(page != null ? page : 0, size != null ? size : 10);
         Page<Notification> notifications = notificationService.getUserNotifications(userId, pageRequest);
+        Page<NotificationResponse> notificationResponses = notifications.map(NotificationResponse::fromNotification);
+        return ResponseEntity.ok(ResponseObject.builder().data(notificationResponses).status(HttpStatus.OK).build());
+    }
+    @GetMapping("/personal/user/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or hasRole('EMPLOYER')")
+    public ResponseEntity<ResponseObject> getUserPersonalNotifications(@PathVariable Integer userId, @AuthenticationPrincipal Jwt jwt, @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer id = userIdLong != null ? userIdLong.intValue() : null;
+        if(id == null || !id.equals(userId)) {
+            return ResponseEntity.badRequest().body(ResponseObject.builder().message("Ban khong co quyen truy cap").status(HttpStatus.BAD_REQUEST).build());
+        }
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, size != null ? size : 10);
+        Page<Notification> notifications = notificationService.getUserPersonalNotifications(userId, pageRequest);
         Page<NotificationResponse> notificationResponses = notifications.map(NotificationResponse::fromNotification);
         return ResponseEntity.ok(ResponseObject.builder().data(notificationResponses).status(HttpStatus.OK).build());
     }

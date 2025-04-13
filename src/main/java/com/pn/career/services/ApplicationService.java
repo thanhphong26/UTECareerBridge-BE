@@ -7,12 +7,14 @@ import com.pn.career.models.*;
 import com.pn.career.repositories.*;
 import com.pn.career.responses.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApplicationService implements IApplicationService{
@@ -36,6 +38,7 @@ public class ApplicationService implements IApplicationService{
                 .applicationStatus(ApplicationStatus.PENDING)
                 .build();
         applicationRepository.save(application);
+        log.info("Gửi email thông báo ứng tuyển cho sinh viên: "+resume.getStudent().getEmail());
         emailService.sendJobApplicationEmail(resume.getStudent().getEmail(), ResumeResponse.fromResume(resume), JobResponse.fromJob(job),ApplicationResponse.fromApplication(application));
         return application;
     }

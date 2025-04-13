@@ -258,7 +258,7 @@ public class AuthController {
                             .build()
             );
         }
-        tokenService.invalidateUserTokens(userId);
+        tokenService.invalidateUserTokens(userId, jwt.getTokenValue());
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setMaxAge(0);
         cookie.setHttpOnly(true);

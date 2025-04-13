@@ -1,6 +1,5 @@
 package com.pn.career.services;
 
-import com.pn.career.dtos.NotificationDTO;
 import com.pn.career.models.Notification;
 import com.pn.career.models.NotificationType;
 import com.pn.career.models.Role;
@@ -8,21 +7,17 @@ import com.pn.career.models.User;
 import com.pn.career.repositories.NotificationRepository;
 import com.pn.career.repositories.RoleRepository;
 import com.pn.career.repositories.UserRepository;
-import com.pn.career.responses.NotificationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +29,12 @@ public class NotificationService implements INotificationService{
 
     @Override
     public Notification getById(Integer notificationId, Integer userId) {
-        return notificationRepository.findByUserIdAndNotificationId(userId, notificationId);
+        // Check if the notification belongs to the user
+        Optional<Notification> notificationOptional = notificationRepository.findById(notificationId);
+        if (notificationOptional.isEmpty()) {
+            throw new RuntimeException("Notification not found");
+        }
+        return notificationRepository.findById(notificationId).orElseThrow(() -> new RuntimeException("Notification not found"));
     }
 
     @Override
@@ -159,8 +159,17 @@ public class NotificationService implements INotificationService{
     @Override
     public Page<Notification> getUserNotifications(Integer userID, PageRequest pageable) {
         User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User not found"));
-        Page<Notification> notifications = notificationRepository.findByUserIdAndTypeOrderByNotificationDateDesc(user.getUserId(), NotificationType.PERSONAL, pageable);
-        return notifications;
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endOfMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth())
+                .withHour(23).withMinute(59).withSecond(59);
+
+        return notificationRepository.findByUserIdAndTypeInAndNotificationDateBetweenOrderByNotificationDateDesc(
+                user.getUserId(),
+                List.of(NotificationType.PERSONAL, NotificationType.BROADCAST),
+                startOfMonth,
+                endOfMonth,
+                pageable);
     }
 
     @Override
@@ -279,5 +288,15 @@ public class NotificationService implements INotificationService{
                 .build();
         notificationRepository.save(notification);
         messagingTemplate.convertAndSendToUser(String.valueOf(studentId), "/notifications/personal", notification);
+    }
+
+    @Override
+    public Page<Notification> getUserPersonalNotifications(Integer userID, PageRequest pageable) {
+        User user = userRepository.findById(userID).orElseThrow(() -> new RuntimeException("User not found"));
+
+        return notificationRepository.findByUserIdAndTypeInOrderByNotificationDateDesc(
+                user.getUserId(),
+                List.of(NotificationType.PERSONAL),
+                pageable);
     }
 }

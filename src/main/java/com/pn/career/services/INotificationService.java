@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 public interface INotificationService {
     Notification getById(Integer notificationId, Integer userId);
@@ -29,4 +30,6 @@ public interface INotificationService {
     void sendNotificationApprovedJob(String title, String content, String url);
     void sendNotificationRejectedApplication(Integer studentId, String title, String content);
     void sendNotificationInterview(String title, String content, String url, Integer studentId, String jobTitle, String companyName);
+    Page<Notification> getUserPersonalNotifications(Integer userID, PageRequest pageable);
+
 }

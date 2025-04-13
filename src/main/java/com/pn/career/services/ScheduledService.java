@@ -21,7 +21,7 @@ public class ScheduledService {
     private final EmailService emailService;
     private final JdbcTemplate jdbcTemplate;
     private final Logger logger= LoggerFactory.getLogger(ScheduledService.class);
-    @Scheduled(cron = "0 07 07 * * *")
+    @Scheduled(cron = "0 26 13 * * *")
     @Transactional
     public void sendSuitableJobEmail() {
         List<Student> students = studentRepository.findAllByRole_RoleName("student");

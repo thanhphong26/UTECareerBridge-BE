@@ -33,7 +33,7 @@ public class JWTTokenUtil {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("ute-career-bridge")
                 .issuedAt(now)
-                .expiresAt(now.plus(1, ChronoUnit.DAYS))
+                .expiresAt(now.plus(1, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
                 .claim("roles", createScope(authentication))
                 .claim("userId", ((UserDetailsImpl) authentication.getPrincipal()).getUser().getUserId())

@@ -23,7 +23,7 @@ public class ApplicationResponse {
     private String companyLogo;
     private String lastName;
     private String firstName;
-    private int year;
+    private Integer year;
     private String email;
     private String companyName;
     private String resumeFile;
@@ -39,8 +39,7 @@ public class ApplicationResponse {
                 .companyLogo(application.getJob().getEmployer().getCompanyLogo())
                 .lastName(application.getResume().getStudent().getLastName())
                 .firstName(application.getResume().getStudent().getFirstName())
-                .year(application.getResume().getStudent().getYear())
-                .email(application.getResume().getStudent().getEmail())
+                .year(application.getResume().getStudent() != null && application.getResume().getStudent().getYear() != null ? application.getResume().getStudent().getYear() : 0)                .email(application.getResume().getStudent().getEmail())
                 .jobTitle(application.getJob().getJobTitle())
                 .companyName(application.getJob().getEmployer().getCompanyName())
                 .resumeFile(application.getResume().getResumeFile())
