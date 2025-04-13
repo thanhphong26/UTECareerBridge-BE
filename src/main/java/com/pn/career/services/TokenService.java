@@ -112,6 +112,19 @@ public class TokenService implements ITokenService{
                 .orElse(false);
     }
 
+    @Override
+    public void invalidateUserTokens(Integer userId, String token) throws DataNotFoundException {
+        User user=userRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin hợp lệ"));
+       Token token2 = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin hợp lệ"));
+        if (token2.getUser().getUserId() != user.getUserId())
+            throw new DataNotFoundException("Không tìm thấy thông tin hợp lệ");
+        token2.setExpired(true);
+        token2.setRevoked(true);
+        tokenRepository.save(token2);
+    }
+
     private LocalDateTime convertToLocalDateTime(Instant instant) {
         return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
     }

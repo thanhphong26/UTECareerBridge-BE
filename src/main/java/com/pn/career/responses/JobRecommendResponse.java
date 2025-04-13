@@ -25,4 +25,5 @@ public class JobRecommendResponse {
     private BigDecimal jobMinSalary;
     @JsonProperty("job_max_salary")
     private BigDecimal jobMaxSalary;
+    private String reason;
 }

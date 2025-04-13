@@ -64,7 +64,9 @@ public class EmployerService implements IEmployerService {
                     localizationUtils.getLocalizedMessage(MessageKeys.INDUSTRY_DOES_NOT_EXISTS))));
             employer.setBackgroundImage(employerUpdateDTO.getBackgroundImage());
             employer.setCompanyLogo(employerUpdateDTO.getCompanyLogo());
-            benefitDetailService.updateBenefitDetail(employer, employerUpdateDTO.getBenefitDetails());
+            if (employerUpdateDTO.getBenefitDetails() != null) {
+                benefitDetailService.updateBenefitDetail(employer, employerUpdateDTO.getBenefitDetails());
+            }
             return employerRepository.save(employer);
         } catch (DataNotFoundException e) {
             throw new RuntimeException("Đã xảy ra lỗi khi cập nhật thông tin. Vui lòng thử lại sau", e);
