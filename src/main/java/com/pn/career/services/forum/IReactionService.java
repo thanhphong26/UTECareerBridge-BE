@@ -1,20 +1,15 @@
 package com.pn.career.services.forum;
 
-import com.pn.career.models.Reaction;
-import com.pn.career.models.ReactionType;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.pn.career.dtos.Forum.ReactionDTO;
+import com.pn.career.responses.forum.ReactionCountResponse;
+import com.pn.career.responses.forum.ReactionResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 public interface IReactionService {
-    List<Reaction> getAllReactions();
-    Optional<Reaction> getReactionById(Integer id);
-    List<Reaction> getReactionsByPostId(Integer postId);
-    List<Reaction> getReactionsByUserId(Integer userId);
-    Optional<Reaction> getUserReactionOnPost(Integer postId, Integer userId);
-    Reaction addOrUpdateReaction(Reaction reaction);
-    void removeReaction(Integer id);
-    void removeUserReactionOnPost(Integer postId, Integer userId);
-    Map<ReactionType, Long> getReactionCountsByPostId(Integer postId);
+    ReactionResponse createReaction(ReactionDTO reaction, Integer userId, Integer postId);
+    void removeReaction(Integer postId, Integer userId);
+    ReactionResponse getUserReaction(Integer postId, Integer userId);
+    Page<ReactionResponse> getReactionsByPostId(Integer postId, PageRequest pageRequest);
+    ReactionCountResponse getReactionCountByPostId(Integer postId);
 }

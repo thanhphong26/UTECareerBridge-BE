@@ -5,14 +5,14 @@ import com.pn.career.models.*;
 import com.pn.career.repositories.EmployerRepository;
 import com.pn.career.repositories.StudentRepository;
 import com.pn.career.repositories.UserRepository;
+import com.pn.career.repositories.forum.CommentRepository;
 import com.pn.career.repositories.forum.PostRepository;
-import com.pn.career.responses.forum.CommentResponse;
+import com.pn.career.repositories.forum.ReactionRepository;
 import com.pn.career.responses.forum.PostResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +26,8 @@ public class PostService implements IPostService {
     private final UserRepository userRepository;
     private final EmployerRepository employerRepository;
     private final StudentRepository studentRepository;
+    private final CommentRepository commentRepository;
+    private final ReactionRepository reactionRepository;
 
     @Override
     public Page<PostResponse> getAllPosts(PageRequest pageRequest) {
@@ -57,6 +59,7 @@ public class PostService implements IPostService {
                 .content(post.getContent())
                 .topicId(post.getTopicId())
                 .userId(post.getUserId())
+                .active(true)
                 .build();
         Post savePost = postRepository.save(newPost);
         return mapTopicToResponse(savePost);
@@ -96,6 +99,8 @@ public class PostService implements IPostService {
     }
     private PostResponse mapTopicToResponse(Post post) {
         PostResponse postResponse = PostResponse.fromPost(post);
+        postResponse.setReactionCount(reactionRepository.countByPostId(post.getPostId()));
+        postResponse.setCommentCount(commentRepository.countByPostId(post.getPostId()));
         User user = userRepository.findById(postResponse.getUserId()).orElse(null);
         if (user != null) {
             String roleName = user.getRole().getRoleName();

@@ -11,7 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReactionDTO {
-    private Integer postId;
-    private Integer userId;
     private ReactionType reactionType;
 }

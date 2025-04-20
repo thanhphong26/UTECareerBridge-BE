@@ -63,10 +63,10 @@ public class CommentService implements ICommentService {
     }
 
     @Override
-    public CommentResponse createComment(CommentDTO comment) {
+    public CommentResponse createComment(CommentDTO comment, Integer userId) {
         Comment newComment = Comment.builder()
                 .postId(comment.getPostId())
-                .userId(comment.getUserId())
+                .userId(userId)
                 .content(comment.getContent())
                 .parentCommentId(comment.getParentId())
                 .build();

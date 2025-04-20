@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +44,7 @@ public class CommentController {
                 .build());
     }
     @GetMapping("/post/{postId}")
-    public ResponseEntity<ResponseObject> getCommentsByPostId(Integer postId,
+    public ResponseEntity<ResponseObject> getCommentsByPostId(@PathVariable  Integer postId,
                                                                @RequestParam(defaultValue = "0") Integer page,
                                                                @RequestParam(defaultValue = "1") Integer size) {
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -96,11 +97,15 @@ public class CommentController {
                 .build());
     }
     @PostMapping
-    public ResponseEntity<ResponseObject> createComment(@RequestBody CommentDTO comment) {
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> createComment(@RequestBody CommentDTO comment, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Thêm bình luận thành công")
                 .status(HttpStatus.OK)
-                .data(commentService.createComment(comment))
+                .data(commentService.createComment(comment, userId))
                 .build());
     }
     @PutMapping("/{commentId}")

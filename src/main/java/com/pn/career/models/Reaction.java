@@ -26,6 +26,7 @@ public class Reaction {
     @Column(name = "user_id")
     private Integer userId;
     @Enumerated(EnumType.STRING)
+    @Column(name = "reaction_type")
     private ReactionType type;
     @Column(name = "created_at")
     private LocalDateTime createdAt;

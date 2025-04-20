@@ -13,7 +13,7 @@ public interface ICommentService {
     Page<CommentResponse> getRootCommentsByPostId(Integer postId, PageRequest pageRequest);
     Page<CommentResponse> getChildComments(Integer parentCommentId, PageRequest pageRequest);
     Page<CommentResponse> getCommentsByUserId(Integer userId, PageRequest pageRequest);
-    CommentResponse createComment(CommentDTO comment);
+    CommentResponse createComment(CommentDTO comment, Integer userId);
     CommentResponse updateComment(Integer id, CommentDTO comment, Integer userId);
     void deleteComment(Integer id, Integer userId);
     Integer countCommentsByPostId(Integer postId);

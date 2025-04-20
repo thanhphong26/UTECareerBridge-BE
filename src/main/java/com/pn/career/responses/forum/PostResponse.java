@@ -18,7 +18,8 @@ public class PostResponse {
     private boolean active;
     private String createdAt;
     private String updatedAt;
-
+    private Integer reactionCount;
+    private Integer commentCount;
     public static PostResponse fromPost(com.pn.career.models.Post post) {
         return PostResponse.builder()
                 .postId(post.getPostId())
