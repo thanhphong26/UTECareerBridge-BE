@@ -43,10 +43,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5500") // Thay bằng origin của client
                 .withSockJS();
-        // end point for chatbot
-        registry.addEndpoint("/ws-chatbot")
-                .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5000")
-                .withSockJS();
         //notification
         registry.addEndpoint("/ws-notifications")
                 .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:5500", "http://localhost:8080")
@@ -55,7 +51,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic", "/queue", "/chatbot", "/notifications", "/user");
+        registry.enableSimpleBroker("/topic", "/queue", "/notifications", "/user");
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user");
     }
@@ -65,9 +61,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                logger.info("Message received: {}", accessor.getCommand());
 
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+
                     String authorizationHeader = accessor.getFirstNativeHeader("Authorization");
                     String refreshToken = accessor.getFirstNativeHeader("RefreshToken");
 

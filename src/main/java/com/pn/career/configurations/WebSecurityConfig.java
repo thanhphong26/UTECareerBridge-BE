@@ -68,6 +68,12 @@ public class WebSecurityConfig {
                             ).permitAll()
                             .requestMatchers("/ws/**").permitAll()
                             .requestMatchers(GET,
+                                    String.format("%s/tags/**", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
+                                    String.format("%s/forums/**", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
+                                    String.format("%s/topics/**", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
                                     String.format("%s/industries/**", apiPrefix)).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/orders/vnpay-payment-return", apiPrefix)).permitAll()
