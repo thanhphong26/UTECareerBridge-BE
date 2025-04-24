@@ -66,14 +66,6 @@ public class CommentController {
                 .data(commentService.getRootCommentsByPostId(postId, pageRequest))
                 .build());
     }
-//    @GetMapping("/user/{userId}")
-//    public ResponseEntity<ResponseObject> getCommentsByUserId(Integer userId) {
-//        return ResponseEntity.ok().body(ResponseObject.builder()
-//                .message("Lấy danh sách bình luận theo người dùng thành công")
-//                .status(HttpStatus.OK)
-//                .data(commentService.getCommentsByUserId(userId))
-//                .build());
-//    }
     @GetMapping("/parent/{parentId}/child")
     public ResponseEntity<ResponseObject> getCommentsByParentId(@PathVariable Integer parentId,
                                                                   @RequestParam(defaultValue = "0") Integer page,

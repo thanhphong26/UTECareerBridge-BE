@@ -12,4 +12,6 @@ public interface IJobCategoryService {
     JobCategory createJobCategory(CategoryJobDTO jobCategory);
     JobCategory updateJobCategory(Integer jobCategoryId, CategoryJobUpdateDTO jobCategory);
     void deleteJobCategory(Integer jobCategoryId) throws Exception;
+    List<JobCategory> getJobCategoryByName(String name);
+    int countJobCategory(boolean isActive);
 }

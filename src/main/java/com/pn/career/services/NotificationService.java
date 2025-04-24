@@ -221,7 +221,6 @@ public class NotificationService implements INotificationService{
                 .content(eventDescription)
                 .notificationDate(LocalDateTime.now())
                 .type(notificationType)
-                .data(Map.of("eventDate", eventDate, "eventLocation", eventLocation))
                 .url(url)
                 .build();
         notificationRepository.save(notification);
@@ -236,7 +235,6 @@ public class NotificationService implements INotificationService{
                     .notificationDate(LocalDateTime.now())
                     .type(notificationType)
                     .read(false)
-                    .data(Map.of("eventDate", eventDate, "eventLocation", eventLocation))
                     .url(url)
                     .build();
             notificationRepository.save(notificationUser);

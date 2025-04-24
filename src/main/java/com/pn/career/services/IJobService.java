@@ -27,4 +27,7 @@ public interface IJobService {
     List<JobResponse> getSimilarJobs(Integer jobId);
     Integer countJobByEmployerId(Integer employerId);
     Page<JobResponse> getJobRecruitmentUrgent(PageRequest pageRequest);
+    Integer countJobByActiveStatus(JobStatus jobStatus);
+    Integer countJobByEmployerIdAndStatus(Integer employerId, JobStatus jobStatus);
+    Integer countJobByJobCategoryIdAndStatus(Integer jobCategoryId, JobStatus jobStatus);
 }

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -127,5 +128,23 @@ public class EventService implements IEventService{
     public EventResponse getEventById(Integer eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Không tìm thấy sự kiện"));
         return EventResponse.from(event);
+    }
+
+    @Override
+    public Integer countEventUpcomming(LocalDateTime dateNow) {
+        List<Event> events = eventRepository.findAllByEventDateAfter(dateNow);
+        return events.size();
+    }
+
+    @Override
+    public List<EventResponse> getAllEventUpcomming(LocalDateTime dateNow, Integer limit) {
+        List<Event> events = eventRepository.findAllByEventDateAfter(dateNow);
+        if (events.size() > limit) {
+            events = events.subList(0, limit);
+        }
+        return events.stream()
+                .map(EventResponse::from)
+                .collect(Collectors.toList());
+
     }
 }

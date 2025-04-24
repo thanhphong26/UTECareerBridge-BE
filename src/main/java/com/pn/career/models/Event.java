@@ -37,6 +37,6 @@ public class Event extends BaseEntity{
     @Column(name = "event_type")
     @Enumerated(EnumType.STRING)
     private EventType eventType;
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "event", fetch = FetchType.EAGER)
     private List<EventTimeline> eventTimelines;
 }

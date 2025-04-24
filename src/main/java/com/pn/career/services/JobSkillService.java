@@ -4,15 +4,14 @@ import com.pn.career.models.Job;
 import com.pn.career.models.JobSkill;
 import com.pn.career.models.JobSkillId;
 import com.pn.career.models.Skill;
+import com.pn.career.repositories.JobRepository;
 import com.pn.career.repositories.JobSkillRepository;
 import com.pn.career.repositories.SkillRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
 public class JobSkillService implements IJobSkillService{
     private final JobSkillRepository jobSkillRepository;
     private final SkillRepository skillRepository;
+    private final JobRepository jobRepository;
 
     @Override
     @Transactional
@@ -61,5 +61,50 @@ public class JobSkillService implements IJobSkillService{
         if (!skillIdsToAdd.isEmpty()) {
             createJobSkill(job, skillIdsToAdd);
         }
+    }
+
+    @Override
+    public List<Job> getRecommendedJobs(String skills, int limit) {
+        if (skills == null || skills.trim().isEmpty()) {
+            // If no skills provided, return latest jobs
+            return jobRepository.findTop5ByOrderByCreatedAtDesc();
+        }
+
+        // Parse the skills string - assuming skills are comma-separated
+        List<String> skillNames = Arrays.stream(skills.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+
+        if (skillNames.isEmpty()) {
+            return jobRepository.findTop5ByOrderByCreatedAtDesc();
+        }
+
+        // Find skills in the database
+        List<Skill> userSkills = skillRepository.findBySkillNameIn(skillNames);
+
+        if (userSkills.isEmpty()) {
+            return jobRepository.findTop5ByOrderByCreatedAtDesc();
+        }
+
+        // Get all job skills that match user skills
+        Map<Job, Integer> jobMatchCount = new HashMap<>();
+
+        for (Skill skill : userSkills) {
+            List<JobSkill> matchingJobSkills = jobSkillRepository.findAllBySkill(skill);
+            for (JobSkill js : matchingJobSkills) {
+                Job job = js.getJob();
+                jobMatchCount.put(job, jobMatchCount.getOrDefault(job, 0) + 1);
+            }
+        }
+
+        // Sort jobs by number of matching skills (descending)
+        List<Job> recommendedJobs = jobMatchCount.entrySet().stream()
+                .sorted(Map.Entry.<Job, Integer>comparingByValue().reversed())
+                .limit(limit)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        return recommendedJobs;
     }
 }

@@ -105,6 +105,7 @@ public class TopicController {
     @GetMapping("/search")
     public ResponseEntity<ResponseObject> searchTopics(@RequestParam String keyword, @RequestParam(defaultValue = "createdAtDesc") String sortBy,
                                                        @RequestParam(required = false) List<Integer> tagIds,
+                                                         @RequestParam Integer forumId,
                                                        @RequestParam(defaultValue = "0") int page,
                                                        @RequestParam(defaultValue = "10") int size
                                                        ) {
@@ -157,7 +158,7 @@ public class TopicController {
         log.info("Searching topics with keyword: {}, tagIds: {}, page: {}, size: {}",
                 normalizedKeyword, tagIds, page, size);
 
-        Page<TopicResponse> topics = topicService.searchTopics(normalizedKeyword, tagIds, pageRequest);
+        Page<TopicResponse> topics = topicService.searchTopics(normalizedKeyword, tagIds, forumId, pageRequest);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Tìm kiếm chủ đề thành công")
                 .status(HttpStatus.OK)

@@ -47,6 +47,11 @@ public class EmployerService implements IEmployerService {
     private final ApplicationRepository applicationRepository;
 
     @Override
+    public Integer countEmployerByStatus(EmployerStatus status) {
+        return employerRepository.countEmployerByApprovalStatus(status);
+    }
+
+    @Override
     @Transactional
     public Employer updateEmployer(Integer employerId, EmployerUpdateDTO employerUpdateDTO) {
         try {
@@ -187,5 +192,11 @@ public class EmployerService implements IEmployerService {
     @Override
     public Integer getTotalJobCount(Integer employerId) {
         return applicationRepository.countUniqueStudentApplicationsByEmployer(employerId);
+    }
+
+    @Override
+    public List<EmployerResponse> getAllEmployerByJobCategoryAndStatus(String categoryName, EmployerStatus status) {
+        List<Employer> employers=employerRepository.findAllByJobCategoryAndStatus(categoryName,status);
+        return employers.stream().map(EmployerResponse::fromUser).toList();
     }
 }

@@ -5,6 +5,7 @@ import com.pn.career.models.*;
 import com.pn.career.repositories.EmployerRepository;
 import com.pn.career.repositories.StudentRepository;
 import com.pn.career.repositories.UserRepository;
+import com.pn.career.repositories.forum.PostRepository;
 import com.pn.career.repositories.forum.TagRepository;
 import com.pn.career.repositories.forum.TopicRepository;
 import com.pn.career.repositories.forum.TopicTagRepository;
@@ -32,6 +33,7 @@ public class TopicService implements ITopicService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final EmployerRepository employerRepository;
+    private final PostRepository postRepository;
 
     @Override
     public Page<TopicResponse> getAllTopics(PageRequest pageRequest) {
@@ -46,7 +48,7 @@ public class TopicService implements ITopicService {
 
     @Override
     public Page<TopicResponse> getTopicsByForumId(Integer forumId, Pageable pageable) {
-        Page<Topic> topics = topicRepository.findByForumId(forumId, pageable);
+        Page<Topic> topics = topicRepository.findByForumIdAndIsCloseFalseOrderByIsPinnedDesc(forumId, pageable);
         return topics.map(this::mapTopicToResponse);
     }
 
@@ -187,10 +189,10 @@ public class TopicService implements ITopicService {
     }
 
     @Override
-    public Page<TopicResponse> searchTopics(String keyword, List<Integer> tagIds, PageRequest pageRequest) {
+    public Page<TopicResponse> searchTopics(String keyword, List<Integer> tagIds, Integer forumId, PageRequest pageRequest) {
         if (tagIds == null || tagIds.isEmpty()) {
             Page<Topic> topics = topicTagRepository.findByTitleContainingOrContentContaining(
-                    keyword != null ? keyword : "",
+                    keyword != null ? keyword : "", forumId,
                     pageRequest);
             return topics.map(this::mapTopicToResponse);
         }
@@ -198,7 +200,7 @@ public class TopicService implements ITopicService {
         // Nếu có cả keyword và tagIds
         int tagCount = tagIds.size();
         Page<Topic> topics = topicTagRepository.findByNameContainingAndTagsIn(
-                keyword, tagIds, tagCount, pageRequest);
+                keyword, tagIds, tagCount, forumId, pageRequest);
         return topics.map(this::mapTopicToResponse);
     }
 
@@ -226,6 +228,7 @@ public class TopicService implements ITopicService {
         topicResponse.setForumId(topic.getForumId());
         topicResponse.setViewCount(topic.getViewCount());
         topicResponse.setStatus(topic.getStatus().toString());
+        topicResponse.setPostCount(postRepository.countByTopicIdAndActive(topic.getTopicId(), true));
 
         // Fetch user information once
         User user = userRepository.findById(topic.getUserId()).orElse(null);

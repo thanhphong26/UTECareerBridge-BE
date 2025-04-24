@@ -19,6 +19,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
+    Integer countByJobCategory_JobCategoryIdAndStatus(Integer jobCategoryId, JobStatus status);
+    Integer countByEmployer_UserIdAndStatus(Integer employerId, JobStatus status);
+    List<Job> findTop5ByOrderByCreatedAtDesc();
+    Integer countByStatus(JobStatus status);
     @Query("SELECT j FROM Job j WHERE j.packageId = :packageId AND j.status = 'ACTIVE' ORDER BY j.createdAt DESC")
     Page<Job> findActiveJobsByPackageIdOrderByCreatedAtDesc(@Param("packageId") Integer packageId, Pageable pageable);
     Integer countByEmployer_UserId(Integer employerId);

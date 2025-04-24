@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EmployerRepository extends JpaRepository<Employer, Integer> {
+    Integer countEmployerByApprovalStatus(EmployerStatus status);
     Optional<Employer> findByCompanyName(String companyName);
     @Query("SELECT e FROM Employer e WHERE " +
             "(:keyword IS NULL OR :keyword = '' OR e.companyName LIKE %:keyword% ) " +
@@ -26,5 +27,12 @@ public interface EmployerRepository extends JpaRepository<Employer, Integer> {
     //get top 10 employer has the most job
     @Query("select e as employer, count(j) as jobCount from Employer e left join Job j on j.employer=e group by e order by jobCount desc")
     Page<Object[]> findTopEmployerByJobCount(Pageable pageable);
+    //get all employer by job categopry name and employer status
+
+    @Query("SELECT e FROM Employer e JOIN Job j ON e.userId = j.employer.userId " +
+            "JOIN j.jobCategory c WHERE c.jobCategoryName = :categoryName " +
+            "AND e.approvalStatus = :status")
+    List<Employer> findAllByJobCategoryAndStatus(@Param("categoryName") String categoryName,
+                                                 @Param("status") EmployerStatus status);
 
 }

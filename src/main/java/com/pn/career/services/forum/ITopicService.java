@@ -18,6 +18,6 @@ public interface ITopicService {
     TopicResponse createTopic(TopicTagDTO topic);
     TopicResponse updateTopic(Integer id, TopicTagDTO topic);
     void deleteTopic(Integer id);
-    Page<TopicResponse> searchTopics(String keyword, List<Integer> tagIds, PageRequest pageRequest);
+    Page<TopicResponse> searchTopics(String keyword, List<Integer> tagIds, Integer forumId, PageRequest pageRequest);
     void pinTopic(Integer topicId);
 }

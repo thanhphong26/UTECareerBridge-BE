@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface IEmployerService{
+    Integer countEmployerByStatus(EmployerStatus status);
     Employer updateEmployer(Integer employerId, EmployerUpdateDTO employerUpdateDTO);
     Employer getEmployerById (Integer employerId) throws DataNotFoundException;
     Employer updateProfile(Integer employerId, UpdateProfileDTO updateProfileDTO);
@@ -30,4 +31,5 @@ public interface IEmployerService{
     Page<EmployerResponse> getEmployersByIndustry(Integer industryId, PageRequest pageRequest);
     Page<TopEmployerResponse> getTopEmployersByJobCount(PageRequest pageRequest);
     Integer getTotalJobCount(Integer employerId);
+    List<EmployerResponse> getAllEmployerByJobCategoryAndStatus(String categoryName, EmployerStatus status);
 }
