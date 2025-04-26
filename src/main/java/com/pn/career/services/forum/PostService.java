@@ -54,11 +54,11 @@ public class PostService implements IPostService {
     }
 
     @Override
-    public PostResponse createPost(PostDTO post) {
+    public PostResponse createPost(PostDTO post, Integer userId) {
         Post newPost = Post.builder()
                 .content(post.getContent())
                 .topicId(post.getTopicId())
-                .userId(post.getUserId())
+                .userId(userId)
                 .active(true)
                 .build();
         Post savePost = postRepository.save(newPost);

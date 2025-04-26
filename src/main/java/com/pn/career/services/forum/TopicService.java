@@ -60,13 +60,13 @@ public class TopicService implements ITopicService {
 
     @Override
     @Transactional
-    public TopicResponse createTopic(TopicTagDTO topic) {
+    public TopicResponse createTopic(TopicTagDTO topic, Integer userId) {
         // Save the topic first
         Topic newTopic = Topic.builder()
                 .title(topic.getTitle())
                 .content(topic.getContent())
                 .forumId(topic.getForumId())
-                .userId(topic.getUserId())
+                .userId(userId)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .isClose(false)
@@ -135,14 +135,14 @@ public class TopicService implements ITopicService {
 
     @Override
     @Transactional
-    public TopicResponse updateTopic(Integer id, TopicTagDTO topic) {
+    public TopicResponse updateTopic(Integer id, TopicTagDTO topic, Integer userId) {
         //check authorization for update except admin
         return topicRepository.findById(id)
                 .map(existingTopic -> {
                     // Check if the user is authorized to update the topic
-                    User user = userRepository.findById(topic.getUserId())
+                    User user = userRepository.findById(userId)
                             .orElseThrow(() -> new IllegalArgumentException("User not found"));
-                    if (!"admin".equals(user.getRole().getRoleName()) && !existingTopic.getUserId().equals(topic.getUserId())) {
+                    if (!"admin".equals(user.getRole().getRoleName()) && !existingTopic.getUserId().equals(userId)) {
                         throw new SecurityException("Bạn không có quyền sửa chủ đề này");
                     }
                     existingTopic.setTitle(topic.getTitle());

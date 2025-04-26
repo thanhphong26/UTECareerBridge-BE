@@ -13,7 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 public class TopicTagDTO {
     private Integer forumId;
-    private Integer userId;
     private String title;
     private String content;
     private List<Integer> tags;

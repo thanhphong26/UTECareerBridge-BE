@@ -11,7 +11,7 @@ public interface IPostService {
     Optional<PostResponse> getPostById(Integer id);
     Page<PostResponse> getPostsByTopicId(Integer topicId, PageRequest pageRequest);
     Page<PostResponse> getPostsByUserId(Integer userId, PageRequest pageRequest);
-    PostResponse createPost(PostDTO post);
+    PostResponse createPost(PostDTO post, Integer userId);
     PostResponse updatePost(Integer id, PostDTO post, Integer userId);
     void deletePost(Integer id, Integer userId);
     Page<PostResponse> searchPosts(String content, PageRequest pageRequest);

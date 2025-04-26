@@ -297,4 +297,18 @@ public class NotificationService implements INotificationService{
                 List.of(NotificationType.PERSONAL),
                 pageable);
     }
+
+    @Override
+    public void sendNotificationForJobAlert(String title, String message, Integer userId, Map<String, Object> data) {
+        Notification payload = Notification.builder()
+                .userId(userId)
+                .title(title)
+                .content(message)
+                .notificationDate(LocalDateTime.now())
+                .type(NotificationType.PERSONAL)
+                .data(data)
+                .build();
+        notificationRepository.save(payload);
+        messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/notifications/personal", payload);
+    }
 }

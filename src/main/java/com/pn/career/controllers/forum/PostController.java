@@ -72,11 +72,13 @@ public class PostController {
     }
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_EMPLOYER') or hasRole('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> createPost(@RequestBody PostDTO post) {
+    public ResponseEntity<ResponseObject> createPost(@RequestBody PostDTO post, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Tạo bài viết thành công")
                 .status(HttpStatus.CREATED)
-                .data(postService.createPost(post))
+                .data(postService.createPost(post, userId))
                 .build());
     }
     @PutMapping("/{postId}")

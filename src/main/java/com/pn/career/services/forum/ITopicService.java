@@ -15,8 +15,8 @@ public interface ITopicService {
     Page<TopicResponse> getTopicsByForumId(Integer forumId, Pageable pageable);
     Page<TopicResponse> getTopicsByUserId(Integer userId, Pageable pageable);
 
-    TopicResponse createTopic(TopicTagDTO topic);
-    TopicResponse updateTopic(Integer id, TopicTagDTO topic);
+    TopicResponse createTopic(TopicTagDTO topic, Integer userId);
+    TopicResponse updateTopic(Integer id, TopicTagDTO topic, Integer userId);
     void deleteTopic(Integer id);
     Page<TopicResponse> searchTopics(String keyword, List<Integer> tagIds, Integer forumId, PageRequest pageRequest);
     void pinTopic(Integer topicId);

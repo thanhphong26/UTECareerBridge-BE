@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostDTO {
     private Integer topicId;
-    private Integer userId;
     private String content;
 }

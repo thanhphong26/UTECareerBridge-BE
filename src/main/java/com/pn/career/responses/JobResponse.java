@@ -9,6 +9,7 @@ import com.pn.career.models.JobSkill;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,8 +29,8 @@ public class JobResponse {
     private String jobDescription;
     private String jobRequirements;
     private String jobLocation;
-    private BigDecimal jobMinSalary;
-    private BigDecimal jobMaxSalary;
+    private String jobMinSalary;
+    private String jobMaxSalary;
     private int amount;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate jobDeadline;
@@ -63,8 +64,8 @@ public class JobResponse {
                 .jobDescription(job.getJobDescription())
                 .jobRequirements(job.getJobRequirements())
                 .jobLocation(job.getJobLocation())
-                .jobMinSalary(job.getJobMinSalary())
-                .jobMaxSalary(job.getJobMaxSalary())
+                .jobMinSalary(formatSalary(job.getJobMinSalary()))
+                .jobMaxSalary(formatSalary(job.getJobMaxSalary()))
                 .packageId(job.getPackageId())
                 .amount(job.getAmount())
                 .jobDeadline(job.getJobDeadline())
@@ -81,5 +82,10 @@ public class JobResponse {
                         .skillName(jobSkill.getSkill().getSkillName())
                         .build())
                 .toList();
+    }
+    private static String formatSalary(BigDecimal salary) {
+        if (salary == null) return "Thỏa thuận";
+        DecimalFormat formatter = new DecimalFormat("#,###");
+        return formatter.format(salary) + " VNĐ";
     }
 }

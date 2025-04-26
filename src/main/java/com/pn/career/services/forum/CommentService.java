@@ -46,7 +46,7 @@ public class CommentService implements ICommentService {
 
     @Override
     public Page<CommentResponse> getRootCommentsByPostId(Integer postId, PageRequest pageRequest) {
-        return commentRepository.findByPostIdAndParentCommentIdIsNull(postId, pageRequest)
+        return commentRepository.findByPostIdAndParentCommentIdIsNullOrderByCreatedAtDesc(postId, pageRequest)
                 .map(this::mapTopicToResponse);
     }
 

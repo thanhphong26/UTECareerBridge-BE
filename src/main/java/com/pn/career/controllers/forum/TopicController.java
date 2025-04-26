@@ -13,6 +13,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jose.JwaAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -76,8 +79,10 @@ public class TopicController {
     }
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_EMPLOYER') or hasRole('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> createTopic(@RequestBody TopicTagDTO topic) {
-        TopicResponse createdTopic = topicService.createTopic(topic);
+    public ResponseEntity<ResponseObject> createTopic(@RequestBody TopicTagDTO topic, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        TopicResponse createdTopic = topicService.createTopic(topic, userId);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Tạo chủ đề thành công")
                 .status(HttpStatus.OK)
@@ -86,8 +91,10 @@ public class TopicController {
     }
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_EMPLOYER') or hasRole('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> updateTopic(@PathVariable Integer id, @RequestBody TopicTagDTO topic) {
-        TopicResponse updatedTopic = topicService.updateTopic(id, topic);
+    public ResponseEntity<ResponseObject> updateTopic(@PathVariable Integer id, @RequestBody TopicTagDTO topic, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        TopicResponse updatedTopic = topicService.updateTopic(id, topic, userId);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Cập nhật chủ đề thành công")
                 .status(HttpStatus.OK)

@@ -15,6 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -228,4 +229,57 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
             @Param("year") Integer year
     );
     Page<Job> findAllByStatusOrderByCreatedAtDesc(JobStatus status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"jobCategory", "employer", "employer.industry", "jobLevel", "jobSkills", "jobSkills.skill"})
+    default Page<Job> searchJobNotifications(Integer userId, String jobTitle, Double minSalary, 
+                                           List<Integer> levelIds, String location, Integer jobCategoryId,
+                                           List<Integer> companyFieldIds, Pageable pageable) {
+        return findAll((Specification<Job>) (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            
+            // Join necessary tables
+            Join<Job, JobCategory> categoryJoin = root.join("jobCategory", JoinType.LEFT);
+            Join<Job, Employer> employerJoin = root.join("employer", JoinType.LEFT);
+            Join<Employer, Industry> industryJoin = employerJoin.join("industry", JoinType.LEFT);
+            Join<Job, JobLevel> jobLevelJoin = root.join("jobLevel", JoinType.LEFT);
+            
+            // Only return active jobs
+            predicates.add(cb.equal(root.get("status"), JobStatus.ACTIVE));
+            
+            // Filter by job title if provided
+            if (jobTitle != null && !jobTitle.isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("jobTitle")), "%" + jobTitle.toLowerCase() + "%"));
+            }
+            
+            // Filter by minimum salary if provided
+            if (minSalary != null && minSalary > 0) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("jobMaxSalary"), minSalary));
+            }
+            
+            // Filter by job level ids if provided
+            if (levelIds != null && !levelIds.isEmpty()) {
+                predicates.add(jobLevelJoin.get("jobLevelId").in(levelIds));
+            }
+            
+            // Filter by location if provided
+            if (location != null && !location.isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("jobLocation")), "%" + location.toLowerCase() + "%"));
+            }
+            
+            // Filter by job category if provided
+            if (jobCategoryId != null && jobCategoryId > 0) {
+                predicates.add(cb.equal(categoryJoin.get("jobCategoryId"), jobCategoryId));
+            }
+            
+            // Filter by company field/industry if provided
+            if (companyFieldIds != null && !companyFieldIds.isEmpty()) {
+                predicates.add(industryJoin.get("industryId").in(companyFieldIds));
+            }
+            
+            query.distinct(true);
+            query.orderBy(cb.desc(root.get("createdAt")));
+            
+            return cb.and(predicates.toArray(new Predicate[0]));
+        }, pageable);
+    }
 }
