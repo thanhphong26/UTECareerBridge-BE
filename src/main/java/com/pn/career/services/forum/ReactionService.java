@@ -15,6 +15,7 @@ import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,10 +57,11 @@ public class ReactionService implements IReactionService{
 
     @Override
     public ReactionResponse getUserReaction(Integer postId, Integer userId) {
-        Reaction reaction = reactionRepository.findByPostIdAndUserId(postId, userId).orElseThrow(
-                () -> new AuthorizationServiceException("Reaction not found")
-        );
-        return mapTopicToResponse(reaction);
+        Optional<Reaction> reaction  = reactionRepository.findByPostIdAndUserId(postId, userId);
+        if (reaction.isEmpty()) {
+            return null;
+        }
+        return mapTopicToResponse(reaction.orElse(null));
     }
 
     @Override

@@ -148,6 +148,13 @@ public class PostController {
         Long userIdLong = jwt.getClaim("userId");
         Integer userId = userIdLong != null ? userIdLong.intValue() : null;
         ReactionResponse reaction = reactionService.getUserReaction(postId, userId);
+        if (reaction == null) {
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message("Người dùng chưa thả cảm xúc cho bài viết này")
+                    .status(HttpStatus.OK)
+                    .data(null)
+                    .build());
+        }
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Lấy cảm xúc của người dùng thành công")
                 .status(HttpStatus.OK)

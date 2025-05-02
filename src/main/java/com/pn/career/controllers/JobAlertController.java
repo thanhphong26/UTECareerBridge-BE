@@ -18,6 +18,19 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class JobAlertController {
     private final IJobAlertService jobAlertService;
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getJobAlertById(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        JobAlertResponse jobAlertResponse = jobAlertService.getJobAlertById(id);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy thông báo việc làm thành công")
+                .status(HttpStatus.OK)
+                .data(jobAlertResponse)
+                .build());
+    }
+
     @GetMapping("/user")
     @PreAuthorize("hasRole('ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> getJobAlertByUserIdAndActive(@RequestParam(defaultValue = "0") int page,

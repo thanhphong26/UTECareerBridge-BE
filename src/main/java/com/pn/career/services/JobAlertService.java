@@ -3,15 +3,14 @@ package com.pn.career.services;
 import com.pn.career.dtos.JobAlertDTO;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.PermissionDenyException;
-import com.pn.career.models.FrequencyEnum;
-import com.pn.career.models.Job;
-import com.pn.career.models.JobAlert;
-import com.pn.career.models.Student;
+import com.pn.career.models.*;
 import com.pn.career.repositories.*;
 import com.pn.career.responses.JobAlertResponse;
 import com.pn.career.responses.JobResponse;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class JobAlertService implements IJobAlertService {
+    private static final Logger log = LoggerFactory.getLogger(JobAlertService.class);
     private final JobAlertRepository jobAlertRepository;
     private final EmailService emailService;
     private final INotificationService notificationService;
@@ -36,6 +36,11 @@ public class JobAlertService implements IJobAlertService {
     @Override
     public JobAlertResponse createJobAlert(JobAlertDTO jobAlertDTO, Integer userId) {
         JobAlert jobAlert = new JobAlert();
+        JobCategory jobCategoryOptional=null;
+        if(jobAlertDTO.getJobCategoryId() != null){
+            Optional<JobCategory> jobCategoryOptional1 = jobCategoryRepository.findById(jobAlertDTO.getJobCategoryId());
+            jobCategoryOptional =jobCategoryOptional1.get();
+        }
         jobAlert.setUser(userRepository.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("Không tìm thấy người dùng")));
         jobAlert.setJobTitle(jobAlertDTO.getJobTitle());
@@ -43,15 +48,14 @@ public class JobAlertService implements IJobAlertService {
         jobAlert.setLocation(jobAlertDTO.getLocation());
         jobAlert.setMinSalary(jobAlertDTO.getMinSalary());
         jobAlert.setCompanyField(convertListToString(jobAlertDTO.getCompanyField()));
-        jobAlert.setJobCategory(jobCategoryRepository.findById(jobAlertDTO.getJobCategoryId())
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy danh mục công việc")));
+        jobAlert.setJobCategory(jobCategoryOptional);
         jobAlert.setFrequency(FrequencyEnum.valueOf(jobAlertDTO.getFrequency()));
         jobAlert.setNotifyByEmail(jobAlertDTO.isNotifyByEmail());
         jobAlert.setNotifyByApp(jobAlertDTO.isNotifyByApp());
         jobAlert.setActive(true);
 
         JobAlert savedJobAlert = jobAlertRepository.save(jobAlert);
-
+        log.info("Saved job alert: {}", savedJobAlert);
         return JobAlertResponse.from(savedJobAlert);
     }
 
@@ -63,13 +67,17 @@ public class JobAlertService implements IJobAlertService {
         if (jobAlert.getUser().getUserId() != userId) {
             throw new PermissionDenyException("Bạn không có quyền truy cập vào thông báo việc làm này");
         }
+        JobCategory jobCategoryOptional=null;
+        if(jobAlertDTO.getJobCategoryId() != null){
+            Optional<JobCategory> jobCategoryOptional1 = jobCategoryRepository.findById(jobAlertDTO.getJobCategoryId());
+            jobCategoryOptional =jobCategoryOptional1.get();
+        }
         jobAlert.setJobTitle(jobAlertDTO.getJobTitle());
         jobAlert.setLevel(convertListToString(jobAlertDTO.getLevel()));
         jobAlert.setLocation(jobAlertDTO.getLocation());
         jobAlert.setMinSalary(jobAlertDTO.getMinSalary());
         jobAlert.setCompanyField(convertListToString(jobAlertDTO.getCompanyField()));
-        jobAlert.setJobCategory(jobCategoryRepository.findById(jobAlertDTO.getJobCategoryId())
-                .orElseThrow(() -> new DataNotFoundException("Không tìm thấy danh mục công việc")));
+        jobAlert.setJobCategory(jobCategoryOptional);
         jobAlert.setFrequency(FrequencyEnum.valueOf(jobAlertDTO.getFrequency()));
         jobAlert.setNotifyByEmail(jobAlertDTO.isNotifyByEmail());
         jobAlert.setNotifyByApp(jobAlertDTO.isNotifyByApp());
