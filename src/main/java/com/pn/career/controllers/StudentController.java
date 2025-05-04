@@ -175,13 +175,13 @@ public class StudentController {
     }
     @PutMapping("/resume/{resumeId}")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
-    public ResponseEntity<ResponseObject> updateResume(@PathVariable Integer resumeId, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ResponseObject> updateResume(@PathVariable Integer resumeId, @RequestBody ResumeDTO resumeDTO, @AuthenticationPrincipal Jwt jwt) {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
         resumeService.updateActiveResume(resumeId, studentId, true);
         return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
-                .data(ResumeResponse.fromResume(resumeService.getResumeById(studentId,resumeId)))
+                .data(ResumeResponse.fromResume(resumeService.updateResume(resumeId, resumeDTO)))
                 .message("Cập nhật cv thành công")
                 .build());
     }

@@ -1,10 +1,14 @@
 package com.pn.career.models;
 
+import com.pn.career.converters.JpaConverterFlexible;
+import com.pn.career.converters.JpaConverterJson;
+import com.pn.career.converters.JpaConverterList;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+import java.util.Map;
 
 @Table(name = "resumes")
 @Entity
@@ -34,4 +38,23 @@ public class Resume extends BaseEntity {
     private boolean isActive;
     @OneToMany(mappedBy = "resume")
     private List<Application> applications;
+    @Convert(converter = JpaConverterFlexible.class)
+    @Column(name = "theme")
+    private Object theme;
+
+    @Convert(converter = JpaConverterFlexible.class)
+    @Column(name = "personal_info")
+    private Object personalInfo;
+
+    @Convert(converter = JpaConverterFlexible.class)
+    @Column(name = "sections")
+    private Object sections;
+
+    @Convert(converter = JpaConverterFlexible.class)
+    @Column(name = "work_experiences")
+    private Object workExperience;
+
+    @Convert(converter = JpaConverterFlexible.class)
+    @Column(name = "certificates")
+    private Object certificates;
 }

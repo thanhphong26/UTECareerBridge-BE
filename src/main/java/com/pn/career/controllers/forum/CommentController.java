@@ -89,7 +89,7 @@ public class CommentController {
                 .build());
     }
     @PostMapping
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_STUDENT')")
+    @PreAuthorize("hasAnyRole('ROLE_EMPLOYER', 'ROLE_ADMIN', 'ROLE_STUDENT')")
     public ResponseEntity<ResponseObject> createComment(@RequestBody CommentDTO comment, @AuthenticationPrincipal Jwt jwt) {
         Long userIdLong = jwt.getClaim("userId");
         Integer userId = userIdLong != null ? userIdLong.intValue() : null;

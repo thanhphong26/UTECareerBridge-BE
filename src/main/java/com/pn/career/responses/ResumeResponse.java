@@ -26,6 +26,11 @@ public class ResumeResponse {
     private LocalDateTime createdAt;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime updatedAt;
+    private Object theme;
+    private Object personalInfo;
+    private Object sections;
+    private Object workExperience;
+    private Object certificates;
     public static ResumeResponse fromResume(Resume resume) {
         return ResumeResponse.builder()
                 .resumeId(resume.getResumeId())
@@ -38,6 +43,11 @@ public class ResumeResponse {
                 .createdAt(resume.getCreatedAt())
                 .updatedAt(resume.getUpdatedAt())
                 .isActive(resume.isActive())
+                .theme(resume.getTheme())
+                .personalInfo(resume.getPersonalInfo())
+                .sections(resume.getSections())
+                .workExperience(resume.getWorkExperience())
+                .certificates(resume.getCertificates())
                 .build();
     }
 }

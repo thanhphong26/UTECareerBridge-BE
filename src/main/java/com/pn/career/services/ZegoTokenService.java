@@ -9,7 +9,6 @@ public class ZegoTokenService {
 
     private static final long APP_ID = 1509815072;
     private static final String SERVER_SECRET = "40ef81546a6d06ea6661f3072d8544be";
-
 public String generateToken(Long userId, Number roomId) {
     int effectiveTimeInSeconds = 3600; // 1 hour
 
