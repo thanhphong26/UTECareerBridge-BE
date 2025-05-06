@@ -12,6 +12,7 @@ import com.pn.career.responses.*;
 import com.pn.career.services.*;
 import com.pn.career.utils.JWTCheck;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("${api.prefix}/students")
 @RequiredArgsConstructor
@@ -232,13 +234,13 @@ public class StudentController {
     public ResponseEntity<ResponseObject> uploadResume(@AuthenticationPrincipal Jwt jwt, @RequestBody ResumeDTO resumeDTO) {
         Long userIdLong = jwt.getClaim("userId");
         Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        log.info("Upload resume with ID: {}", resumeDTO);
         Resume resume= resumeService.createResume(studentId, resumeDTO);
             return ResponseEntity.ok(ResponseObject.builder()
                 .status(HttpStatus.OK)
                 .data(ResumeResponse.fromResume(resume))
                 .message("Upload cv thành công")
                 .build());
-
     }
     @GetMapping("/resumes")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")

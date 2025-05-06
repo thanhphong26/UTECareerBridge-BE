@@ -34,7 +34,7 @@ public class ResumeService implements IResumeService {
         Object theme = resumeDTO.getTheme() != null ? resumeDTO.getTheme() : Map.of();
         Object personalInfo = resumeDTO.getPersonalInfo() != null ? resumeDTO.getPersonalInfo() : Map.of();
         Object sections = resumeDTO.getSections() != null ? resumeDTO.getSections() : List.of();
-        Object workExperience = resumeDTO.getWorkExperience() != null ? resumeDTO.getWorkExperience() : List.of();
+        Object workExperience = resumeDTO.getWorkExperiences() != null ? resumeDTO.getWorkExperiences() : List.of();
         Object certificates = resumeDTO.getCertificates() != null ? resumeDTO.getCertificates() : List.of();
 
         Resume resume = Resume.builder()
@@ -76,7 +76,7 @@ public class ResumeService implements IResumeService {
         Object theme = resumeDTO.getTheme() != null ? resumeDTO.getTheme() : Map.of();
         Object personalInfo = resumeDTO.getPersonalInfo() != null ? resumeDTO.getPersonalInfo() : Map.of();
         Object sections = resumeDTO.getSections() != null ? resumeDTO.getSections() : List.of();
-        Object workExperience = resumeDTO.getWorkExperience() != null ? resumeDTO.getWorkExperience() : List.of();
+        Object workExperience = resumeDTO.getWorkExperiences() != null ? resumeDTO.getWorkExperiences() : List.of();
         Object certificates = resumeDTO.getCertificates() != null ? resumeDTO.getCertificates() : List.of();
 
         resume.setResumeTitle(resumeDTO.getResumeTitle());

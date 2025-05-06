@@ -63,7 +63,9 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
                         .map(kw -> cb.or(
                                 cb.like(cb.lower(root.get("jobTitle")), "%" + kw + "%"),
                                 cb.like(cb.lower(root.get("jobDescription")), "%" + kw + "%"),
-                                cb.like(cb.lower(root.get("jobLocation")), "%" + kw + "%")
+                                cb.like(cb.lower(root.get("jobLocation")), "%" + kw + "%"),
+                                //search theo company name
+                                cb.like(cb.lower(employerJoin.get("companyName")), "%" + kw + "%")
                         ))
                         .collect(Collectors.toList());
                 predicates.add(cb.and(keywordPredicates.toArray(new Predicate[0])));

@@ -68,6 +68,8 @@ public class WebSecurityConfig {
                             ).permitAll()
                             .requestMatchers("/ws/**").permitAll()
                             .requestMatchers(GET,
+                                    String.format("%s/statistical/**", apiPrefix)).permitAll()
+                            .requestMatchers(GET,
                                     String.format("%s/posts/**", apiPrefix)).permitAll()
                             .requestMatchers(GET,
                                     String.format("%s/comments/**", apiPrefix)).permitAll()

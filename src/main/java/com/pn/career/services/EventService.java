@@ -30,7 +30,7 @@ public class EventService implements IEventService{
     private final NotificationService notificationService;
     @Override
     public Page<Event> getAllEvents(EventType eventType, PageRequest pageRequest) {
-        return eventRepository.findAllByEventTypeOrderByCreatedAt(eventType, pageRequest);
+        return eventRepository.findAllByEventTypeOrderByEventDate(eventType, pageRequest);
     }
     @Override
     public EventResponse createEvent(EventDTO eventDTO) {
@@ -146,5 +146,10 @@ public class EventService implements IEventService{
                 .map(EventResponse::from)
                 .collect(Collectors.toList());
 
+    }
+
+    @Override
+    public Integer countEventsByYear(Integer year) {
+        return eventRepository.countEventsByYear(year);
     }
 }

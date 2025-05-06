@@ -20,6 +20,6 @@ public class ResumeDTO {
     private Object theme;
     private Object personalInfo;
     private Object sections;
-    private Object workExperience;
+    private Object workExperiences;
     private Object certificates;
 }

@@ -18,4 +18,5 @@ public interface IEventService {
     EventResponse getEventById(Integer eventId);
     Integer countEventUpcomming(LocalDateTime dateNow);
     List<EventResponse> getAllEventUpcomming(LocalDateTime dateNow, Integer limit);
+    Integer countEventsByYear(Integer year);
 }

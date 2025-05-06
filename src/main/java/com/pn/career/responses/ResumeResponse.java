@@ -29,7 +29,7 @@ public class ResumeResponse {
     private Object theme;
     private Object personalInfo;
     private Object sections;
-    private Object workExperience;
+    private Object workExperiences;
     private Object certificates;
     public static ResumeResponse fromResume(Resume resume) {
         return ResumeResponse.builder()
@@ -46,7 +46,7 @@ public class ResumeResponse {
                 .theme(resume.getTheme())
                 .personalInfo(resume.getPersonalInfo())
                 .sections(resume.getSections())
-                .workExperience(resume.getWorkExperience())
+                .workExperiences(resume.getWorkExperience())
                 .certificates(resume.getCertificates())
                 .build();
     }
