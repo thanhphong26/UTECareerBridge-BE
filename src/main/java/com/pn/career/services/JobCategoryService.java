@@ -67,4 +67,22 @@ public class JobCategoryService implements IJobCategoryService{
             jobCategoryRepository.delete(existingJobCategory);
         }
     }
+
+    @Override
+    public List<JobCategory> getJobCategoryByName(String name) {
+        List<JobCategory> jobCategories = jobCategoryRepository.findByJobCategoryNameContainingIgnoreCase(name);
+        if(jobCategories.isEmpty()){
+            throw new RuntimeException("Không tìm thấy ngành nghề nào");
+        }
+        return jobCategories;
+    }
+
+    @Override
+    public int countJobCategory(boolean isActive) {
+        if(isActive){
+            return jobCategoryRepository.findAllByIsActiveTrue().size();
+        }else{
+            return jobCategoryRepository.findAll().size();
+        }
+    }
 }

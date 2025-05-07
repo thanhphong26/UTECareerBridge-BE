@@ -74,17 +74,13 @@ public class UserService implements IUserService {
     public TokenDTO userLogin(LoginDTO loginDTO, String... allowedRoles) throws Exception{
         UserDetailsImpl userDetails=null;
         try {
-            logger.info("Attempting login with email: {} or phone number: {}", loginDTO.getEmail(), loginDTO.getPhoneNumber());
-
             // Sử dụng AuthenticationManager để xác thực người dùng dựa trên email hoặc phone
-
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginDTO.getEmail() != null ? loginDTO.getEmail() : loginDTO.getPhoneNumber(),
                             loginDTO.getPassword()
                     )
             );
-            logger.info("Authentication successful for user: {}", authentication.getName());
             SecurityContextHolder.getContext()
                     .setAuthentication(authentication);
             // Lấy đối tượng UserDetails sau khi xác thực thành công
@@ -105,7 +101,7 @@ public class UserService implements IUserService {
             }
             throw e;
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Tài khoản không tồn tại trong hệ thống");
+            throw new BadCredentialsException("Tài khoản hoặc mật khẩu không đúng. Vui lòng thử lại");
         } catch (AuthenticationException e) {
             throw new AuthenticationException(localizationUtils.getLocalizedMessage(MessageKeys.AUTHENTICATION_FAILED)) {};
         }
@@ -124,11 +120,9 @@ public class UserService implements IUserService {
     }
     @Override
     public User getUserDetailsFromToken(String token) throws Exception{
-        logger.info("Attempting to get user details from token: {}", token);
         Jwt jwt = jwtDecoder.decode(token); // Đảm bảo rằng jwtDecoder được cấu hình đúng
         logger.info("Token subject: {}", jwt.getSubject());
         String subject = jwt.getSubject();
-        logger.info("Attempting to find user by email or phone: {}", subject);
         return userRepository.findUserByEmailOrPhoneNumber(subject, subject)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
     }

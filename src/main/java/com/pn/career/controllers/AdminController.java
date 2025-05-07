@@ -18,6 +18,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("${api.prefix}/admin")
@@ -72,6 +74,20 @@ public class AdminController {
                 .data(EventListResponse.builder()
                         .eventResponses(events.map(EventResponse::from).getContent())
                         .totalPages(events.getTotalPages())
+                        .build())
+                .status(HttpStatus.OK)
+                .build());
+    }
+    //get sự kiện sắp diễn ra
+    @GetMapping("/events/upcoming")
+    public ResponseEntity<ResponseObject> getUpcomingEvents(@RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "10") int size){
+        LocalDateTime dateNow = LocalDateTime.now();
+        List<EventResponse> events=eventService.getAllEventUpcomming(dateNow, size);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách sự kiện sắp diễn ra thành công")
+                .data(EventListResponse.builder()
+                        .eventResponses(events)
                         .build())
                 .status(HttpStatus.OK)
                 .build());

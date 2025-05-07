@@ -182,13 +182,16 @@
 			<version>1.19.0</version>  <!-- Use the latest version -->
 		</dependency>
 		<!-- Redis Dependencies -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>io.lettuce</groupId>
 			<artifactId>lettuce-core</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
 		</dependency>
 
 	</dependencies>

@@ -18,7 +18,7 @@ import com.google.api.services.calendar.model.EntryPoint;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.EventReminder;;
+import com.google.api.services.calendar.model.EventReminder;
 import com.pn.career.dtos.InterviewRequestDTO;
 import com.pn.career.exceptions.AuthenticationException;
 import com.pn.career.models.EmployerCredential;
@@ -119,7 +119,7 @@ public class GoogleCalendarService {
             EmployerCredential empCredential = credentialOpt.get();
             String accessToken = empCredential.getGoogleAccessToken();
             String refreshToken = empCredential.getGoogleRefreshToken();
-
+            log.info("Employer ID: {}", accessToken);
             // Create credential from saved tokens
             Credential credential = createCredentialFromTokens(accessToken, refreshToken);
 
@@ -127,6 +127,7 @@ public class GoogleCalendarService {
             if (credential.getExpiresInSeconds() != null && credential.getExpiresInSeconds() <= 60) {
                 // Token about to expire, refresh it
                 accessToken = refreshGoogleToken(employerId, refreshToken);
+                log.info("New access token: {}", accessToken);
                 if (accessToken == null) {
                     throw new AuthenticationException("Unable to refresh Google token");
                 }
@@ -149,14 +150,7 @@ public class GoogleCalendarService {
             throw new AuthenticationException("Google Calendar authorization not found. Please authorize.");
         }
     }
-    private Calendar getDefaultCalendarService() throws IOException, GeneralSecurityException {
-        // Triển khai logic lấy credential mặc định của bạn ở đây
-        final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        Credential credential = getCredentials(httpTransport); // Phương thức getCredentials hiện tại của bạn
-        return new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-    }
+
     private Credential getCredentials(final NetHttpTransport httpTransport) throws IOException {
         // Tải thông tin client secret
         Resource resource = new ClassPathResource("calendar.json");
@@ -182,27 +176,27 @@ public class GoogleCalendarService {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    private Calendar getCalendarService() throws IOException, GeneralSecurityException {
-        log.info("Khởi tạo Google Calendar service");
-        try {
-            final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-            log.info("HTTP Transport: {}", httpTransport);
-
-            Credential credential = getCredentials(httpTransport);
-            log.info("Credential: {}", credential);
-
-            // Cập nhật cách tạo Calendar service với API mới
-            Calendar service = new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
-                    .setApplicationName(APPLICATION_NAME)
-                    .build();
-
-            log.info("Calendar Service successfully created");
-            return service;
-        } catch (Exception e) {
-            log.error("Error creating Calendar service", e);
-            throw e;
-        }
-    }
+//    private Calendar getCalendarService() throws IOException, GeneralSecurityException {
+//        log.info("Khởi tạo Google Calendar service");
+//        try {
+//            final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+//            log.info("HTTP Transport: {}", httpTransport);
+//
+//            Credential credential = getCredentials(httpTransport);
+//            log.info("Credential: {}", credential);
+//
+//            // Cập nhật cách tạo Calendar service với API mới
+//            Calendar service = new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
+//                    .setApplicationName(APPLICATION_NAME)
+//                    .build();
+//
+//            log.info("Calendar Service successfully created");
+//            return service;
+//        } catch (Exception e) {
+//            log.error("Error creating Calendar service", e);
+//            throw e;
+//        }
+//    }
     public String createCalendarEventAsEmployer(
             InterviewRequestDTO interviewRequestDTO,
             MeetingResponse meetingResponse,
@@ -288,73 +282,73 @@ public class GoogleCalendarService {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public String createCalendarEvent(InterviewRequestDTO interviewRequestDTO, MeetingResponse meetingResponse)
-            throws IOException, GeneralSecurityException {
-
-        // Xây dựng service
-        Calendar service = getCalendarService();
-        log.info("Service: {}", service);
-
-        // Chuyển đổi thời gian
-        DateTime startDateTime = new DateTime(
-                interviewRequestDTO.getStartTime()
-                        .atZone(ZoneId.of(calendarTimezone))
-                        .toInstant().toEpochMilli());
-
-        DateTime endDateTime = new DateTime(
-                interviewRequestDTO.getStartTime()
-                        .plusMinutes(interviewRequestDTO.getDurationMinutes())
-                        .atZone(ZoneId.of(calendarTimezone))
-                        .toInstant().toEpochMilli());
-
-        // Tạo danh sách người tham gia
-        EventAttendee[] attendeesArray = new EventAttendee[interviewRequestDTO.getAttendeeEmails().size() + 1];
-
-        // Thêm ứng viên
-        attendeesArray[0] = new EventAttendee()
-                .setEmail(interviewRequestDTO.getCandidateEmail())
-                .setDisplayName("Ứng viên");
-
-        // Thêm các người tham gia khác
-        for (int i = 0; i < interviewRequestDTO.getAttendeeEmails().size(); i++) {
-            attendeesArray[i + 1] = new EventAttendee()
-                    .setEmail(interviewRequestDTO.getAttendeeEmails().get(i));
-        }
-
-        // Tạo nội dung sự kiện
-        Event event = new Event()
-                .setSummary(interviewRequestDTO.getTitle())
-                .setLocation("Phỏng vấn trực tuyến qua Zoom")
-                .setDescription(String.format("%s\n\nLink phỏng vấn: %s",
-                        interviewRequestDTO.getDescription(),
-                        meetingResponse.getJoinUrl()))
-                .setStart(new EventDateTime()
-                        .setDateTime(startDateTime)
-                        .setTimeZone(calendarTimezone))
-                .setEnd(new EventDateTime()
-                        .setDateTime(endDateTime)
-                        .setTimeZone(calendarTimezone))
-                .setAttendees(Arrays.asList(attendeesArray))
-                .setConferenceData(new ConferenceData()
-                        .setEntryPoints(Collections.singletonList(
-                                new EntryPoint()
-                                        .setEntryPointType("video")
-                                        .setUri(meetingResponse.getJoinUrl())
-                                        .setLabel("Tham gia phỏng vấn Zoom")
-                        )))
-                .setReminders(new Event.Reminders()
-                        .setUseDefault(false)
-                        .setOverrides(Arrays.asList(
-                                new EventReminder().setMethod("email").setMinutes(24 * 60),  // 1 ngày trước
-                                new EventReminder().setMethod("popup").setMinutes(30)        // 30 phút trước
-                        )));
-
-        // Chèn sự kiện với API mới
-        event = service.events().insert("primary", event)
-                .setConferenceDataVersion(1) // Hỗ trợ thông tin hội nghị (Zoom link)
-                .setSendNotifications(true) // Gửi thông báo tới người tham gia
-                .execute();
-
-        return event.getId();
-    }
+//    public String createCalendarEvent(InterviewRequestDTO interviewRequestDTO, MeetingResponse meetingResponse)
+//            throws IOException, GeneralSecurityException {
+//
+//        // Xây dựng service
+//        Calendar service = getCalendarService();
+//        log.info("Service: {}", service);
+//
+//        // Chuyển đổi thời gian
+//        DateTime startDateTime = new DateTime(
+//                interviewRequestDTO.getStartTime()
+//                        .atZone(ZoneId.of(calendarTimezone))
+//                        .toInstant().toEpochMilli());
+//
+//        DateTime endDateTime = new DateTime(
+//                interviewRequestDTO.getStartTime()
+//                        .plusMinutes(interviewRequestDTO.getDurationMinutes())
+//                        .atZone(ZoneId.of(calendarTimezone))
+//                        .toInstant().toEpochMilli());
+//
+//        // Tạo danh sách người tham gia
+//        EventAttendee[] attendeesArray = new EventAttendee[interviewRequestDTO.getAttendeeEmails().size() + 1];
+//
+//        // Thêm ứng viên
+//        attendeesArray[0] = new EventAttendee()
+//                .setEmail(interviewRequestDTO.getCandidateEmail())
+//                .setDisplayName("Ứng viên");
+//
+//        // Thêm các người tham gia khác
+//        for (int i = 0; i < interviewRequestDTO.getAttendeeEmails().size(); i++) {
+//            attendeesArray[i + 1] = new EventAttendee()
+//                    .setEmail(interviewRequestDTO.getAttendeeEmails().get(i));
+//        }
+//
+//        // Tạo nội dung sự kiện
+//        Event event = new Event()
+//                .setSummary(interviewRequestDTO.getTitle())
+//                .setLocation("Phỏng vấn trực tuyến qua Zoom")
+//                .setDescription(String.format("%s\n\nLink phỏng vấn: %s",
+//                        interviewRequestDTO.getDescription(),
+//                        meetingResponse.getJoinUrl()))
+//                .setStart(new EventDateTime()
+//                        .setDateTime(startDateTime)
+//                        .setTimeZone(calendarTimezone))
+//                .setEnd(new EventDateTime()
+//                        .setDateTime(endDateTime)
+//                        .setTimeZone(calendarTimezone))
+//                .setAttendees(Arrays.asList(attendeesArray))
+//                .setConferenceData(new ConferenceData()
+//                        .setEntryPoints(Collections.singletonList(
+//                                new EntryPoint()
+//                                        .setEntryPointType("video")
+//                                        .setUri(meetingResponse.getJoinUrl())
+//                                        .setLabel("Tham gia phỏng vấn Zoom")
+//                        )))
+//                .setReminders(new Event.Reminders()
+//                        .setUseDefault(false)
+//                        .setOverrides(Arrays.asList(
+//                                new EventReminder().setMethod("email").setMinutes(24 * 60),  // 1 ngày trước
+//                                new EventReminder().setMethod("popup").setMinutes(30)        // 30 phút trước
+//                        )));
+//
+//        // Chèn sự kiện với API mới
+//        event = service.events().insert("primary", event)
+//                .setConferenceDataVersion(1) // Hỗ trợ thông tin hội nghị (Zoom link)
+//                .setSendNotifications(true) // Gửi thông báo tới người tham gia
+//                .execute();
+//
+//        return event.getId();
+//    }
 }

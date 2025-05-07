@@ -235,4 +235,17 @@ public class JobService implements IJobService {
             return jobResponse;
         });
     }
+
+    @Override
+    public Integer countJobByActiveStatus(JobStatus jobStatus) {
+        return jobRepository.countByStatus(jobStatus);
+    }
+    @Override
+    public Integer countJobByEmployerIdAndStatus(Integer employerId, JobStatus jobStatus) {
+        return jobRepository.countByEmployer_UserIdAndStatus(employerId, jobStatus);
+    }
+    @Override
+    public Integer countJobByJobCategoryIdAndStatus(Integer jobCategoryId, JobStatus jobStatus) {
+        return jobRepository.countByJobCategory_JobCategoryIdAndStatus(jobCategoryId, jobStatus);
+    }
 }

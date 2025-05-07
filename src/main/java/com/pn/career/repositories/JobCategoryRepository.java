@@ -9,4 +9,5 @@ public interface JobCategoryRepository extends JpaRepository<JobCategory, Intege
     boolean existsByJobCategoryName(String jobCategoryName);
     JobCategory findByJobCategoryName(String jobCategoryName);
     List<JobCategory> findAllByIsActiveTrue();
+    List<JobCategory> findByJobCategoryNameContainingIgnoreCase(String name);
 }

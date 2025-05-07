@@ -49,9 +49,9 @@ public class Employer extends User{
     @ManyToOne
     @JoinColumn(name = "industry_id")
     private Industry industry;
-    @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "employer", fetch = FetchType.EAGER)
     private List<EmployerPackage> employerPackages = new ArrayList<>();
-    @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "employer", fetch = FetchType.EAGER)
     @JsonManagedReference // hoặc @JsonIgnore nếu không cần
     private List<BenefitDetail> benefitDetails = new ArrayList<>();
 }

@@ -221,7 +221,6 @@ public class NotificationService implements INotificationService{
                 .content(eventDescription)
                 .notificationDate(LocalDateTime.now())
                 .type(notificationType)
-                .data(Map.of("eventDate", eventDate, "eventLocation", eventLocation))
                 .url(url)
                 .build();
         notificationRepository.save(notification);
@@ -236,7 +235,6 @@ public class NotificationService implements INotificationService{
                     .notificationDate(LocalDateTime.now())
                     .type(notificationType)
                     .read(false)
-                    .data(Map.of("eventDate", eventDate, "eventLocation", eventLocation))
                     .url(url)
                     .build();
             notificationRepository.save(notificationUser);
@@ -298,5 +296,19 @@ public class NotificationService implements INotificationService{
                 user.getUserId(),
                 List.of(NotificationType.PERSONAL),
                 pageable);
+    }
+
+    @Override
+    public void sendNotificationForJobAlert(String title, String message, Integer userId, Map<String, Object> data) {
+        Notification payload = Notification.builder()
+                .userId(userId)
+                .title(title)
+                .content(message)
+                .notificationDate(LocalDateTime.now())
+                .type(NotificationType.PERSONAL)
+                .data(data)
+                .build();
+        notificationRepository.save(payload);
+        messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/notifications/personal", payload);
     }
 }

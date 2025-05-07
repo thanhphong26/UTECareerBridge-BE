@@ -60,7 +60,7 @@ public class Job extends BaseEntity{
     private String rejectionReason;
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Application> applications;
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "job", fetch = FetchType.EAGER)
     @JsonManagedReference // hoặc @JsonIgnore nếu không cần
     private List<JobSkill> jobSkills=new ArrayList<>();
     @Column(name = "package_id")
