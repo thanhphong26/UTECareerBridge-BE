@@ -31,6 +31,7 @@ public class ResumeResponse {
     private Object sections;
     private Object workExperiences;
     private Object certificates;
+    private Object skills;
     public static ResumeResponse fromResume(Resume resume) {
         return ResumeResponse.builder()
                 .resumeId(resume.getResumeId())
@@ -48,6 +49,7 @@ public class ResumeResponse {
                 .sections(resume.getSections())
                 .workExperiences(resume.getWorkExperience())
                 .certificates(resume.getCertificates())
+                .skills(resume.getSkills())
                 .build();
     }
 }

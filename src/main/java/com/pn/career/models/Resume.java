@@ -57,4 +57,7 @@ public class Resume extends BaseEntity {
     @Convert(converter = JpaConverterFlexible.class)
     @Column(name = "certificates")
     private Object certificates;
+    @Convert(converter = JpaConverterFlexible.class)
+    @Column(name = "skills")
+    private Object skills;
 }

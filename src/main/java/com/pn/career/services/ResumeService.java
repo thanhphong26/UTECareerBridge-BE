@@ -36,6 +36,7 @@ public class ResumeService implements IResumeService {
         Object sections = resumeDTO.getSections() != null ? resumeDTO.getSections() : List.of();
         Object workExperience = resumeDTO.getWorkExperiences() != null ? resumeDTO.getWorkExperiences() : List.of();
         Object certificates = resumeDTO.getCertificates() != null ? resumeDTO.getCertificates() : List.of();
+        Object skills = resumeDTO.getSkills() != null ? resumeDTO.getSkills() : List.of();
 
         Resume resume = Resume.builder()
                 .resumeTitle(resumeDTO.getResumeTitle())
@@ -48,6 +49,7 @@ public class ResumeService implements IResumeService {
                 .sections(sections)
                 .workExperience(workExperience)
                 .certificates(certificates)
+                .skills(skills)
                 .isActive(true)
                 .build();
         return resumeRepository.save(resume);
@@ -78,6 +80,7 @@ public class ResumeService implements IResumeService {
         Object sections = resumeDTO.getSections() != null ? resumeDTO.getSections() : List.of();
         Object workExperience = resumeDTO.getWorkExperiences() != null ? resumeDTO.getWorkExperiences() : List.of();
         Object certificates = resumeDTO.getCertificates() != null ? resumeDTO.getCertificates() : List.of();
+        Object skills = resumeDTO.getSkills() != null ? resumeDTO.getSkills() : List.of();
 
         resume.setResumeTitle(resumeDTO.getResumeTitle());
         resume.setResumeDescription(resumeDTO.getResumeDescription());
@@ -88,6 +91,7 @@ public class ResumeService implements IResumeService {
         resume.setSections(sections);
         resume.setWorkExperience(workExperience);
         resume.setCertificates(certificates);
+        resume.setSkills(skills);
         return resumeRepository.save(resume);
     }
 

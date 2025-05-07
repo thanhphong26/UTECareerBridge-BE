@@ -22,4 +22,5 @@ public class ResumeDTO {
     private Object sections;
     private Object workExperiences;
     private Object certificates;
+    private Object skills;
 }
