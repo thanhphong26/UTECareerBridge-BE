@@ -44,6 +44,7 @@ public class CVAnalysisService {
         }
     }
 
+
     public CVAnalysisResponse uploadAndAnalyzeCV(MultipartFile file, Integer studentId) throws IOException {
         try {
             // Chuẩn bị file và parameters cho multipart request

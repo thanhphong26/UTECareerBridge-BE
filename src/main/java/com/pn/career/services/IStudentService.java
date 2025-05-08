@@ -2,6 +2,7 @@ package com.pn.career.services;
 
 import com.pn.career.dtos.StudentDTO;
 import com.pn.career.responses.ApplicationResponse;
+import com.pn.career.responses.JobStaStudentResponse;
 import com.pn.career.responses.StudentResponse;
 import com.pn.career.responses.StudentViewResponse;
 import org.springframework.data.domain.Page;
@@ -12,4 +13,5 @@ public interface IStudentService {
     void updateIsFindingJob(Integer studentId, boolean isFindingJob);
     Page<ApplicationResponse> getJobApplyByStudentId(Integer studentId, PageRequest pageRequest);
     Page<StudentViewResponse> getStudentIsFindingJob(Integer categoryId, PageRequest pageRequest);
+    JobStaStudentResponse getJobStaStudent(Integer studentId);
 }
