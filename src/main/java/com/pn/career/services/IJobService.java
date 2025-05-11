@@ -30,4 +30,5 @@ public interface IJobService {
     Integer countJobByJobCategoryIdAndStatus(Integer jobCategoryId, JobStatus jobStatus);
     Double timeAverageRecruitment(Integer employerId);
     List<EmployerActivityStatsResponse> getEmployerActivityStats(Integer employerId, Integer month, Integer year);
+    Page<JobResponse> getJobCompleteInterviewRecentByEmployerId(Integer employerId, PageRequest pageRequest);
 }

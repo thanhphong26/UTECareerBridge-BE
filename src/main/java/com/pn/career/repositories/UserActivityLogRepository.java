@@ -22,4 +22,5 @@ public interface UserActivityLogRepository extends JpaRepository<UserActivityLog
             @Param("userId") Integer userId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+    Integer countByJob_Employer_UserId(Integer employerId);
 }

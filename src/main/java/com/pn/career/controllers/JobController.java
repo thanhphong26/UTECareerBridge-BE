@@ -2,6 +2,8 @@ package com.pn.career.controllers;
 
 import com.pn.career.dtos.JobDTO;
 import com.pn.career.dtos.RejectDTO;
+import com.pn.career.dtos.UserActivityDTO;
+import com.pn.career.event.JobApprovedEvent;
 import com.pn.career.event.JobEventListener;
 import com.pn.career.event.JobViewedEvent;
 import com.pn.career.models.JobStatus;
@@ -54,6 +56,33 @@ public class JobController {
                 .data(average)
                 .build());
     }
+    @GetMapping("/interview-complete")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getJobCompleteInterviewRecentByEmployer(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        int totalPages=0;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        Page<JobResponse> jobs=jobService.getJobCompleteInterviewRecentByEmployerId(employerId,pageRequest);
+        if(jobs.getTotalPages()>0){
+            totalPages=jobs.getTotalPages();
+        }
+        List<JobResponse> jobResponses=jobs.getContent();
+        if(jobResponses.isEmpty()){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Không có công việc nào")
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy danh sách công việc thành công")
+                .data(JobListResponse.builder()
+                        .jobResponses(jobResponses)
+                        .totalPages(totalPages)
+                        .build())
+                .build());
+    }
     @GetMapping("/recruitment-urgent")
     public ResponseEntity<ResponseObject> getJobRecruitmentUrgent(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit){
         int totalPages=0;
@@ -84,6 +113,7 @@ public class JobController {
         try{
             Long userIdLong = jwt.getClaim("userId");
             Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+            logger.info("Employer ID: {}", jobDTO);
             JobResponse job=jobService.createJob(employerId,jobDTO);
             return ResponseEntity.ok().body(ResponseObject.builder()
                     .status(HttpStatus.OK)
@@ -253,6 +283,7 @@ public class JobController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> approveJob(@PathVariable Integer jobId){
         JobResponse jobResponse=jobService.approveJob(jobId);
+        applicationEventPublisher.publishEvent(new JobApprovedEvent(jobId, jobResponse.getEmployerId()));
 
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .status(HttpStatus.OK)

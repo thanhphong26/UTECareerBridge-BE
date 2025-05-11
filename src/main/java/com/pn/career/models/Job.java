@@ -1,5 +1,6 @@
 package com.pn.career.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -60,9 +61,9 @@ public class Job extends BaseEntity{
     private String rejectionReason;
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Application> applications;
-    @OneToMany(mappedBy = "job", fetch = FetchType.EAGER)
-    @JsonManagedReference // hoặc @JsonIgnore nếu không cần
-    private List<JobSkill> jobSkills=new ArrayList<>();
+    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<JobSkill> jobSkills = new ArrayList<>();
     @Column(name = "package_id")
     private Integer packageId;
 }

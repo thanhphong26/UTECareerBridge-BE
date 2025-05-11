@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
+    //find user
     @Query("SELECT u FROM User u WHERE u.active = true AND u.role.roleName <> 'admin'")
     List<User> findAllByActiveExceptAdmin();
     List<User> findByRole(Role role);

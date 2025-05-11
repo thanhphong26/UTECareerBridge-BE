@@ -34,4 +34,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
             "FROM Application a " +
             "WHERE a.resume.student.userId = :studentId")
     JobStaStudentResponse getJobStatisticsByStudentId(@Param("studentId") Integer studentId);
+    //count all application by employerId
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.job.employer.userId = :employerId")
+    Integer countAllApplicationByEmployerId(@Param("employerId") Integer employerId);
+    boolean existsByResume_ResumeId(Integer resumeId);
 }

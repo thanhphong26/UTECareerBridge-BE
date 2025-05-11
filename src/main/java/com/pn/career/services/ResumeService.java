@@ -6,6 +6,7 @@ import com.pn.career.exceptions.PermissionDenyException;
 import com.pn.career.models.JobLevel;
 import com.pn.career.models.Resume;
 import com.pn.career.models.Student;
+import com.pn.career.repositories.ApplicationRepository;
 import com.pn.career.repositories.JobLevelRepository;
 import com.pn.career.repositories.ResumeRepository;
 import com.pn.career.repositories.StudentRepository;
@@ -24,6 +25,7 @@ public class ResumeService implements IResumeService {
     private final JobLevelRepository jobLevelRepository;
     private final CloudinaryService cloudinaryService;
     private final StudentRepository studentRepository;
+    private final ApplicationRepository applicationRepository;
 
     @Override
     @Transactional
@@ -97,6 +99,10 @@ public class ResumeService implements IResumeService {
 
     @Override
     public void deleteResume(Integer studentId, Integer resumeId) {
+        //check resume đã phát sinh không cho xóa
+        if(applicationRepository.existsByResume_ResumeId(resumeId)){
+            throw new PermissionDenyException("Hồ sơ đã phát sinh không thể xóa");
+        }
         Resume resume=getResumeById(studentId, resumeId);
         if(resume.getStudent().getUserId()!=studentId){
             throw new PermissionDenyException("Bạn không có quyền thực hiện chức năng này");

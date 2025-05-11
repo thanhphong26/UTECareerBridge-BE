@@ -31,6 +31,7 @@ public class JobService implements IJobService {
     private final JobSkillRepository jobSkillRepository;
     private final IEmployerPackageService employerPackageService;
     private final Logger logger= LoggerFactory.getLogger(JobService.class);
+    private final InterviewRepository interviewRepository;
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
@@ -265,5 +266,15 @@ public class JobService implements IJobService {
                         ((Number) record[1]).longValue(),
                         ((Number) record[2]).longValue()))
                 .toList();
+    }
+    public Page<JobResponse> getJobCompleteInterviewRecentByEmployerId(Integer employerId, PageRequest pageRequest) {
+        Page<Integer> jobIds = interviewRepository.findRecentCompletedInterviewJobIdsByEmployerId(employerId, pageRequest);
+        return jobIds.map(jobId -> {
+            Job job = jobRepository.findById(jobId).orElseThrow(); // Assuming you have a jobRepository
+            JobResponse jobResponse = JobResponse.fromJob(job);
+            List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
+            jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+            return jobResponse;
+        });
     }
 }
