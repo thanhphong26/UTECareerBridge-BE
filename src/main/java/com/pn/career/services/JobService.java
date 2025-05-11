@@ -4,9 +4,9 @@ import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.PermissionDenyException;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
+import com.pn.career.responses.EmployerActivityStatsResponse;
 import com.pn.career.responses.JobResponse;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -247,5 +249,21 @@ public class JobService implements IJobService {
     @Override
     public Integer countJobByJobCategoryIdAndStatus(Integer jobCategoryId, JobStatus jobStatus) {
         return jobRepository.countByJobCategory_JobCategoryIdAndStatus(jobCategoryId, jobStatus);
+    }
+
+    @Override
+    public Double timeAverageRecruitment(Integer employerId) {
+        return jobRepository.getAverageRecruitmentTimeForEmployer(employerId);
+    }
+
+
+    public List<EmployerActivityStatsResponse> getEmployerActivityStats(Integer employerId, Integer month, Integer year) {
+        List<Object[]> rawStats = jobRepository.getEmployerActivityStats(employerId, month, year);
+        return rawStats.stream()
+                .map(record -> new EmployerActivityStatsResponse(
+                        (Date) record[0],
+                        ((Number) record[1]).longValue(),
+                        ((Number) record[2]).longValue()))
+                .toList();
     }
 }

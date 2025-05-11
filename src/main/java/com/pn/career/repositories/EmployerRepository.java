@@ -35,4 +35,5 @@ public interface EmployerRepository extends JpaRepository<Employer, Integer> {
     List<Employer> findAllByJobCategoryAndStatus(@Param("categoryName") String categoryName,
                                                  @Param("status") EmployerStatus status);
 
+
 }

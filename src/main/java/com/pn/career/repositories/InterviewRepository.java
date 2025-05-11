@@ -24,4 +24,5 @@ public interface InterviewRepository extends JpaRepository<Interview, Integer> {
             @Param("status") InterviewStatus status,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+    Integer countByApplication_Job_Employer_UserId(Integer employerId);
 }

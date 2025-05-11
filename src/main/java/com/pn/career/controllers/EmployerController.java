@@ -6,6 +6,7 @@ import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.UnUpdatedLicense;
 import com.pn.career.models.*;
 import com.pn.career.repositories.EmployerPackageRepository;
+import com.pn.career.repositories.InterviewRepository;
 import com.pn.career.repositories.JobRepository;
 import com.pn.career.repositories.StudentRepository;
 import com.pn.career.responses.*;
@@ -57,7 +58,20 @@ public class EmployerController {
     private final StudentRepository studentRepository;
     private final JobRepository jobRepository;
     private final INotificationService notificationService;
+    private final InterviewRepository interviewRepository;
 
+    @GetMapping("/count-interview")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getTotalInterview(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        Integer totalInterview = interviewRepository.countByApplication_Job_Employer_UserId(userId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy tổng số cuộc phỏng vấn thành công")
+                .status(HttpStatus.OK)
+                .data(totalInterview)
+                .build());
+    }
     @GetMapping("/get-total-student-application")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getTotalStudentApplication(@AuthenticationPrincipal Jwt jwt) {
