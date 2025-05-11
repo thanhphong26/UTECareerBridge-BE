@@ -6,7 +6,6 @@ import com.pn.career.models.Package;
 import jakarta.persistence.criteria.*;
 import jakarta.persistence.criteria.Order;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,11 +14,18 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
+    @Query(value = "SELECT AVG(DATEDIFF(a.created_at, j.updated_at)) " +
+            "FROM jobs j " +
+            "JOIN applications a ON j.job_id = a.job_id " +
+            "WHERE j.employer_id = :employerId " +
+            "AND j.status = 'ACTIVE' " +
+            "AND a.created_at = (SELECT MIN(a2.created_at) FROM applications a2 WHERE a2.job_id = j.job_id)",
+            nativeQuery = true)
+    Double getAverageRecruitmentTimeForEmployer(@Param("employerId") Integer employerId);
     Integer countByJobCategory_JobCategoryIdAndStatus(Integer jobCategoryId, JobStatus status);
     Integer countByEmployer_UserIdAndStatus(Integer employerId, JobStatus status);
     List<Job> findTop5ByOrderByCreatedAtDesc();
@@ -284,4 +290,21 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
             return cb.and(predicates.toArray(new Predicate[0]));
         }, pageable);
     }
+    @Query(value = "SELECT \n" +
+            "  CAST(log.created_at AS DATE) AS activity_date,\n" +
+            "  SUM(CASE WHEN log.action_type = 'VIEW' THEN 1 ELSE 0 END) AS views,\n" +
+            "  SUM(CASE WHEN log.action_type = 'APPLY' THEN 1 ELSE 0 END) AS applies\n" +
+            "FROM user_activity_logs log\n" +
+            "JOIN jobs ON log.job_id = jobs.job_id\n" +
+            "JOIN employers ON jobs.employer_id = employers.employer_id\n" +
+            "WHERE jobs.employer_id = :employerId\n" +
+            "  AND MONTH(log.created_at) = :month\n" +
+            "  AND YEAR(log.created_at) = :year\n" +
+            "GROUP BY CAST(log.created_at AS DATE)\n" +
+            "ORDER BY activity_date",
+            nativeQuery = true)
+    List<Object[]> getEmployerActivityStats(
+            @Param("employerId") Integer employerId,
+            @Param("month") Integer month,
+            @Param("year") Integer year);
 }

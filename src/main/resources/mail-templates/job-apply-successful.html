@@ -34,9 +34,9 @@
                     <li style="margin-bottom: 10px;">Ngày ứng tuyển: <strong th:text="${#temporals.format(application.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></strong></li>
                     <li style="margin-bottom: 10px;">Vị trí: <strong><a th:href="@{'http://localhost:3000/jobs/' + ${job.getJobId()}}" target="_blank" th:text="${job.getJobTitle()}" style="color: #0066cc;"></a></strong></li>
                     <li style="margin-bottom: 10px;">Mức lương: <strong>
-                        <span th:text="${#numbers.formatDecimal(job.getJobMinSalary(), 1, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                        <span th:text="${job.getJobMinSalary()}"></span>
                         -
-                        <span th:text="${#numbers.formatDecimal(job.getJobMaxSalary(), 1, 'COMMA', 0, 'POINT')} + ' VND'"></span>
+                        <span th:text="${job.getJobMaxSalary()}"></span>
                     </strong></li>
                 </ul>
             </div>

@@ -7,10 +7,7 @@ import com.pn.career.models.Resume;
 import com.pn.career.models.Student;
 import com.pn.career.models.User;
 import com.pn.career.repositories.*;
-import com.pn.career.responses.ApplicationResponse;
-import com.pn.career.responses.JobResponse;
-import com.pn.career.responses.StudentResponse;
-import com.pn.career.responses.StudentViewResponse;
+import com.pn.career.responses.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -85,5 +82,10 @@ public class StudentService implements IStudentService{
         Page<Student> students=studentRepository.findAllByIsFindTrueAndJobCategory_JobCategoryId(categoryId,pageRequest);
         System.out.println("hellp" +students.getContent());
         return students.map(StudentViewResponse::fromStudent);
+    }
+
+    @Override
+    public JobStaStudentResponse getJobStaStudent(Integer studentId) {
+        return applicationRepository.getJobStatisticsByStudentId(studentId);
     }
 }

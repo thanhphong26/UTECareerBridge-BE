@@ -2,16 +2,15 @@ package com.pn.career.controllers;
 
 import com.pn.career.dtos.JobDTO;
 import com.pn.career.dtos.RejectDTO;
-import com.pn.career.dtos.UserActivityDTO;
 import com.pn.career.event.JobEventListener;
 import com.pn.career.event.JobViewedEvent;
 import com.pn.career.models.JobStatus;
+import com.pn.career.responses.EmployerActivityStatsResponse;
 import com.pn.career.responses.JobListResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.IJobService;
 import com.pn.career.services.IUserActivityLog;
-import com.pn.career.services.UserActivityLogService;
 import com.pn.career.utils.JWTCheck;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -43,7 +42,18 @@ public class JobController {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     private final Logger logger= LoggerFactory.getLogger(JobController.class);
-
+    @GetMapping("/recruiment-average")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getRecruitmentAverage(@AuthenticationPrincipal Jwt jwt){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        Double average=jobService.timeAverageRecruitment(employerId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy thông tin thành công")
+                .data(average)
+                .build());
+    }
     @GetMapping("/recruitment-urgent")
     public ResponseEntity<ResponseObject> getJobRecruitmentUrgent(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit){
         int totalPages=0;
@@ -169,6 +179,7 @@ public class JobController {
                 .data(JobListResponse.builder()
                         .jobResponses(jobResponses)
                         .totalPages(totalPages)
+                        .totalElements(jobs.getTotalElements())
                         .build())
                 .build());
     }
@@ -282,6 +293,22 @@ public class JobController {
                         .totalPages(jobs.getTotalPages())
                         .totalElements(jobs.getTotalElements())
                         .build())
+                .build());
+    }
+
+    @GetMapping("/activity-stats")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getEmployerActivityStats(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam Integer month,
+            @RequestParam Integer year) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        List<EmployerActivityStatsResponse> stats = jobService.getEmployerActivityStats(employerId, month, year);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy thống kê hoạt động thành công")
+                .data(stats)
                 .build());
     }
 }

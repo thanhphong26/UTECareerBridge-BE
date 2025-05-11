@@ -23,6 +23,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -37,6 +38,34 @@ public class StudentController {
     private final IFollowerService followerService;
     private final ISaveJobService saveJobService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final IUserActivityLog userActivityLogService;
+
+    @GetMapping("/activity")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getStudentActivities(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        LocalDate startDate = LocalDate.now().minusDays(7);
+        LocalDate endDate = LocalDate.now();
+        List<StudentActivityStatsResponse> activities=userActivityLogService.getStudentActivities(studentId, startDate, endDate);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(activities)
+                .message("Lấy hoạt động sinh viên thành công")
+                .build());
+    }
+    @GetMapping("/job-statistics")
+    @PreAuthorize("hasAuthority('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getJobStatistics(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer studentId = userIdLong != null ? userIdLong.intValue() : null;
+        JobStaStudentResponse jobStaStudentResponse=studentService.getJobStaStudent(studentId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(jobStaStudentResponse)
+                .message("Lấy thống kê công việc thành công")
+                .build());
+    }
     @GetMapping("/students-finding-job")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getStudentIsFindingJob(@RequestParam(required = false) Integer categoryId, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit) {
