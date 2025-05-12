@@ -6,6 +6,8 @@ import com.pn.career.models.*;
 import com.pn.career.repositories.*;
 import com.pn.career.responses.EmployerActivityStatsResponse;
 import com.pn.career.responses.JobResponse;
+import com.pn.career.responses.RecruitmentPerformanceResponse;
+import com.pn.career.responses.TopSkillResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +35,7 @@ public class JobService implements IJobService {
     private final IEmployerPackageService employerPackageService;
     private final Logger logger= LoggerFactory.getLogger(JobService.class);
     private final InterviewRepository interviewRepository;
+    private final JobRepositoryCustom jobRepositoryCustom;
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
@@ -276,5 +280,39 @@ public class JobService implements IJobService {
             jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
             return jobResponse;
         });
+    }
+
+    @Override
+    public List<TopSkillResponse> getTopSkillsInJobByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate) {
+        return jobRepositoryCustom.getTopSkillsByEmployerId(employerId, limit, startDate, endDate);
+    }
+
+    @Override
+    public List<RecruitmentPerformanceResponse> getJobsRecruitmentPerformance(Integer employerId, LocalDateTime startDate, LocalDateTime endDate, Integer page, Integer size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Employer employer = employerRepository.findById(employerId).orElseThrow(() -> new DataNotFoundException("Không tìm thấy thông tin công ty"));
+        Page<Job> jobs = jobRepository.findAllByEmployerAndStatusIn(employer, List.of(JobStatus.ACTIVE, JobStatus.INACTIVE), pageRequest);
+        List<Job> jobList = jobs.getContent();
+        return jobList.stream().map(job -> {
+            // Get view count for this specific job within date range
+            Integer viewCount = jobRepository.countJobViewsInDateRange(
+                    job.getJobId(), ActionType.VIEW, startDate, endDate);
+
+            // Get application count for this job within date range
+            Integer applicationCount = jobRepository.countJobApplicationsInDateRange(
+                    job.getJobId(), startDate, endDate);
+
+            return RecruitmentPerformanceResponse.builder()
+                    .jobId(job.getJobId())
+                    .title(job.getJobTitle())
+                    .views(viewCount)
+                    .applications(applicationCount)
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TopSkillResponse> getTopApplicantSkillsByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate) {
+        return jobRepositoryCustom.getTopApplicantSkillsByEmployerId(employerId, limit, startDate, endDate);
     }
 }

@@ -7,10 +7,7 @@ import com.pn.career.event.JobApprovedEvent;
 import com.pn.career.event.JobEventListener;
 import com.pn.career.event.JobViewedEvent;
 import com.pn.career.models.JobStatus;
-import com.pn.career.responses.EmployerActivityStatsResponse;
-import com.pn.career.responses.JobListResponse;
-import com.pn.career.responses.JobResponse;
-import com.pn.career.responses.ResponseObject;
+import com.pn.career.responses.*;
 import com.pn.career.services.IJobService;
 import com.pn.career.services.IUserActivityLog;
 import com.pn.career.utils.JWTCheck;
@@ -24,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +29,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -44,6 +43,74 @@ public class JobController {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     private final Logger logger= LoggerFactory.getLogger(JobController.class);
+    @GetMapping("/top-student-skills")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getTopApplicantSkillsByEmployerId(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "5") Integer limit,
+                                                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusMonths(1);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        List<TopSkillResponse> topSkills=jobService.getTopApplicantSkillsByEmployerId(employerId,limit,startDate,endDate);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy danh sách kỹ năng thành công")
+                .data(topSkills)
+                .build());
+    }
+    @GetMapping("/recruitment-performance")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getJobsRecruitmentPerformance(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer limit,
+                                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        int totalPages=0;
+        PageRequest pageRequest=PageRequest.of(page,limit);
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusMonths(1);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        List<RecruitmentPerformanceResponse> jobs=jobService.getJobsRecruitmentPerformance(employerId,startDate,endDate,page,limit);
+        if(jobs.isEmpty()){
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Không có công việc nào")
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy danh sách công việc thành công")
+                .data(jobs)
+                .build());
+    }
+    @GetMapping("/top-skills")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getTopSkillsInJobByEmployerId(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "5") Integer limit,
+                                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate){
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusMonths(1);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        List<TopSkillResponse> topSkills=jobService.getTopSkillsInJobByEmployerId(employerId,limit,startDate,endDate);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy danh sách kỹ năng thành công")
+                .data(topSkills)
+                .build());
+    }
     @GetMapping("/recruiment-average")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> getRecruitmentAverage(@AuthenticationPrincipal Jwt jwt){
