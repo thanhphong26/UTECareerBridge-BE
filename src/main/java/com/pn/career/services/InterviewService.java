@@ -37,6 +37,10 @@ public class InterviewService implements IInterviewService{
         Application application = applicationRepository.findApplicationByResumeIdAndAndJob_JobId(interviewRequestDTO.getResumeId(), interviewRequestDTO.getJobId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy hồ sơ ứng tuyển"));
         log.info("Meeting Response: {}", application);
+        //check if interview already exists
+        if (interviewRepository.findByMeetingLinkAndEmployerId(meetingResponse.getJoinUrl(), userId) != null) {
+            throw new EntityNotFoundException("Cuộc phỏng vấn đã tồn tại");
+        }
         Interview interview = Interview.builder()
                 .application(application)
                 .scheduleDate(interviewRequestDTO.getStartTime())

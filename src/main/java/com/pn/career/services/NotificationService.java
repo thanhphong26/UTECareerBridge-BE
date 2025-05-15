@@ -311,4 +311,17 @@ public class NotificationService implements INotificationService{
         notificationRepository.save(payload);
         messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/notifications/personal", payload);
     }
+
+    @Override
+    public void sendNotificationForStudentFollowEmployer(String title, String message, Integer userId) {
+        Notification payload = Notification.builder()
+                .userId(userId)
+                .title(title)
+                .content(message)
+                .notificationDate(LocalDateTime.now())
+                .type(NotificationType.PERSONAL)
+                .build();
+        notificationRepository.save(payload);
+        messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/notifications/personal", payload);
+    }
 }

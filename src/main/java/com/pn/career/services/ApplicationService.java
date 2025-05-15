@@ -55,6 +55,7 @@ public class ApplicationService implements IApplicationService{
         if(job==null){
             throw new DataNotFoundException("Không tìm thấy công việc");
         }
+        log.info("Lấy danh sách hồ sơ ứng viên cho công việc: "+job.getJobTitle());
         Page<Application> applications=applicationRepository.findAllByJob_JobIdAndApplicationStatus(jobId,status,pageRequest);
         return applications.map(ApplicationResponse::fromApplication);
     }

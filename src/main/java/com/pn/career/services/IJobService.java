@@ -4,9 +4,12 @@ import com.pn.career.dtos.JobDTO;
 import com.pn.career.models.JobStatus;
 import com.pn.career.responses.EmployerActivityStatsResponse;
 import com.pn.career.responses.JobResponse;
+import com.pn.career.responses.RecruitmentPerformanceResponse;
+import com.pn.career.responses.TopSkillResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,4 +33,8 @@ public interface IJobService {
     Integer countJobByJobCategoryIdAndStatus(Integer jobCategoryId, JobStatus jobStatus);
     Double timeAverageRecruitment(Integer employerId);
     List<EmployerActivityStatsResponse> getEmployerActivityStats(Integer employerId, Integer month, Integer year);
+    Page<JobResponse> getJobCompleteInterviewRecentByEmployerId(Integer employerId, PageRequest pageRequest);
+    List<TopSkillResponse> getTopSkillsInJobByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate);
+    List<RecruitmentPerformanceResponse> getJobsRecruitmentPerformance(Integer employerId, LocalDateTime startDate, LocalDateTime endDate, Integer page, Integer size);
+    List<TopSkillResponse> getTopApplicantSkillsByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate);
 }

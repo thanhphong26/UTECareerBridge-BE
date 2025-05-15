@@ -51,7 +51,7 @@ public class Employer extends User{
     private Industry industry;
     @OneToMany(mappedBy = "employer", fetch = FetchType.EAGER)
     private List<EmployerPackage> employerPackages = new ArrayList<>();
-    @OneToMany(mappedBy = "employer", fetch = FetchType.EAGER)
-    @JsonManagedReference // hoặc @JsonIgnore nếu không cần
+    @OneToMany(mappedBy = "employer", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<BenefitDetail> benefitDetails = new ArrayList<>();
 }

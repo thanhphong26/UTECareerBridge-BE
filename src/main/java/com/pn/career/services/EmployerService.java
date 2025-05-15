@@ -11,6 +11,7 @@ import com.pn.career.models.EmployerStatus;
 import com.pn.career.models.Token;
 import com.pn.career.models.User;
 import com.pn.career.repositories.*;
+import com.pn.career.responses.EmployerDashboardResponse;
 import com.pn.career.responses.EmployerResponse;
 import com.pn.career.responses.StudentResponse;
 import com.pn.career.responses.TopEmployerResponse;
@@ -45,6 +46,7 @@ public class EmployerService implements IEmployerService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
+    private final JobRepository jobRepository;
 
     @Override
     public Integer countEmployerByStatus(EmployerStatus status) {

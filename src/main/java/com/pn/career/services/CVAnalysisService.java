@@ -1,7 +1,10 @@
 package com.pn.career.services;
 
+import com.pn.career.exceptions.PermissionDenyException;
+import com.pn.career.repositories.JobRepository;
 import com.pn.career.responses.CVAnalysisResponse;
 import com.pn.career.responses.CVRecommendationResponse;
+import com.pn.career.responses.ListResumeJobMatchResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -22,6 +25,28 @@ import java.util.Collections;
 public class CVAnalysisService {
     private final RestTemplate restTemplate = new RestTemplate();
     private static final String CV_API_BASE_URL = "http://localhost:8000/api/cv";
+    private final JobRepository jobRepository;
+
+    public ListResumeJobMatchResponse getJobMatchesForResume(Integer jobId, Integer employerId) {
+        try {
+            // Gọi FastAPI CV Analysis Service với resume_id
+            //check employerId authorization
+            if(employerId != jobRepository.findById(jobId).get().getEmployer().getUserId()) {
+                throw new PermissionDenyException(("Bạn không có quyền truy cập vào thông tin này"));
+            }
+            ResponseEntity<ListResumeJobMatchResponse> response =
+                    restTemplate.getForEntity(
+                            CV_API_BASE_URL + "/job/" + jobId + "/matching_resumes",
+                            ListResumeJobMatchResponse.class
+                    );
+            log.info("CV analysis service response: {}", response);
+            return response.getBody();
+        } catch (RestClientException e) {
+            // Xử lý nếu gặp lỗi
+            log.error("CV analysis service error", e);
+            return new ListResumeJobMatchResponse(Collections.emptyList());
+        }
+    }
 
     public CVAnalysisResponse analyzeCV(int resumeId) {
         try {

@@ -2,6 +2,7 @@ package com.pn.career.controllers;
 
 import com.pn.career.responses.CVAnalysisResponse;
 import com.pn.career.responses.CVRecommendationResponse;
+import com.pn.career.responses.ListResumeJobMatchResponse;
 import com.pn.career.responses.ResponseObject;
 import com.pn.career.services.CVAnalysisService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +25,18 @@ import java.io.IOException;
 public class CVAnalysisController {
     private final CVAnalysisService cvAnalysisService;
 
+    @GetMapping("/job/{jobId}/matching_resumes")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getJobMatchesForResume(@PathVariable Integer jobId, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer employerId = userIdLong != null ? userIdLong.intValue() : null;
+        ListResumeJobMatchResponse resumeJobMatchResponse = cvAnalysisService.getJobMatchesForResume(jobId, employerId);
+        return ResponseEntity.ok(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .data(resumeJobMatchResponse)
+                .message("Job matches for resume retrieved successfully")
+                .build());
+    }
     @GetMapping("/analyze/{resumeId}")
     @PreAuthorize("hasRole('ROLE_STUDENT') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> analyzeCV(@PathVariable int resumeId) {

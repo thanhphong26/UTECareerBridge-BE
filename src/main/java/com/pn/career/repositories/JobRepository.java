@@ -3,6 +3,9 @@ package com.pn.career.repositories;
 import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.models.*;
 import com.pn.career.models.Package;
+import com.pn.career.responses.TopSkillResponse;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import jakarta.persistence.criteria.Order;
 import org.springframework.data.domain.Page;
@@ -14,10 +17,18 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
+    @Query("SELECT COUNT(u) FROM UserActivityLog u WHERE u.job.jobId = :jobId " +
+            "AND u.actionType = :actionType AND u.createdAt BETWEEN :startDate AND :endDate")
+    Integer countJobViewsInDateRange(Integer jobId, ActionType actionType, LocalDateTime startDate, LocalDateTime endDate);
+
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.job.jobId = :jobId " +
+            "AND a.createdAt BETWEEN :startDate AND :endDate")
+    Integer countJobApplicationsInDateRange(Integer jobId, LocalDateTime startDate, LocalDateTime endDate);
     @Query(value = "SELECT AVG(DATEDIFF(a.created_at, j.updated_at)) " +
             "FROM jobs j " +
             "JOIN applications a ON j.job_id = a.job_id " +
