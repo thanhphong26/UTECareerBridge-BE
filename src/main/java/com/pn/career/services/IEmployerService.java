@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IEmployerService{
     Integer countEmployerByStatus(EmployerStatus status);
@@ -29,4 +30,5 @@ public interface IEmployerService{
     Page<TopEmployerResponse> getTopEmployersByJobCount(PageRequest pageRequest);
     Integer getTotalJobCount(Integer employerId);
     List<EmployerResponse> getAllEmployerByJobCategoryAndStatus(String categoryName, EmployerStatus status);
+    Map<String, Object> getEmployerStatistics(Integer employerId);
 }
