@@ -119,7 +119,6 @@ public class GoogleCalendarService {
             EmployerCredential empCredential = credentialOpt.get();
             String accessToken = empCredential.getGoogleAccessToken();
             String refreshToken = empCredential.getGoogleRefreshToken();
-            log.info("Employer ID: {}", accessToken);
             // Create credential from saved tokens
             Credential credential = createCredentialFromTokens(accessToken, refreshToken);
 
@@ -127,7 +126,6 @@ public class GoogleCalendarService {
             if (credential.getExpiresInSeconds() != null && credential.getExpiresInSeconds() <= 60) {
                 // Token about to expire, refresh it
                 accessToken = refreshGoogleToken(employerId, refreshToken);
-                log.info("New access token: {}", accessToken);
                 if (accessToken == null) {
                     throw new AuthenticationException("Unable to refresh Google token");
                 }
