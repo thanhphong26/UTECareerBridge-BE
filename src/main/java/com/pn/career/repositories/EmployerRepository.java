@@ -35,5 +35,9 @@ public interface EmployerRepository extends JpaRepository<Employer, Integer> {
     List<Employer> findAllByJobCategoryAndStatus(@Param("categoryName") String categoryName,
                                                  @Param("status") EmployerStatus status);
 
-
+    @Query(value = "SELECT " +
+            "(SELECT COUNT(*) FROM applications a JOIN jobs j ON a.job_id = j.job_id WHERE j.employer_id = :employer_id) AS total_applications, " +
+            "(SELECT COUNT(*) FROM interviews i WHERE i.employer_id = :employer_id) AS total_interviews",
+            nativeQuery = true)
+    Object getEmployerStatisticsRaw(@Param("employer_id") Integer employerId);
 }

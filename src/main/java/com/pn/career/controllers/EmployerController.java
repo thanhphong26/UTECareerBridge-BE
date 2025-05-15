@@ -35,6 +35,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -68,6 +69,18 @@ public class EmployerController {
                 .message("Lấy tổng số cuộc phỏng vấn thành công")
                 .status(HttpStatus.OK)
                 .data(totalInterview)
+                .build());
+    }
+    @GetMapping("/application-rate")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYER')")
+    public ResponseEntity<ResponseObject> getEmployerStatistics(@AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        Map<String, Object> statistics = employerService.getEmployerStatistics(userId);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy tổng số cuộc phỏng vấn thành công")
+                .status(HttpStatus.OK)
+                .data(statistics)
                 .build());
     }
     @GetMapping("/get-total-student-application")
