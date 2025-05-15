@@ -28,7 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -200,5 +202,13 @@ public class EmployerService implements IEmployerService {
     public List<EmployerResponse> getAllEmployerByJobCategoryAndStatus(String categoryName, EmployerStatus status) {
         List<Employer> employers=employerRepository.findAllByJobCategoryAndStatus(categoryName,status);
         return employers.stream().map(EmployerResponse::fromUser).toList();
+    }
+
+    public Map<String, Object> getEmployerStatistics(Integer employerId) {
+        Object[] result = (Object[]) employerRepository.getEmployerStatisticsRaw(employerId);
+        Map<String, Object> statistics = new HashMap<>();
+        statistics.put("totalApplications", result[0]);
+        statistics.put("totalInterviews", result[1]);
+        return statistics;
     }
 }
