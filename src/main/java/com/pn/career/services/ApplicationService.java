@@ -12,7 +12,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -24,6 +26,7 @@ public class ApplicationService implements IApplicationService{
     private final EmailService emailService;
     private final StudentSkillRepository studentSkillRepository;
     private final JobCategoryRepository jobCategoryRepository;
+    private final UserGrowthRepository userGrowthRepository;
 
     @Override
     public Application createApplication(Integer jobId, Integer resumeId) throws Exception {
@@ -110,5 +113,10 @@ public class ApplicationService implements IApplicationService{
            throw new RuntimeException("Lỗi xảy ra khi gửi mail tới sinh viên");
        }
         return applicationRepository.save(application);
+    }
+
+    @Override
+    public List<Map<String, Object>> getApplicationStatsByDate(LocalDateTime startDate, LocalDateTime endDate) {
+        return userGrowthRepository.getApplicationStatsByDate(startDate, endDate);
     }
 }

@@ -31,6 +31,39 @@ public class AdminController {
     private final IOrderService orderService;
     private final IJobService jobService;
     private final IUserService userService;
+    private final IApplicationService applicationService;
+    @GetMapping("/forum-statistics")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getForumStatistics(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusDays(30);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy thống kê diễn đàn thành công")
+                .data(adminService.getForumStatsByDate(startDate, endDate))
+                .status(HttpStatus.OK)
+                .build());
+    }
+    @GetMapping("/application-statistics")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getApplicationStatistics(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusDays(30);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy thống kê đơn ứng tuyển thành công")
+                .data(applicationService.getApplicationStatsByDate(startDate, endDate))
+                .status(HttpStatus.OK)
+                .build());
+    }
     @GetMapping("/top-employers")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> getTopEmployers(@RequestParam(defaultValue = "10") int limit,

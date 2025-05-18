@@ -11,5 +11,6 @@ public interface UserGrowthRepository {
     Map<String, Integer> getMonthlyStudentCounts(LocalDateTime startDate, LocalDateTime endDate);
     List<Object[]> getAllMonthsInRange(LocalDateTime startDate, LocalDateTime endDate) ;
     List<AdminTopEmployerResponse> getTopEmployers(int limit, LocalDateTime startDate, LocalDateTime endDate);
-
+    List<Map<String, Object>> getApplicationStatsByDate(LocalDateTime startDate, LocalDateTime endDate);
+    List<Map<String, Object>> getForumStatsByDate(LocalDateTime startDate, LocalDateTime endDate);
 }

@@ -123,4 +123,85 @@ public class UserGrowthRepositoryImpl implements UserGrowthRepository {
         }
         return topEmployers;
     }
+
+    @Override
+    public List<Map<String, Object>> getApplicationStatsByDate(LocalDateTime startDate, LocalDateTime endDate) {
+        String sql = """
+        SELECT 
+            DATE(a.created_at) as date,
+            COUNT(a.application_id) as applications,
+            SUM(CASE WHEN a.application_status = 'HIRED' THEN 1 ELSE 0 END) as hires
+        FROM 
+            applications a
+        WHERE 
+            a.created_at BETWEEN :startDate AND :endDate
+        GROUP BY 
+            DATE(a.created_at)
+        ORDER BY 
+            date
+        """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("startDate", startDate);
+        query.setParameter("endDate", endDate);
+
+        List<Object[]> results = query.getResultList();
+        List<Map<String, Object>> stats = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Map<String, Object> stat = new HashMap<>();
+            stat.put("date", row[0]);
+            stat.put("applications", ((Number) row[1]).intValue());
+            stat.put("hires", ((Number) row[2]).intValue());
+            stats.add(stat);
+        }
+
+        return stats;
+    }
+
+    @Override
+    public List<Map<String, Object>> getForumStatsByDate(LocalDateTime startDate, LocalDateTime endDate) {
+        String sql = """
+        SELECT
+            DATE(a.created_at) as date,
+            COUNT(DISTINCT f.forum_id) as forums,
+            COUNT(DISTINCT t.topic_id) as topics,
+            COUNT(p.post_id) as posts
+        FROM
+            forums f
+            LEFT JOIN topics t ON f.forum_id = t.forum_id
+            LEFT JOIN posts p ON t.topic_id = p.topic_id
+            LEFT JOIN (
+                SELECT created_at, forum_id FROM forums
+                UNION ALL
+                SELECT created_at, NULL as forum_id FROM topics
+                UNION ALL
+                SELECT created_at, NULL as forum_id FROM posts
+            ) a ON (a.forum_id IS NULL OR a.forum_id = f.forum_id)
+        WHERE
+            a.created_at BETWEEN :startDate AND :endDate
+        GROUP BY
+            DATE(a.created_at)
+        ORDER BY
+            date
+        """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("startDate", startDate);
+        query.setParameter("endDate", endDate);
+
+        List<Object[]> results = query.getResultList();
+        List<Map<String, Object>> stats = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Map<String, Object> stat = new HashMap<>();
+            stat.put("date", row[0]);
+            stat.put("forums", ((Number) row[1]).intValue());
+            stat.put("topics", ((Number) row[2]).intValue());
+            stat.put("posts", ((Number) row[3]).intValue());
+            stats.add(stat);
+        }
+
+        return stats;
+    }
 }

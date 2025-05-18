@@ -9,6 +9,7 @@ import com.pn.career.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ public class AdminService implements IAdminService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final PackageRepository packageRepository;
+    private final UserGrowthRepository userGrowthRepository;
     @Override
     public List<JobCategoryStatDTO> getJobCategoryStats(Integer month, Integer year) {
         List<Object[]> jobStats = jobRepository.countJobsByCategory(month, year);
@@ -61,5 +63,10 @@ public class AdminService implements IAdminService {
     public List<PackageStatisticDTO> getPackageBestSeller() {
         List<PackageStatisticDTO> packageStats = packageRepository.getPacakgeBestSeller();
         return packageStats.isEmpty() ? Collections.emptyList() : packageStats;
+    }
+
+    @Override
+    public List<Map<String, Object>> getForumStatsByDate(LocalDateTime startDate, LocalDateTime endDate) {
+        return userGrowthRepository.getForumStatsByDate(startDate, endDate);
     }
 }
