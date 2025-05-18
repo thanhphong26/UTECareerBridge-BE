@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Integer>, JpaSpecificationExecutor<Order> {
+    Page<Order> findAllByOrderDateBetween(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
     Page<Order> findByEmployer_UserId(Integer employerId, Pageable pageable);
     List<Order> findByOrderDateBetweenAndPaymentStatus(LocalDateTime startDate, LocalDateTime endDate, PaymentStatus paymentStatus);
     default Page<Order> search(String keyword, Integer employerId, LocalDate startDate, LocalDate endDate, PaymentStatus paymentStatus, Pageable pageable) {

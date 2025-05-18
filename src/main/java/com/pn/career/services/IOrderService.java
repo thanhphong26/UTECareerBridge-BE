@@ -4,6 +4,7 @@ import com.pn.career.dtos.RevenueReportDTO;
 import com.pn.career.models.Order;
 import com.pn.career.models.OrderDetail;
 import com.pn.career.models.PaymentStatus;
+import com.pn.career.responses.RecentOrderStatResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,5 +24,5 @@ public interface IOrderService {
     Page<Order> getOrdersByPaymentStatus(String keyword, Integer employerId, LocalDate startDate, LocalDate endDate, PaymentStatus paymentStatus, PageRequest pageRequest);
     void deleteOrder(Integer orderId);
     RevenueReportDTO generateRevenueReport(LocalDateTime startDate, LocalDateTime endDate);
-
+    Page<RecentOrderStatResponse> getRecentOrderStats(LocalDateTime startDate, LocalDateTime endDate, PageRequest pageRequest);
 }

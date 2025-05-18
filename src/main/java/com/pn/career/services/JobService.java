@@ -4,10 +4,7 @@ import com.pn.career.exceptions.DataNotFoundException;
 import com.pn.career.exceptions.PermissionDenyException;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
-import com.pn.career.responses.EmployerActivityStatsResponse;
-import com.pn.career.responses.JobResponse;
-import com.pn.career.responses.RecruitmentPerformanceResponse;
-import com.pn.career.responses.TopSkillResponse;
+import com.pn.career.responses.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -20,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,6 +34,7 @@ public class JobService implements IJobService {
     private final Logger logger= LoggerFactory.getLogger(JobService.class);
     private final InterviewRepository interviewRepository;
     private final JobRepositoryCustom jobRepositoryCustom;
+
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
@@ -314,5 +313,15 @@ public class JobService implements IJobService {
     @Override
     public List<TopSkillResponse> getTopApplicantSkillsByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate) {
         return jobRepositoryCustom.getTopApplicantSkillsByEmployerId(employerId, limit, startDate, endDate);
+    }
+
+    @Override
+    public AdminJobResponse getStatisticsJobByAdmin(LocalDateTime startDate, LocalDateTime endDate) {
+        return jobRepositoryCustom.getStatisticsJobByAdmin(startDate, endDate);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopRequestedSkills(int limit, LocalDateTime startDate, LocalDateTime endDate) {
+        return jobRepositoryCustom.getTopRequestedSkills(limit, startDate, endDate);
     }
 }

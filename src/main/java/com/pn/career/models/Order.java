@@ -3,6 +3,7 @@ package com.pn.career.models;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,8 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@Builder
-public class Order {
+@SuperBuilder
+public class Order extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")

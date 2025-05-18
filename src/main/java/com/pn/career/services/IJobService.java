@@ -2,15 +2,13 @@ package com.pn.career.services;
 
 import com.pn.career.dtos.JobDTO;
 import com.pn.career.models.JobStatus;
-import com.pn.career.responses.EmployerActivityStatsResponse;
-import com.pn.career.responses.JobResponse;
-import com.pn.career.responses.RecruitmentPerformanceResponse;
-import com.pn.career.responses.TopSkillResponse;
+import com.pn.career.responses.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface IJobService {
@@ -37,4 +35,7 @@ public interface IJobService {
     List<TopSkillResponse> getTopSkillsInJobByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate);
     List<RecruitmentPerformanceResponse> getJobsRecruitmentPerformance(Integer employerId, LocalDateTime startDate, LocalDateTime endDate, Integer page, Integer size);
     List<TopSkillResponse> getTopApplicantSkillsByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate);
+    AdminJobResponse getStatisticsJobByAdmin(LocalDateTime startDate, LocalDateTime endDate);
+    List<Map<String, Object>> getTopRequestedSkills(int limit, LocalDateTime startDate, LocalDateTime endDate);
+
 }

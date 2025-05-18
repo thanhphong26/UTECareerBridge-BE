@@ -7,7 +7,9 @@ import com.pn.career.exceptions.InvalidCouponException;
 import com.pn.career.exceptions.InvalidOperationException;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
+import com.pn.career.responses.RecentOrderStatResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -166,6 +168,29 @@ public class OrderService implements IOrderService {
                 .endDate(endDate)
                 .build();
     }
+
+    @Override
+    public Page<RecentOrderStatResponse> getRecentOrderStats(LocalDateTime startDate, LocalDateTime endDate, PageRequest pageRequest) {
+        Page<Order> recentOrders = orderRepository.findAllByOrderDateBetween(startDate, endDate, pageRequest);
+        return recentOrders.map(order -> {
+            OrderDetail firstOrderDetail = order.getOrderDetails().stream()
+                    .findFirst()
+                    .orElse(null);
+
+            String packageName = firstOrderDetail != null ?
+                    firstOrderDetail.getJobPackage().getPackageName() : "N/A";
+
+            return RecentOrderStatResponse.builder()
+                    .companyName(order.getEmployer().getCompanyName())
+                    .packageName(packageName + (order.getOrderDetails().size() > 1 ?
+                            " (+" + (order.getOrderDetails().size() - 1) + " khác)" : ""))
+                    .purchaseDate(order.getOrderDate())
+                    .price(order.getTotal().doubleValue())
+                    .paymentStatus(order.getPaymentStatus().name())
+                    .build();
+        });
+    }
+
     private BigDecimal calculateTotal(List<OrderDetail> orderDetails) {
         return orderDetails.stream()
                 .map(detail -> BigDecimal.valueOf(detail.getPrice()).multiply(BigDecimal.valueOf(detail.getAmount())))

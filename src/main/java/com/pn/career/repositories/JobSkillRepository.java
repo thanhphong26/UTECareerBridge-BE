@@ -22,4 +22,5 @@ public interface JobSkillRepository extends JpaRepository<JobSkill, Integer> {
     @Modifying
     @Query("DELETE FROM JobSkill js WHERE js.job = :job AND js.skill.skillId IN :skillIds")
     void deleteByJobAndSkillIdIn(@Param("job") Job job, @Param("skillIds") Set<Integer> skillIds);
+
 }

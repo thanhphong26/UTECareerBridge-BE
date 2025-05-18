@@ -3,15 +3,16 @@ package com.pn.career.controllers;
 import com.pn.career.dtos.EventDTO;
 import com.pn.career.models.Event;
 import com.pn.career.models.EventType;
+import com.pn.career.repositories.JobRepository;
 import com.pn.career.responses.EventListResponse;
 import com.pn.career.responses.EventResponse;
+import com.pn.career.responses.RecentOrderStatResponse;
 import com.pn.career.responses.ResponseObject;
-import com.pn.career.services.IAdminService;
-import com.pn.career.services.IEventService;
-import com.pn.career.services.IJobService;
+import com.pn.career.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +28,104 @@ import java.util.List;
 public class AdminController {
     private final IEventService eventService;
     private final IAdminService adminService;
+    private final IOrderService orderService;
+    private final IJobService jobService;
+    private final IUserService userService;
+    @GetMapping("/top-employers")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getTopEmployers(@RequestParam(defaultValue = "10") int limit,
+                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusDays(30);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách nhà tuyển dụng hàng đầu thành công")
+                .data(userService.getTopEmployers(limit, startDate, endDate))
+                .status(HttpStatus.OK)
+                .build());
+    }
+    @GetMapping("/top-requested-skills")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getTopRequestedSkills(@RequestParam(defaultValue = "10") int limit,
+                                                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusDays(30);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy danh sách kỹ năng được yêu cầu nhiều nhất thành công")
+                .data(jobService.getTopRequestedSkills(limit, startDate, endDate))
+                .status(HttpStatus.OK)
+                .build());
+    }
+    @GetMapping("/users-statistics")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getUserStatistics(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusDays(30);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy thống kê người dùng thành công")
+                .data(userService.getMonthlyUserGrowth(startDate, endDate))
+                .status(HttpStatus.OK)
+                .build());
+    }
+    @GetMapping("/jobs-statistics")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getJobStatistics(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusDays(30);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Lấy thống kê job thành công")
+                .data(jobService.getStatisticsJobByAdmin(startDate, endDate))
+                .status(HttpStatus.OK)
+                .build());
+    }
+    @GetMapping("/recent-orders")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ResponseObject> getRecentOrders( @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+                                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+                                                           @RequestParam(defaultValue = "0") int page,
+                                                          @RequestParam(defaultValue = "10") int limit) {
+        if (startDate == null) {
+            startDate = LocalDateTime.now().minusDays(30);
+        }
+        if (endDate == null) {
+            endDate = LocalDateTime.now();
+        }
+        PageRequest pageRequest = PageRequest.of(page, limit);
+        Page<RecentOrderStatResponse> orderStats = orderService.getRecentOrderStats(startDate, endDate, pageRequest);
+
+        if (orderStats.isEmpty()) {
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status(HttpStatus.OK)
+                    .message("Không có đơn hàng nào")
+                    .data(null)
+                    .build());
+        }
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .status(HttpStatus.OK)
+                .message("Lấy danh sách đơn hàng thành công")
+                .data(orderStats.getContent())
+                .build());
+    }
+
     @PostMapping("/events")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ResponseObject> createEvent(@RequestBody EventDTO eventDTO){

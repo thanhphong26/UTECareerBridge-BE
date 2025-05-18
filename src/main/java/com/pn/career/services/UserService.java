@@ -6,6 +6,9 @@ import com.pn.career.dtos.*;
 import com.pn.career.exceptions.*;
 import com.pn.career.models.*;
 import com.pn.career.repositories.*;
+import com.pn.career.responses.AdminTopEmployerResponse;
+import com.pn.career.responses.MonthlyUserGrowthResponse;
+import com.pn.career.responses.UserGrowthResponse;
 import com.pn.career.responses.UserResponse;
 import com.pn.career.utils.*;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +47,7 @@ public class UserService implements IUserService {
     private final JwtDecoder jwtDecoder;
     private final StudentRepository studentRepository;
     private final EmployerRepository employerRepository;
+    private final UserGrowthRepository userGrowthRepository;
     @Value("${app.frontend.url}")
     private String frontendUrl;
     @Value("${app.password-reset.expirations}")
@@ -303,6 +304,44 @@ public class UserService implements IUserService {
 
         // Tạo cặp token (access token và refresh token)
         return jwtTokenUtil.generateTokenPair(authentication);
+    }
+
+    @Override
+    public MonthlyUserGrowthResponse getMonthlyUserGrowth(LocalDateTime startDate, LocalDateTime endDate) {
+        Map<String, Integer> employerCounts = userGrowthRepository.getMonthlyEmployerCounts(startDate, endDate);
+        Map<String, Integer> studentCounts = userGrowthRepository.getMonthlyStudentCounts(startDate, endDate);
+        List<Object[]> allMonths = userGrowthRepository.getAllMonthsInRange(startDate, endDate);
+
+        // Create the response with data for each month
+        List<UserGrowthResponse> monthlyData = new ArrayList<>();
+
+        for (Object[] monthData : allMonths) {
+            Integer year = ((Number) monthData[0]).intValue();
+            Integer month = ((Number) monthData[1]).intValue();
+
+            String key = year + "-" + (month < 10 ? "0" + month : month);
+
+            // Get counts for this month (default to 0 if no data)
+            Integer employerCount = employerCounts.getOrDefault(key, 0);
+            Integer studentCount = studentCounts.getOrDefault(key, 0);
+
+            // Add to result list
+            monthlyData.add(UserGrowthResponse.builder()
+                    .year(year)
+                    .month(month)
+                    .employerCount(employerCount)
+                    .studentCount(studentCount)
+                    .build());
+        }
+
+        return MonthlyUserGrowthResponse.builder()
+                .userGrowthResponses(monthlyData)
+                .build();
+    }
+
+    @Override
+    public List<AdminTopEmployerResponse> getTopEmployers(int limit, LocalDateTime startDate, LocalDateTime endDate) {
+        return userGrowthRepository.getTopEmployers(limit, startDate, endDate);
     }
 
     private String generateToken(){

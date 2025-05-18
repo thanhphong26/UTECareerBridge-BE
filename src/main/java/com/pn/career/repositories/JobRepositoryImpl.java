@@ -1,15 +1,21 @@
 package com.pn.career.repositories;
 
 import com.pn.career.models.*;
+import com.pn.career.responses.AdminJobResponse;
+import com.pn.career.responses.AdminTopEmployerResponse;
+import com.pn.career.responses.TopEmployerResponse;
 import com.pn.career.responses.TopSkillResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.persistence.criteria.*;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class JobRepositoryImpl implements JobRepositoryCustom{
@@ -90,5 +96,85 @@ public class JobRepositoryImpl implements JobRepositoryCustom{
         return entityManager.createQuery(query)
                 .setMaxResults(limit)
                 .getResultList();
+    }
+
+    @Override
+    public AdminJobResponse getStatisticsJobByAdmin(LocalDateTime startDate, LocalDateTime endDate) {
+        Integer activeJobCount = countJobsByStatusAndDateRange(JobStatus.ACTIVE, startDate, endDate);
+        Integer pendingJobCount = countJobsByStatusAndDateRange(JobStatus.PENDING, startDate, endDate);
+        Integer rejectedJobCount = countJobsByStatusAndDateRange(JobStatus.REJECTED, startDate, endDate);
+        Integer totalInterviewCount = countInterviewsByDateRange(startDate, endDate);
+        Integer successfulInterviewCount = countInterviewsByStatusAndDateRange(InterviewStatus.COMPLETED, startDate, endDate);
+        return AdminJobResponse.builder()
+                .activeJob(activeJobCount)
+                .pendingJob(pendingJobCount)
+                .rejectedJob(rejectedJobCount)
+                .countInterview(totalInterviewCount)
+                .successfulInterview(successfulInterviewCount)
+                .build();
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopRequestedSkills(int limit, LocalDateTime startDate, LocalDateTime endDate) {
+        String sql = "SELECT s.skill_name as skill, COUNT(js.job_id) as jobCount " +
+                "FROM skills s " +
+                "JOIN job_skills js ON s.skill_id = js.skill_id " +
+                "JOIN jobs j ON js.job_id = j.job_id " +
+                "WHERE j.created_at BETWEEN :startDate AND :endDate " +
+                "GROUP BY s.skill_id, s.skill_name " +
+                "ORDER BY jobCount DESC " +
+                "LIMIT :limit";
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("startDate", startDate);
+        query.setParameter("endDate", endDate);
+        query.setParameter("limit", limit);
+
+        List<Object[]> results = query.getResultList();
+        List<Map<String, Object>> topSkills = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Map<String, Object> skillInfo = new HashMap<>();
+            skillInfo.put("skill", row[0]);
+            skillInfo.put("count", ((Number) row[1]).intValue());
+            topSkills.add(skillInfo);
+        }
+
+        return topSkills;
+    }
+
+    private Integer countJobsByStatusAndDateRange(JobStatus status, LocalDateTime startDate, LocalDateTime endDate) {
+        String jpql = "SELECT COUNT(j) FROM Job j WHERE j.status = :status " +
+                "AND j.createdAt BETWEEN :startDate AND :endDate";
+
+        Query query = entityManager.createQuery(jpql);
+        query.setParameter("status", status);
+        query.setParameter("startDate", startDate);
+        query.setParameter("endDate", endDate);
+
+        return ((Long) query.getSingleResult()).intValue();
+    }
+
+    private Integer countInterviewsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        String jpql = "SELECT COUNT(i) FROM Interview i WHERE " +
+                "i.createdAt BETWEEN :startDate AND :endDate";
+
+        Query query = entityManager.createQuery(jpql);
+        query.setParameter("startDate", startDate);
+        query.setParameter("endDate", endDate);
+
+        return ((Long) query.getSingleResult()).intValue();
+    }
+
+    private Integer countInterviewsByStatusAndDateRange(InterviewStatus status, LocalDateTime startDate, LocalDateTime endDate) {
+        String jpql = "SELECT COUNT(i) FROM Interview i WHERE i.status = :status " +
+                "AND i.createdAt BETWEEN :startDate AND :endDate";
+
+        Query query = entityManager.createQuery(jpql);
+        query.setParameter("status", status);
+        query.setParameter("startDate", startDate);
+        query.setParameter("endDate", endDate);
+
+        return ((Long) query.getSingleResult()).intValue();
     }
 }
