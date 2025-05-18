@@ -78,6 +78,8 @@ public class JobController {
         if (endDate == null) {
             endDate = LocalDateTime.now();
         }
+        logger.info("Employer ID: {}", startDate);
+        logger.info("Employer ID: {}", endDate);
         List<RecruitmentPerformanceResponse> jobs=jobService.getJobsRecruitmentPerformance(employerId,startDate,endDate,page,limit);
         if(jobs.isEmpty()){
             return ResponseEntity.ok().body(ResponseObject.builder()

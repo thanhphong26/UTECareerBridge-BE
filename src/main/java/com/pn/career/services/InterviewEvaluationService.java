@@ -10,6 +10,8 @@ import com.pn.career.repositories.StudentRepository;
 import com.pn.career.responses.InterviewEvaluationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -109,6 +111,17 @@ public class InterviewEvaluationService implements IInterviewEvaluationService{
                 .toList();
         return interviewEvaluationResponses;
     }
+
+    @Override
+    public Page<InterviewEvaluationResponse> getAllInterviewEvaluationByStudentId(Integer studentId, PageRequest pageRequest) {
+        Page<InterviewEvaluation> interviewEvaluations = evaluationRepository.findAllByInterview_Application_Resume_Student_UserId(studentId, pageRequest);
+        if(interviewEvaluations.isEmpty()){
+            throw new RuntimeException("Không tìm thấy đánh giá phỏng vấn cho sinh viên có id " + studentId);
+        }
+        Page<InterviewEvaluationResponse> interviewEvaluationResponses = interviewEvaluations.map(this::fromInterviewEvaluation);
+        return interviewEvaluationResponses;
+    }
+
     private InterviewEvaluationResponse fromInterviewEvaluation(InterviewEvaluation interviewEvaluation){
         InterviewEvaluationResponse interviewEvaluationResponse = InterviewEvaluationResponse.fromInterviewEvaluation(interviewEvaluation);
         Employer employer = employerRepository.findById(interviewEvaluation.getEvaluatedBy()).orElse(null);

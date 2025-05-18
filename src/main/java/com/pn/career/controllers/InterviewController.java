@@ -39,6 +39,22 @@ public class InterviewController {
     private final GoogleOauthController googleOauthController;
     private final INotificationService notificationService;
     private final IInterviewEvaluationService interviewEvaluationService;
+
+    @GetMapping("/student/evaluation")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> getInterviewEvaluationByStudentId(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") int page,
+                                                                             @RequestParam(defaultValue = "10") int size) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<InterviewEvaluationResponse> interviewEvaluations = interviewEvaluationService.getAllInterviewEvaluationByStudentId(userId, pageRequest);
+        return ResponseEntity.ok()
+                .body(ResponseObject.builder()
+                        .status(HttpStatus.OK)
+                        .message("Lấy danh sách đánh giá phỏng vấn thành công")
+                        .data(interviewEvaluations)
+                        .build());
+    }
     @PostMapping("/evaluation")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<ResponseObject> createInterviewEvaluation(@RequestBody InterviewEvaluationDTO interviewEvaluationDTO, @AuthenticationPrincipal Jwt jwt) {
