@@ -1,6 +1,7 @@
 package com.pn.career.services;
 
 import com.pn.career.models.Job;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Set;

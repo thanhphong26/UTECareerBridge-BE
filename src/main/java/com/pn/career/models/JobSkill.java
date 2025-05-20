@@ -23,7 +23,7 @@ public class JobSkill {
     @JsonBackReference
     private Job job;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnore
     @MapsId("skillId")
     @JoinColumn(name = "skill_id")

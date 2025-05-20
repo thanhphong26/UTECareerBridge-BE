@@ -9,6 +9,7 @@ import com.pn.career.repositories.JobSkillRepository;
 import com.pn.career.repositories.SkillRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class JobSkillService implements IJobSkillService{
     private final JobSkillRepository jobSkillRepository;
     private final SkillRepository skillRepository;
@@ -64,12 +66,14 @@ public class JobSkillService implements IJobSkillService{
     }
 
     @Override
+    @Transactional
     public List<Job> getRecommendedJobs(String skills, int limit) {
         if (skills == null || skills.trim().isEmpty()) {
             // If no skills provided, return latest jobs
             return jobRepository.findTop5ByOrderByCreatedAtDesc();
         }
-
+        // If skills are provided, find jobs that match those skills
+        log.info("Finding recommended jobs for skills: {}", skills);
         // Parse the skills string - assuming skills are comma-separated
         List<String> skillNames = Arrays.stream(skills.split(","))
                 .map(String::trim)
@@ -79,7 +83,7 @@ public class JobSkillService implements IJobSkillService{
         if (skillNames.isEmpty()) {
             return jobRepository.findTop5ByOrderByCreatedAtDesc();
         }
-
+        log.info("Finding recommended jobs for skills: {}", skillNames);
         // Find skills in the database
         List<Skill> userSkills = skillRepository.findBySkillNameIn(skillNames);
 

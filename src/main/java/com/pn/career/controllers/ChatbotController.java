@@ -20,7 +20,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -671,7 +670,7 @@ public class ChatbotController {
             String field = (String) userPref.getOrDefault("field", "");
 
             List<Job> recommendedJobs = jobSkillService.getRecommendedJobs(skills, 5);
-
+            log.info("Recommended jobs based on skills: {}", recommendedJobs);
             List<Map<String, Object>> formattedJobs = recommendedJobs.stream()
                     .map(job -> {
                         Map<String, Object> jobData = new HashMap<>();
