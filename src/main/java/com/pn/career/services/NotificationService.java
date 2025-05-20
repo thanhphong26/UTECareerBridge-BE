@@ -324,4 +324,21 @@ public class NotificationService implements INotificationService{
         notificationRepository.save(payload);
         messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/notifications/personal", payload);
     }
+
+    @Override
+    public void sendNotificationForAdmin(String title, String message,String url) {
+        List<User> admins = userRepository.findByRole(roleRepository.findByRoleName("admin").get());
+        admins.stream().forEach(admin -> {
+            Notification notification = Notification.builder()
+                    .userId(admin.getUserId())
+                    .title(title)
+                    .content(message)
+                    .notificationDate(LocalDateTime.now())
+                    .type(NotificationType.PERSONAL)
+                    .url(url)
+                    .build();
+            notificationRepository.save(notification);
+            messagingTemplate.convertAndSendToUser(String.valueOf(admin.getUserId()), "/notifications/personal", notification);
+        });
+    }
 }

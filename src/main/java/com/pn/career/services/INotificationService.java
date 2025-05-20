@@ -32,5 +32,6 @@ public interface INotificationService {
     Page<Notification> getUserPersonalNotifications(Integer userID, PageRequest pageable);
     void sendNotificationForJobAlert(String title, String message, Integer userId, Map<String, Object> data);
     void sendNotificationForStudentFollowEmployer(String title, String message, Integer userId);
+    void sendNotificationForAdmin(String title, String message, String url);
 
 }

@@ -34,6 +34,7 @@ public class JobService implements IJobService {
     private final Logger logger= LoggerFactory.getLogger(JobService.class);
     private final InterviewRepository interviewRepository;
     private final JobRepositoryCustom jobRepositoryCustom;
+    private final INotificationService notificationService;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
@@ -75,7 +76,11 @@ public class JobService implements IJobService {
         List<JobSkill> jobSkills=jobSkillRepository.findAllByJob(job);
         jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
         String jobUrl=frontendUrl+"/employer/view/"+job.getJobId();
-       // fcmService.sendNotificationToAdmin("Có công việc mới cần duyệt", "Công ty "+employer.getCompanyName()+" vừa đăng một công việc mới, vui lòng kiểm tra và duyệt công việc", jobUrl);
+        //send notification to admin for approval
+        String title = "Thông báo duyệt công việc";
+        String link = "/view/job/" + job.getJobId();
+        String message = "Công việc mới cần duyệt: " + job.getJobTitle() + "\n" ;
+        notificationService.sendNotificationForAdmin(title, message, link);
         return jobResponse;
     }
     @Override
