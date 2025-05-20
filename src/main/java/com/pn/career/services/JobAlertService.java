@@ -125,7 +125,7 @@ public class JobAlertService implements IJobAlertService {
         return jobResponses;
     }
 
-    @Scheduled(cron = "0 0 09 * * ?")
+    @Scheduled(cron = "0 0 8 * * ?")
     public void processDailyAlert() {
         List<JobAlert> jobAlerts = jobAlertRepository.findByFrequencyAndActive(FrequencyEnum.DAILY, true);
         processAlerts(jobAlerts);
@@ -145,7 +145,7 @@ public class JobAlertService implements IJobAlertService {
             PageRequest pageRequest = PageRequest.of(0, 10);
             Page<Job> jobs = jobRepository.searchJobNotifications(alert.getUser().getUserId(), alert.getJobTitle(),
                     alert.getMinSalary(), levelIds, alert.getLocation(),
-                    alert.getJobCategory().getJobCategoryId(), companyFieldIds, pageRequest);
+                    alert.getJobCategory() != null ? alert.getJobCategory().getJobCategoryId() : null, companyFieldIds, pageRequest);
             List<JobResponse> jobResponses = jobs.stream().map(JobResponse::fromJob).toList();
 
             if (!jobResponses.isEmpty()) {

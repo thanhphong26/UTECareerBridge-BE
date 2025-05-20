@@ -86,7 +86,10 @@ public class PostService implements IPostService {
         Post existingPost = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         //check authorize for delete
-        if (existingPost.getUserId() != userId || existingPost.getUserId() != existingPost.getUserId()) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        boolean isAdmin = "admin".equalsIgnoreCase(user.getRole().getRoleName());
+        if (!isAdmin && existingPost.getUserId() != userId) {
             throw new AuthorizationServiceException("Bạn không có quyền xóa bài viết này");
         }
         postRepository.deleteById(id);

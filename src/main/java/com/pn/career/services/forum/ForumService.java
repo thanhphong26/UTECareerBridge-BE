@@ -24,7 +24,7 @@ public class ForumService implements IForumService{
 
     @Override
     public Page<Forum> getActiveForums(PageRequest pageRequest) {
-        return forumRepository.findByIsActiveTrue(pageRequest);
+        return forumRepository.findByIsActiveTrueOrderByCreatedAt(pageRequest);
     }
 
     @Override

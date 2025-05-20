@@ -162,29 +162,24 @@ public class UserGrowthRepositoryImpl implements UserGrowthRepository {
     @Override
     public List<Map<String, Object>> getForumStatsByDate(LocalDateTime startDate, LocalDateTime endDate) {
         String sql = """
-        SELECT
-            DATE(a.created_at) as date,
-            COUNT(DISTINCT f.forum_id) as forums,
-            COUNT(DISTINCT t.topic_id) as topics,
-            COUNT(p.post_id) as posts
-        FROM
-            forums f
-            LEFT JOIN topics t ON f.forum_id = t.forum_id
-            LEFT JOIN posts p ON t.topic_id = p.topic_id
-            LEFT JOIN (
-                SELECT created_at, forum_id FROM forums
-                UNION ALL
-                SELECT created_at, NULL as forum_id FROM topics
-                UNION ALL
-                SELECT created_at, NULL as forum_id FROM posts
-            ) a ON (a.forum_id IS NULL OR a.forum_id = f.forum_id)
-        WHERE
-            a.created_at BETWEEN :startDate AND :endDate
-        GROUP BY
-            DATE(a.created_at)
-        ORDER BY
-            date
-        """;
+    SELECT
+        DATE(creation_date) as date,
+        SUM(CASE WHEN entity_type = 'FORUM' THEN 1 ELSE 0 END) as forums,
+        SUM(CASE WHEN entity_type = 'TOPIC' THEN 1 ELSE 0 END) as topics,
+        SUM(CASE WHEN entity_type = 'POST' THEN 1 ELSE 0 END) as posts
+    FROM (
+        SELECT 'FORUM' as entity_type, created_at as creation_date FROM forums 
+        WHERE created_at BETWEEN :startDate AND :endDate
+        UNION ALL
+        SELECT 'TOPIC' as entity_type, created_at as creation_date FROM topics 
+        WHERE created_at BETWEEN :startDate AND :endDate
+        UNION ALL
+        SELECT 'POST' as entity_type, created_at as creation_date FROM posts 
+        WHERE created_at BETWEEN :startDate AND :endDate
+    ) combined_data
+    GROUP BY DATE(creation_date)
+    ORDER BY date
+    """;
 
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("startDate", startDate);

@@ -15,11 +15,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Arrays;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -323,5 +323,115 @@ public class JobService implements IJobService {
     @Override
     public List<Map<String, Object>> getTopRequestedSkills(int limit, LocalDateTime startDate, LocalDateTime endDate) {
         return jobRepositoryCustom.getTopRequestedSkills(limit, startDate, endDate);
+    }
+
+    @Override
+    public List<JobResponse> getRecommendedJobResponses(String skills, int limit) {
+        try {
+            if (skills == null || skills.isEmpty()) {
+                // If no skills provided, return latest jobs
+                return getLatestJobs(limit);
+            }
+            
+            // Parse skills from input string
+            List<String> skillList = Arrays.stream(skills.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+            
+            if (skillList.isEmpty()) {
+                return getLatestJobs(limit);
+            }
+            
+            // Find jobs with matching skills
+            List<Job> jobs = jobRepository.findRecommendedJobsBySkills(skillList, limit);
+            
+            // Convert to JobResponse objects with all data loaded
+            return jobs.stream()
+                    .map(job -> {
+                        JobResponse jobResponse = JobResponse.fromJob(job);
+                        List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
+                        jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+                        return jobResponse;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error getting recommended jobs: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<JobResponse> getJobsByLocation(String location, int limit) {
+        try {
+            if (location == null || location.isEmpty()) {
+                return getLatestJobs(limit);
+            }
+            
+            // Find jobs by location
+            List<Job> jobs = jobRepository.findByJobLocationContainingIgnoreCaseAndStatusOrderByCreatedAtDesc(
+                    location, JobStatus.ACTIVE, PageRequest.of(0, limit)).getContent();
+            
+            // Convert to JobResponse objects with all data loaded
+            return jobs.stream()
+                    .map(job -> {
+                        JobResponse jobResponse = JobResponse.fromJob(job);
+                        List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
+                        jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+                        return jobResponse;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error getting jobs by location: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<JobResponse> getJobsByField(String field, int limit) {
+        try {
+            if (field == null || field.isEmpty()) {
+                return getLatestJobs(limit);
+            }
+            
+            // Find jobs by category name
+            List<Job> jobs = jobRepository.findByJobCategory_JobCategoryNameContainingIgnoreCaseAndStatusOrderByCreatedAtDesc(
+                    field, JobStatus.ACTIVE, PageRequest.of(0, limit)).getContent();
+            
+            // Convert to JobResponse objects with all data loaded
+            return jobs.stream()
+                    .map(job -> {
+                        JobResponse jobResponse = JobResponse.fromJob(job);
+                        List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
+                        jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+                        return jobResponse;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error getting jobs by field: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<JobResponse> getLatestJobs(int limit) {
+        try {
+            // Find latest active jobs
+            List<Job> jobs = jobRepository.findByStatusOrderByCreatedAtDesc(
+                    JobStatus.ACTIVE, PageRequest.of(0, limit)).getContent();
+            
+            // Convert to JobResponse objects with all data loaded
+            return jobs.stream()
+                    .map(job -> {
+                        JobResponse jobResponse = JobResponse.fromJob(job);
+                        List<JobSkill> jobSkills = jobSkillRepository.findAllByJob(job);
+                        jobResponse.setJobSkills(JobResponse.convertJobSkillToDTO(jobSkills));
+                        return jobResponse;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error getting latest jobs: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
 }

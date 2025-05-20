@@ -1,6 +1,8 @@
 package com.pn.career.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,12 +17,14 @@ public class JobSkill {
     @EmbeddedId
     private JobSkillId id;
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @MapsId("jobId")
     @JoinColumn(name = "job_id")
     @JsonBackReference
     private Job job;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @MapsId("skillId")
     @JoinColumn(name = "skill_id")
     private Skill skill;

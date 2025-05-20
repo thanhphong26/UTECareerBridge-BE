@@ -318,4 +318,35 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
             @Param("employerId") Integer employerId,
             @Param("month") Integer month,
             @Param("year") Integer year);
+
+    Page<Job> findByStatusOrderByCreatedAtDesc(JobStatus status, Pageable pageable);
+    
+    Page<Job> findByJobLocationContainingIgnoreCaseAndStatusOrderByCreatedAtDesc(
+            String location, JobStatus status, Pageable pageable);
+    
+    Page<Job> findByJobCategory_JobCategoryNameContainingIgnoreCaseAndStatusOrderByCreatedAtDesc(
+            String categoryName, JobStatus status, Pageable pageable);
+    
+    // Find recommended jobs based on a list of skills
+    default List<Job> findRecommendedJobsBySkills(List<String> skills, int limit) {
+        return findAll((Specification<Job>) (root, query, cb) -> {
+            Join<Job, JobSkill> jobSkillJoin = root.join("jobSkills", JoinType.LEFT);
+            Join<JobSkill, Skill> skillJoin = jobSkillJoin.join("skill", JoinType.LEFT);
+            
+            List<Predicate> skillPredicates = new ArrayList<>();
+            for (String skill : skills) {
+                skillPredicates.add(cb.like(cb.lower(skillJoin.get("skillName")), "%" + skill.toLowerCase() + "%"));
+            }
+            
+            Predicate skillMatch = cb.or(skillPredicates.toArray(new Predicate[0]));
+            Predicate isActive = cb.equal(root.get("status"), JobStatus.ACTIVE);
+            
+            query.distinct(true);
+            query.orderBy(cb.desc(root.get("createdAt")));
+            
+            return cb.and(isActive, skillMatch);
+        }).stream()
+          .limit(limit)
+          .collect(Collectors.toList());
+    }
 }

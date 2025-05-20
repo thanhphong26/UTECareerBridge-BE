@@ -7,6 +7,8 @@ import java.util.List;
 public class ResumeJobMatchResponse {
     @JsonProperty("resume_id")
     private Integer resumeId;
+    @JsonProperty("application_id")
+    private Integer applicationId;
     @JsonProperty("student_name")
     private String studentName;
     @JsonProperty("match_score")

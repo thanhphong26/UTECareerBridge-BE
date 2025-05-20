@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ForumRepository extends JpaRepository<Forum, Integer> {
-    Page<Forum> findByIsActiveTrue(Pageable pageable);
+    Page<Forum> findByIsActiveTrueOrderByCreatedAt(Pageable pageable);
     Page<Forum> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }

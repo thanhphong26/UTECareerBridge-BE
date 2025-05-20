@@ -7,6 +7,7 @@ import com.pn.career.responses.EventResponse;
 import com.pn.career.responses.JobResponse;
 import com.pn.career.services.*;
 import com.pn.career.utils.LanguageDetector;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -594,7 +595,6 @@ public class ChatbotController {
         }
         return "";
     }
-
     private Map<String, Object> collectRealTimeData(String sessionId, String content) {
         Map<String, Object> data = new HashMap<>();
 
@@ -684,7 +684,6 @@ public class ChatbotController {
                         jobData.put("skills", job.getJobSkills().stream()
                                 .map(skill -> skill.getSkill().getSkillName())
                                 .collect(Collectors.joining(", ")));
-                        jobData.put("applyUrl", applicationUrl + "/jobs/" + job.getJobId() + "/apply");
                         jobData.put("viewUrl", applicationUrl + "/jobs/" + job.getJobId());
                         return jobData;
                     })

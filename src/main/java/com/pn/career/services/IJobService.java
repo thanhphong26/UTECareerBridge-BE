@@ -35,7 +35,10 @@ public interface IJobService {
     List<TopSkillResponse> getTopSkillsInJobByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate);
     List<RecruitmentPerformanceResponse> getJobsRecruitmentPerformance(Integer employerId, LocalDateTime startDate, LocalDateTime endDate, Integer page, Integer size);
     List<TopSkillResponse> getTopApplicantSkillsByEmployerId(Integer employerId, Integer limit, LocalDateTime startDate, LocalDateTime endDate);
-    AdminJobResponse getStatisticsJobByAdmin(LocalDateTime startDate, LocalDateTime endDate);
-    List<Map<String, Object>> getTopRequestedSkills(int limit, LocalDateTime startDate, LocalDateTime endDate);
+    AdminJobResponse getStatisticsJobByAdmin(LocalDateTime startDate, LocalDateTime endDate);    List<Map<String, Object>> getTopRequestedSkills(int limit, LocalDateTime startDate, LocalDateTime endDate);
+    List<JobResponse> getRecommendedJobResponses(String skills, int limit);
+    List<JobResponse> getJobsByLocation(String location, int limit);
+    List<JobResponse> getJobsByField(String field, int limit);
+    List<JobResponse> getLatestJobs(int limit);
 
 }

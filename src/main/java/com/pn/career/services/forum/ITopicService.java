@@ -17,7 +17,7 @@ public interface ITopicService {
 
     TopicResponse createTopic(TopicTagDTO topic, Integer userId);
     TopicResponse updateTopic(Integer id, TopicTagDTO topic, Integer userId);
-    void deleteTopic(Integer id);
+    void deleteTopic(Integer id, Integer userId);
     Page<TopicResponse> searchTopics(String keyword, List<Integer> tagIds, Integer forumId, PageRequest pageRequest);
     void pinTopic(Integer topicId);
 }

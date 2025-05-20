@@ -5,10 +5,7 @@ import com.pn.career.models.*;
 import com.pn.career.repositories.EmployerRepository;
 import com.pn.career.repositories.StudentRepository;
 import com.pn.career.repositories.UserRepository;
-import com.pn.career.repositories.forum.PostRepository;
-import com.pn.career.repositories.forum.TagRepository;
-import com.pn.career.repositories.forum.TopicRepository;
-import com.pn.career.repositories.forum.TopicTagRepository;
+import com.pn.career.repositories.forum.*;
 import com.pn.career.responses.forum.TagResponse;
 import com.pn.career.responses.forum.TopicResponse;
 import jakarta.transaction.Transactional;
@@ -34,6 +31,8 @@ public class TopicService implements ITopicService {
     private final StudentRepository studentRepository;
     private final EmployerRepository employerRepository;
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final ReactionRepository reactionRepository;
 
     @Override
     public Page<TopicResponse> getAllTopics(PageRequest pageRequest) {
@@ -179,13 +178,23 @@ public class TopicService implements ITopicService {
     }
 
     @Override
-    public void deleteTopic(Integer id) {
-        topicRepository.findById(id)
-                .ifPresent(topic -> {
-                    topic.setClose(false);
-                    topic.setUpdatedAt(LocalDateTime.now());
-                    topicRepository.save(topic);
-                });
+    @Transactional
+    public void deleteTopic(Integer id, Integer userId) {
+        //check authorization for delete except admin
+        Topic topic = topicRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Topic not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (!"admin".equals(user.getRole().getRoleName()) && !topic.getUserId().equals(userId)) {
+            throw new SecurityException("Bạn không có quyền xóa chủ đề này");
+        }
+        // xóa những thứ liên quan đến topic như post, comment, reactions
+        postRepository.deleteAllByTopicId(topic.getTopicId());
+        commentRepository.deleteAllCommentsByTopicId(topic.getTopicId());
+        topicTagRepository.deleteByTopic_TopicId(topic.getTopicId());
+        reactionRepository.deleteAllReactionsByTopicId(topic.getTopicId());
+        topicRepository.delete(topic);
+
     }
 
     @Override

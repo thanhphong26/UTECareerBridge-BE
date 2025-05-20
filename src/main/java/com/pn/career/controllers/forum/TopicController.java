@@ -102,8 +102,11 @@ public class TopicController {
                 .build());
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseObject> deleteTopic(@PathVariable Integer id) {
-        topicService.deleteTopic(id);
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_EMPLOYER') or hasRole('ROLE_STUDENT')")
+    public ResponseEntity<ResponseObject> deleteTopic(@PathVariable Integer id, @AuthenticationPrincipal Jwt jwt) {
+        Long userIdLong = jwt.getClaim("userId");
+        Integer userId = userIdLong != null ? userIdLong.intValue() : null;
+        topicService.deleteTopic(id, userId);
         return ResponseEntity.ok().body(ResponseObject.builder()
                 .message("Xóa chủ đề thành công")
                 .status(HttpStatus.OK)

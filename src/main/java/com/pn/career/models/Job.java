@@ -61,7 +61,7 @@ public class Job extends BaseEntity{
     private String rejectionReason;
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Application> applications;
-    @OneToMany(mappedBy = "job", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "job", fetch = FetchType.EAGER)
     @JsonIgnore
     private List<JobSkill> jobSkills = new ArrayList<>();
     @Column(name = "package_id")
