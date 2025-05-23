@@ -24,6 +24,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
@@ -164,7 +166,7 @@ public class InterviewController {
             Integer studentID = interview.getApplication().getResume().getStudent().getUserId();
             String title = "Lịch phỏng vấn mới từ " + interview.getApplication().getJob().getEmployer().getCompanyName();
             String message = "Bạn đã được lên lịch phỏng vấn cho vị trí " + interview.getApplication().getJob().getJobTitle() +
-                    " vào lúc " + interview.getScheduleDate() + ". Thời gian phỏng vấn là " + interview.getDuration() + " phút. Vui lòng kiểm tra email để xác nhận lịch phỏng vấn.";
+                    " vào lúc " + interview.getScheduleDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + ". Thời gian phỏng vấn là " + interview.getDuration() + " phút. Vui lòng kiểm tra email để xác nhận lịch phỏng vấn.";
             notificationService.sendNotificationInterview(title, message, meetingInfo.getJoinUrl(), studentID, interview.getApplication().getJob().getJobTitle(), interview.getApplication().getJob().getEmployer().getCompanyName());
             return ResponseEntity.ok()
                     .body(ResponseObject.builder()
